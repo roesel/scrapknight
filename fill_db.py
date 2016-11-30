@@ -12,6 +12,9 @@ class Scraper:
     debug = True
     editions = ["KLD", "SOI"]
 
+    def __init__(self):
+        self.db = Database()
+
     def fetch_url(self, url):
         response = urllib.request.urlopen(url)
         data = response.read()              # a `bytes` object
@@ -27,13 +30,12 @@ class Scraper:
         if (matches and (matches[0] == matches[1])):
             if self.debug:
                 print('Successfully found out edition ' + edition +
-                      ' has ' + str(matches[0]) + ' cards.')
+                      ' should have ' + str(matches[0]) + ' cards.')
             return int(matches[0])
         else:
             warnings.warn('Regex to get # of cards in ' + edition + ' failed.')
 
     def scrape_edition(self, edition, sleep=0.1):
-
         size_of_edition = self.get_edition_size(edition)
         cards = []
 
@@ -57,7 +59,7 @@ class Scraper:
                     cards.append(card)
             else:
                 warnings.warn(
-                    'A scrape of a page was useless. Not a big deal but probably not correct.')
+                    'A scrape of a page was useless. Not a big deal but probably not correct anyway.')
 
             time.sleep(sleep)
 
@@ -68,9 +70,25 @@ class Scraper:
                 print(str(len(cards)) + ' cards found in edition ' + edition + '.')
         return cards
 
-    def format_edition(self, cards):
+    def format_edition(self, cards, foil=False, played=False):
         # check for - foil, actual ID, completeness, ...
-        return cards
+        cards_out = []
+        added_keys = []
+        for card in cards:
+            if (foil == self.is_foil(card[1])) and (played == self.is_played(card[1])):
+                if card[0] not in added_keys:
+                    added_keys.append(card[0])
+                    cards_out.append(card)
+                else:
+                    warning.warn('A duplicate entry was attempted, something might be wrong.')
+
+        return cards_out
+
+    def is_foil(self, card):
+        return (str.find(card, '- foil') != -1)
+
+    def is_played(self, card):
+        return (str.find(card, '- lightly played') != -1)
 
     def insert_into_db(self, cards):
         for card in cards:
@@ -81,17 +99,28 @@ class Scraper:
                 ('%s', '%s', '%s', '%s', %s)
                 """ % (card[0], card[1], card[4], card[2], card[3])
 
-            db = Database()
+            self.db.insert(query)
 
-            db.insert(query)
+    def empty_db(self):
+        query = """TRUNCATE `scrapknight`.`cards`;"""
+        self.db.insert(query)
+        if self.debug:
+            print('Truncated table `cards`.')
 
-            # print(query)
+    def run(self, update=True):
+        if update:
+            print('Updating database information not implemented.')
+        else:
+            self.empty_db()
 
-    def run(self):
         for edition in self.editions:
             cards = self.scrape_edition(edition, sleep=0.5)
+            if self.debug:
+                print(str(len(cards)) + ' cards scraped.')
             cards = self.format_edition(cards)
-            self.insert_into_db(cards)
+            if self.debug:
+                print(str(len(cards)) + ' left after cleaning.')
+                self.insert_into_db(cards)
 
             # db = {}
             # for a in matches:
@@ -102,5 +131,5 @@ class Scraper:
             # print(db)
 
 sc = Scraper()
-sc.run()
+sc.run(update=False)
 # print(sc.scrape_edition('KLD'))
