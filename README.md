@@ -35,3 +35,4 @@ Add this repository to your favourite git client. Let's assume you put it into `
     flask\Scripts\pip install guess_language
     flask\Scripts\pip install flipflop
     flask\Scripts\pip install coverage
+    flask\Scripts\pip install numpy
