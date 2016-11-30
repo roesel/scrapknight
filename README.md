@@ -51,6 +51,7 @@ At this point, you have everything you need to run the app, just in the wrong pl
 3. If you're on Linux, you need to properly chmod the `run.py` file with the following
  * `chmod a+x run.py`
 
+
 ### Running the server
 At this point, you should be able to run the server like this:
 
