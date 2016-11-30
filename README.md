@@ -25,6 +25,7 @@ Add this repository to your favourite git client. Let's assume you put it into `
  * on Linux: replace `flask\Scripts\pip` with `flask/bin/pip`
 
 
+
     flask\Scripts\pip install flask
     flask\Scripts\pip install flask-login
     flask\Scripts\pip install flask-openid
@@ -38,6 +39,7 @@ Add this repository to your favourite git client. Let's assume you put it into `
     flask\Scripts\pip install flipflop
     flask\Scripts\pip install coverage
     flask\Scripts\pip install numpy
+
 
 5. The environment should be ready now.
 
