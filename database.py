@@ -2,6 +2,7 @@ from config_nonflask import config
 
 import mysql.connector
 
+
 class Database:
 
     def __init__(self):

@@ -6,6 +6,7 @@ import urllib.request
 import time
 import warnings
 from database import Database
+import hashlib
 
 
 class Scraper:
@@ -92,14 +93,16 @@ class Scraper:
 
     def insert_into_db(self, cards):
         for card in cards:
+            name_md5 = hashlib.md5(card[1].lower().encode('utf-8')).hexdigest()
             query = """
                 INSERT INTO `cards`
-                (`id`, `name`, `edition`, `manacost`, `cost_buy`)
+                (`id`, `name`, `edition`, `manacost`, `cost_buy`, `md5`)
                 VALUES
-                ('%s', '%s', '%s', '%s', %s)
-                """ % (card[0], card[1], card[4], card[2], card[3])
+                ('%s', '%s', '%s', '%s', %s, '%s')
+                """ % (card[0], card[1], card[4], card[2], card[3], name_md5)
 
             self.db.insert(query)
+            # print(query)
 
     def empty_db(self):
         query = """TRUNCATE `scrapknight`.`cards`;"""
