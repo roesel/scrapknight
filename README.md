@@ -41,6 +41,11 @@ Add this repository to your favourite git client. Let's assume you put it into `
     flask\Scripts\pip install coverage
     flask\Scripts\pip install numpy
     ```
+ * You can also copy and paste this one-liner:
+ 
+    ```
+    flask/bin/pip install flask flask-login flask-openid flask-mail flask-sqlalchemy sqlalchemy-migrate flask-whooshalchemy flask-wtf flask-babel guess_language flipflop coverage numpy
+    ```
 
 5. The environment should be ready now.
 
