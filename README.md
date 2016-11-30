@@ -20,7 +20,9 @@ Add this repository to your favourite git client. Let's assume you put it into `
 2. Navigate to the root of the repository
 3. run `python -m venv flask`
  * (a dedicated python installation has been copied over to the folder `flask` in the repository root)
+ * on Linux you should probably run `python3 -m venv flask`
 4. While still in the root of the repo, run the following commands. (Most of them are likely not necessary, but they're adopted from a tutorial, it works and it's a virtualenv anyway.)
+ * on Linux: replace `flask\Scripts\pip` with `flask/bin/pip`
 
 
     flask\Scripts\pip install flask
@@ -45,11 +47,20 @@ At this point, you have everything you need to run the app, just in the wrong pl
 2. Change the copies according to your liking. You don't have to, but you might want to.
  * Changing `SECRET_KEY` in `config.py` is probably a good idea.
  * Changing the IP address/port in `run.py` might be necessary.
+3. If you're on Linux, you need to properly chmod the `run.py` file with the following
+ * `chmod a+x run.py`
 
 ### Running the server
 At this point, you should be able to run the server like this:
 
     cd C:\Repa\scrapknight
     flask\Scripts\python run.py
+
+or on Linux:
+
+    cd ~/repa/scrapknight
+    ./run.py
+
+Once you're running, the website should be visible on [http://localhost:5010/](http://localhost:5010/) unless you changed the IP address/port in the configs.
 
 Have fun!
