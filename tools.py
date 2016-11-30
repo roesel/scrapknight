@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import re
+import hashlib
 import numpy as np
 import urllib.request
 import flask
@@ -87,13 +88,14 @@ class Card():
         """
 
         self.card_id = card_id
+        self.md5 = hashlib.md5(self.card_id)
 
         query = """
             SELECT `id`, `name`, `edition`, `manacost`, `cost_buy`
             FROM `cards`
-            WHERE LOWER(`name`) = '{}'
-            """.format(self.card_id)
-
+            WHERE md5 = '{}'
+            """.format(self.md5)
+            
         result = self.db.query(query)
 
         if result:
