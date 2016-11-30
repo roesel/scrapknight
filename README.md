@@ -22,6 +22,7 @@ Add this repository to your favourite git client. Let's assume you put it into `
 4. run `python -m venv flask`
  * (a dedicated python installation has been copied over to the folder `flask` in the repository root)
  * on Linux you should probably run `python3 -m venv flask`
+ * If you encounter error such as `Error: Command '['~/repo/scrapknight/flask/bin/python', '-Im', 'ensurepip', '--upgrade', '--default-pip']' returned non-zero exit status 1` you may try to follow this [stackoverflow answer](http://stackoverflow.com/a/26314477)
 5. While still in the root of the repo, run the following commands. (Most of them are likely not necessary, but they're adopted from a tutorial, it works and it's a virtualenv anyway.)
  * on Linux: replace `flask\Scripts\pip` with `flask/bin/pip`
 
