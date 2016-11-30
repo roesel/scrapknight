@@ -5,7 +5,7 @@ import numpy as np
 import urllib.request
 import time
 import warnings
-from database import *
+from database import Database
 
 
 class Scraper:
