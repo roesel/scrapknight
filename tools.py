@@ -88,14 +88,14 @@ class Card():
         """
 
         self.card_id = card_id
-        self.md5 = hashlib.md5(self.card_id)
+        self.md5 = hashlib.md5(self.card_id.lower().encode('utf-8')).hexdigest()
 
         query = """
             SELECT `id`, `name`, `edition`, `manacost`, `cost_buy`
             FROM `cards`
             WHERE md5 = '{}'
             """.format(self.md5)
-            
+
         result = self.db.query(query)
 
         if result:
