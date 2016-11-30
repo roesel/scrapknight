@@ -1,4 +1,7 @@
-HOST = 'localhost'
-USER = 'root'
-PASSWORD = ''
-DB = 'scrapknight'
+config = {
+  'user': 'root',
+  'password': '',
+  'host': 'localhost',
+  'database': 'scrapknight',
+  'raise_on_warnings': True,
+}
