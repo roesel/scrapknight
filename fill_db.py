@@ -5,7 +5,7 @@ import numpy as np
 import urllib.request
 import time
 import warnings
-# import MySQLdb
+import MySQLdb
 
 
 class Database:
@@ -37,7 +37,7 @@ class Database:
 
 class Scraper:
     debug = True
-    editions = ["KLD"]
+    editions = ["KLD", "SOI"]
 
     def fetch_url(self, url):
         response = urllib.request.urlopen(url)
@@ -61,9 +61,7 @@ class Scraper:
 
     def scrape_edition(self, edition, sleep=0.1):
 
-        # size_of_edition = self.get_edition_size(edition)
-        size_of_edition = 100
-
+        size_of_edition = self.get_edition_size(edition)
         cards = []
 
         for limit in np.arange(0, size_of_edition, 30):
@@ -72,10 +70,18 @@ class Scraper:
                 '&poczob=100&foil=R&triditpodle=ceny&hledej_pouze_magic=1&submit=Vyhledej'
             html = self.fetch_url(url)
             matches = re.findall(
-                '/images/kusovkymagicsmall/([^.]*).jpg.*?<font style="font-weight : bolder;">([^<]*)</font></div>.*?>(\d*)&nbsp;Kč', html, re.DOTALL)
+                '/images/kusovkymagicsmall/([^.]*)\.jpg.*?<font style="font-weight : bolder;">([^<]*)</font></div>.*?(/images/kusovky/.*?\.gif[^&]*).*?>(\d*)&nbsp;Kč', html, re.DOTALL)
 
             if matches:
-                cards.append(list(matches[0]))
+                for match in matches:
+                    card = list(match)
+                    card[0] = card[0].replace('/', '_')
+                    manacosts = re.findall('/([0-9a-z]*?)\.gif', card[2], re.DOTALL)
+                    card[2] = ''.join(manacosts)
+                    if card[2] == edition.lower():
+                        card[2] = "-"
+                    card.append(edition)
+                    cards.append(card)
             else:
                 warnings.warn(
                     'A scrape of a page was useless. Not a big deal but probably not correct.')
@@ -89,51 +95,39 @@ class Scraper:
                 print(str(len(cards)) + ' cards found in edition ' + edition + '.')
         return cards
 
-    def format_cards(self, cards):
-        for card in cards:
-            card[0] = card[0].replace('/', '_')
+    def format_edition(self, cards):
+        # check for - foil, actual ID, completeness, ...
+        return cards
 
     def insert_into_db(self, cards):
         for card in cards:
-            pass
+            query = """
+                INSERT INTO `cards`
+                (`id`, `name`, `edition`, `manacost`, `cost_buy`)
+                VALUES
+                ('%s', '%s', '%s', '%s', %s)
+                """ % (card[0], card[1], card[4], card[2], card[3])
+
+            db = Database()
+
+            db.insert(query)
+
+            # print(query)
 
     def run(self):
-        matches = []
+        for edition in self.editions:
+            cards = self.scrape_edition(edition, sleep=0.5)
+            cards = self.format_edition(cards)
+            self.insert_into_db(cards)
 
-        for limit in np.arange(0, 30, 30):
-            url = 'http://cernyrytir.cz/index.php3?akce=3&limit=' + \
-                str(limit) + '&edice_magic=KLD&poczob=100&foil=R&triditpodle=ceny&hledej_pouze_magic=1&submit=Vyhledej'
-            response = urllib.request.urlopen(url)
-            data = response.read()      # a `bytes` object
-            text = data.decode('windows-1250')  # a `str`; this step can't be used if data is binary
-
-            matches3 = re.findall(
-                '/images/kusovkymagicsmall/([^.]*).jpg.*?<font style="font-weight : bolder;">([^<]*)</font></div>.*?>(\d*)&nbsp;Kč', text, re.DOTALL)
-            # print(matches3)
-            matches += matches3
-
-        for card in matches:
-            print(card)
-    # query = """
-    #     INSERT INTO `cards`
-    #     (`id`, `name`, `edition`, `manacost`, `cost_buy`, `cost_sell`)
-    #     VALUES
-    #     ('KLA221', 'Riparian Tiger Bob', 'KLA', '2rr', 15, 35),
-    #     ('KLA222', 'Wild Wanderer Mike', 'KLA', '2rw', 5, 3)
-    #     """
-    #
-    # db = Database()
-    #
-    # db.insert(query)
-
-    # db = {}
-    # for a in matches:
-    #     if ((str.find(a[0], ' - lightly played') == -1) and (str.find(a[0], '- foil') == -1)):
-    #         #print(a[0]+" "+a[1])
-    #         db[a[0].lower()] = {'cost': int(a[1]), 'title': a[0]}
-
-    # print(db)
+            # db = {}
+            # for a in matches:
+            #     if ((str.find(a[0], ' - lightly played') == -1) and (str.find(a[0], '- foil') == -1)):
+            #         #print(a[0]+" "+a[1])
+            #         db[a[0].lower()] = {'cost': int(a[1]), 'title': a[0]}
+            #
+            # print(db)
 
 sc = Scraper()
-# sc.run()
-print(sc.scrape_edition('KLD'))
+sc.run()
+# print(sc.scrape_edition('KLD'))
