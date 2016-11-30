@@ -4,28 +4,11 @@ import re
 import numpy as np
 import urllib.request
 import flask
+from database import Database
 
 def process(user_input):
-    matches = []
-    for limit in np.arange(0, 300, 30):
-        url = 'http://cernyrytir.cz/index.php3?akce=3&limit='+str(limit)+'&edice_magic=KLD&poczob=100&foil=R&triditpodle=ceny&hledej_pouze_magic=1&submit=Vyhledej'
-        response = urllib.request.urlopen(url)
-        data = response.read()      # a `bytes` object
-        text = data.decode('windows-1250') # a `str`; this step can't be used if data is binary
-        #with open('input.txt', 'r', encoding="utf8") as myfile:
-        #    data = myfile.read().replace('\n', '')
 
-        matches3 = re.findall('<font style="font-weight : bolder;">([^<]*)</font></div>.*?>(\d*)&nbsp;Kč', text, re.DOTALL)
-        #print(matches3)
-        matches += matches3
-
-    db = {}
-    for a in matches:
-        if ((str.find(a[0], ' - lightly played') == -1) and (str.find(a[0], '- foil') == -1)):
-            #print(a[0]+" "+a[1])
-            db[a[0].lower()] = {'cost': int(a[1]), 'title': a[0]}
-
-    Card.db = db
+    Card.db = Database()
 
     mydeck = Deck(user_input)
 
@@ -72,7 +55,7 @@ class Deck():
             if card.found:
                 multiprice = card.count * card.cost
                 table.append([
-                    str(card.title),
+                    str(card.name),
                     str(card.count),
                     str(card.cost),
                     str(multiprice)])
@@ -105,10 +88,22 @@ class Card():
 
         self.card_id = card_id
 
-        if card_id in self.db:
+        query = """
+            SELECT `id`, `name`, `edition`, `manacost`, `cost_buy`
+            FROM `cards`
+            WHERE LOWER(`name`) = '{}'
+            """.format(self.card_id)
+
+        result = self.db.query(query)
+
+        if result:
             self.found = True
-            self.cost = self.db[card_id]['cost']
-            self.title = self.db[card_id]['title']
+
+            self.id, \
+            self.name, \
+            self.edition, \
+            self.manacosts, \
+            self.cost = result[0]
 
         else:
             self.found = False
