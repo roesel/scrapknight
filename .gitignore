@@ -1,7 +1,8 @@
 # Custom
 flask/
-config.py
-run.py
+/config.py
+/config_nonflask.py
+/run.py
 
 # ------------------------------------------------------------------------------
 # Byte-compiled / optimized / DLL files
