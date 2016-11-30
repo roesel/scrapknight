@@ -44,6 +44,7 @@ Add this repository to your favourite git client. Let's assume you put it into `
 
 ### Moving configuration files
 At this point, you have everything you need to run the app, just in the wrong place. Let's fix that.
+
 1. Copy all config files in the `install/` folder into the root of the repository.
 2. Change the copies according to your liking. You don't have to, but you might want to.
  * Changing `SECRET_KEY` in `config.py` is probably a good idea.
