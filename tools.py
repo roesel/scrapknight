@@ -50,22 +50,33 @@ class Deck():
                 # (2) ... anything but "[", "]" at least once plus anything but "[", "]", or whitespace exactly once
                 # maybe a whitespace
                 # (3) ... maybe "[" plus maybe anything plus maybe "]"
+                #
+                # Therefore a string
+                # 4 x Inspiring Vantage [KLD]
+                # will be split into
+                #   count = '4'
+                #   name = 'Inspiring Vantage'
+                #   edition = '[KLD]'
+                #
                 match = re.match(
                     r"(\d+)\s?x?\s([^\[\]]+[^\[\]\s])\s?(\[?.*\]?)", row)
+
                 if match:
                     count = int(match.group(1))
                     name = match.group(2)
                     edition = match.group(3).replace("[", "").replace("]", "")
+
                 else:
                     raise ValueError(
                         "Error while processing input row {}: {}".format(i, row))
 
+                # Now get the card instance
                 card = Card(name, edition)
 
-                # If card was not found, maybe the problem is in the wrong
-                # apostrophe character.
+                # If card was not found in the database, maybe the problem is
+                #  in the wrong apostrophe character.
                 if not card.found:
-                    name = re.sub("'", "´", name)
+                    name = name.replace("'", "´")
                     card = Card(name, edition)
 
                 card.count = count
