@@ -40,24 +40,33 @@ class Deck():
                 # If the first character is not a digit, lets assume the
                 # number of cards is just ommited and should be equal to 1.
                 if not row[0].isdigit():
-                    count = 1
-                    name = row
-                else:
-                    match = re.match(r"(\d+)\s?x\s(.+)", row)
-                    if match:
-                        count = int(match.group(1))
-                        name = match.group(2)
-                    else:
-                        raise ValueError(
-                            "Error while processing input row {}: {}".format(i, row))
+                    row = '1 x ' + row
 
-                card = Card(name)
+                # Regex explained
+                # (1) ... one or more digits
+                # maybe a whitespace
+                # maybe "x"
+                # whitespace
+                # (2) ... anything but "[", "]" at least once plus anything but "[", "]", or whitespace exactly once
+                # maybe a whitespace
+                # (3) ... maybe "[" plus maybe anything plus maybe "]"
+                match = re.match(
+                    r"(\d+)\s?x?\s([^\[\]]+[^\[\]\s])\s?(\[?.*\]?)", row)
+                if match:
+                    count = int(match.group(1))
+                    name = match.group(2)
+                    edition = match.group(3).replace("[", "").replace("]", "")
+                else:
+                    raise ValueError(
+                        "Error while processing input row {}: {}".format(i, row))
+
+                card = Card(name, edition)
 
                 # If card was not found, maybe the problem is in the wrong
                 # apostrophe character.
                 if not card.found:
                     name = re.sub("'", "´", name)
-                    card = Card(name)
+                    card = Card(name, edition)
 
                 card.count = count
                 card.user_input = name
@@ -104,18 +113,26 @@ class Deck():
 
 class Card():
 
-    def __init__(self, card_id):
+    def __init__(self, name_req, edition_req=None):
         """
         """
 
-        self.card_id = card_id
-        self.md5 = hashlib.md5(self.card_id.lower().encode('utf-8')).hexdigest()
+        self.name_req = name_req
+        self.edition_req = edition_req
+        self.md5 = hashlib.md5(self.name_req.lower().encode('utf-8')).hexdigest()
+
+        print(edition_req)
 
         query = """
             SELECT `id`, `name`, `edition`, `manacost`, `cost_buy`
             FROM `cards`
-            WHERE md5 = '{}'
+            WHERE `md5` = '{}'
             """.format(self.md5)
+
+        if self.edition_req:
+            query += """
+            AND `edition` = '{}'
+            """.format(self.edition_req) # zde to chce udelat zase pres md5 a pres join - tabulka karet a tabulka edic s FK -- PK
 
         result = self.db.query(query)
 
