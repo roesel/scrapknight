@@ -11,7 +11,7 @@ import hashlib
 
 class Scraper:
     debug = True
-    editions = ["KLD", "SOI"]
+    editions = []
 
     def __init__(self):
         self.db = Database()
@@ -35,6 +35,37 @@ class Scraper:
             return int(matches[0])
         else:
             warnings.warn('Regex to get # of cards in ' + edition + ' failed.')
+
+    def get_edition_list(self):
+        html = self.fetch_url('http://cernyrytir.cz/index.php3?akce=3')
+        select = re.findall('<select name="edice_magic"(.*?)</select>', html, re.DOTALL)
+        matches = re.findall('<option value="([^"]*)" >([^<]*)</option>', select[0], re.DOTALL)
+
+        editions = []
+        for match in matches:
+            if (match[0] != 'standard') and (match[0] != 'modern'):
+                editions.append(match)
+                self.editions.append(match[0])
+        self.insert_editions(editions)
+
+    def insert_editions(self, editions, update=False):
+        if update:
+            print('Updating database information not implemented.')
+        else:
+            query = """TRUNCATE `scrapknight`.`cards`;"""
+            self.db.insert(query)
+            if self.debug:
+                print('Truncated table `editions`.')
+
+        for edition in editions:
+            query = """
+                INSERT INTO `editions`
+                (`id`, `name`)
+                VALUES
+                ('%s', '%s')
+                """ % (edition[0], edition[1])
+
+            self.db.insert(query)
 
     def scrape_edition(self, edition, sleep=0.1):
         size_of_edition = self.get_edition_size(edition)
@@ -61,7 +92,6 @@ class Scraper:
             else:
                 warnings.warn(
                     'A scrape of a page was useless. Not a big deal but probably not correct anyway.')
-
             time.sleep(sleep)
 
         if not cards:
@@ -81,7 +111,7 @@ class Scraper:
                     added_keys.append(card[0])
                     cards_out.append(card)
                 else:
-                    warning.warn('A duplicate entry was attempted, something might be wrong.')
+                    warnings.warn('A duplicate entry was attempted, something might be wrong.')
 
         return cards_out
 
@@ -111,13 +141,15 @@ class Scraper:
             print('Truncated table `cards`.')
 
     def run(self, update=True):
+        self.get_edition_list()
+
         if update:
             print('Updating database information not implemented.')
         else:
             self.empty_db()
 
-        for edition in self.editions:
-            cards = self.scrape_edition(edition, sleep=0.5)
+        for edition in self.editions[0:9]:
+            cards = self.scrape_edition(edition, sleep=1)
             if self.debug:
                 print(str(len(cards)) + ' cards scraped.')
             cards = self.format_edition(cards)
