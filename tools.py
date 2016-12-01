@@ -25,23 +25,44 @@ class Deck():
 
         for i, row in enumerate(user_input.splitlines()):
 
-            split = row.replace('\n', '').split(' x ')
+            # Delete newline from string
+            row = row.replace(r"\n", "")
 
+            # Get rid of multiple adjoining whitespace.
+            row = re.sub(r"\s+", " ", row)
+
+            # Strip leading and trainling whitespace.
+            row = row.strip()
+
+            # Check that the row is not a comment
             if not row[0] == '#':
-                if len(split) == 2:
-                    count = int(split[0])
-                    name = split[1]
 
-                    card = Card(name.lower())
-
-                    card.count = count
-                    card.user_input = name
-
-                    self.cards.append(card)
-
+                # If the first character is not a digit, lets assume the
+                # number of cards is just ommited and should be equal to 1.
+                if not row[0].isdigit():
+                    count = 1
+                    name = row
                 else:
-                    raise ValueError(
-                        "Error while processing input row {}: {}".format(i, row))
+                    match = re.match(r"(\d+)\s?x\s(.+)", row)
+                    if match:
+                        count = int(match.group(1))
+                        name = match.group(2)
+                    else:
+                        raise ValueError(
+                            "Error while processing input row {}: {}".format(i, row))
+
+                card = Card(name)
+
+                # If card was not found, maybe the problem is in the wrong
+                # apostrophe character.
+                if not card.found:
+                    name = re.sub("'", "´", name)
+                    card = Card(name)
+
+                card.count = count
+                card.user_input = name
+
+                self.cards.append(card)
 
     def print_price_table(self):
         """
