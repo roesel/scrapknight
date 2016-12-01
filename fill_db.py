@@ -79,13 +79,20 @@ class Scraper:
 
             if matches:
                 for match in matches:
-                    card = list(match)
-                    card[0] = card[0].replace('/', '_')
-                    manacosts = re.findall('/([0-9a-z]*?)\.gif', card[2], re.DOTALL)
-                    card[2] = ''.join(manacosts)
-                    if card[2] == edition.lower():
-                        card[2] = "-"
-                    card.append(edition)
+                    manacosts = re.findall('/([0-9a-z]*?)\.gif', match[2], re.DOTALL)
+                    manacost = ''.join(manacosts)
+
+                    card = {}
+                    card['id'] = match[0].replace('/', '_')
+                    card['name'] = match[1]
+                    card['edition'] = edition
+                    if manacost == edition.lower():
+                        card['manacost'] = "-"
+                    else:
+                        card['manacost'] = manacost
+
+                    card['cost'] = match[3]
+
                     cards.append(card)
             else:
                 warnings.warn(
@@ -104,9 +111,9 @@ class Scraper:
         cards_out = []
         added_keys = []
         for card in cards:
-            if (self.is_foil(card[1]) == False) and (self.is_played(card[1]) == False):
-                if card[0] not in added_keys:
-                    added_keys.append(card[0])
+            if (self.is_foil(card) == False) and (self.is_played(card) == False):
+                if card['id'] not in added_keys:
+                    added_keys.append(card['id'])
                     cards_out.append(card)
                 else:
                     warnings.warn('A duplicate entry was attempted, something might be wrong.')
@@ -114,21 +121,21 @@ class Scraper:
         return cards_out
 
     def is_foil(self, card):
-        return (str.find(card, '- foil') != -1)
+        return (str.find(card['name'], '- foil') != -1)
 
     def is_played(self, card):
-        return (str.find(card, '- lightly played') != -1)
+        return (str.find(card['name'], '- lightly played') != -1)
 
     def insert_into_db(self, cards):
         for card in cards:
             # Insert into list of cards
-            name_md5 = hashlib.md5(card[1].lower().encode('utf-8')).hexdigest()
+            name_md5 = hashlib.md5(card['name'].lower().encode('utf-8')).hexdigest()
             query = """
                 INSERT INTO `cards`
                 (`id`, `name`, `edition`, `manacost`, `md5`)
                 VALUES
                 ('%s', '%s', '%s', '%s', '%s')
-                """ % (card[0], card[1], card[4], card[2], name_md5)
+                """ % (card['id'], card['name'], card['edition'], card['manacost'], name_md5)
 
             self.db.insert(query)
 
@@ -138,7 +145,7 @@ class Scraper:
                 (`id`, `buy`)
                 VALUES
                 ('%s', %s)
-                """ % (card[0], card[3])
+                """ % (card['id'], card['cost'])
 
             self.db.insert(query)
             # print(query)
