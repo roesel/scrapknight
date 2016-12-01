@@ -48,14 +48,12 @@ class Scraper:
                 self.editions.append(match[0])
         self.insert_editions(editions)
 
-    def insert_editions(self, editions, update=False):
-        if update:
-            print('Updating database information not implemented.')
-        else:
-            query = """TRUNCATE `scrapknight`.`cards`;"""
-            self.db.insert(query)
-            if self.debug:
-                print('Truncated table `editions`.')
+    def insert_editions(self, editions):
+
+        query = """TRUNCATE `scrapknight`.`cards`;"""
+        self.db.insert(query)
+        if self.debug:
+            print('Truncated table `editions`.')
 
         for edition in editions:
             query = """
@@ -101,12 +99,12 @@ class Scraper:
                 print(str(len(cards)) + ' cards found in edition ' + edition + '.')
         return cards
 
-    def format_edition(self, cards, foil=False, played=False):
+    def format_edition(self, cards):
         # check for - foil, actual ID, completeness, ...
         cards_out = []
         added_keys = []
         for card in cards:
-            if (foil == self.is_foil(card[1])) and (played == self.is_played(card[1])):
+            if (self.is_foil(card[1]) == False) and (self.is_played(card[1]) == False):
                 if card[0] not in added_keys:
                     added_keys.append(card[0])
                     cards_out.append(card)
@@ -123,13 +121,24 @@ class Scraper:
 
     def insert_into_db(self, cards):
         for card in cards:
+            # Insert into list of cards
             name_md5 = hashlib.md5(card[1].lower().encode('utf-8')).hexdigest()
             query = """
                 INSERT INTO `cards`
-                (`id`, `name`, `edition`, `manacost`, `cost_buy`, `md5`)
+                (`id`, `name`, `edition`, `manacost`, `md5`)
                 VALUES
-                ('%s', '%s', '%s', '%s', %s, '%s')
-                """ % (card[0], card[1], card[4], card[2], card[3], name_md5)
+                ('%s', '%s', '%s', '%s', '%s')
+                """ % (card[0], card[1], card[4], card[2], name_md5)
+
+            self.db.insert(query)
+
+            # Insert into costs
+            query = """
+                INSERT INTO `costs`
+                (`id`, `buy`)
+                VALUES
+                ('%s', %s)
+                """ % (card[0], card[3])
 
             self.db.insert(query)
             # print(query)
@@ -140,15 +149,12 @@ class Scraper:
         if self.debug:
             print('Truncated table `cards`.')
 
-    def run(self, update=True):
+    def rebuild_db(self):
         self.get_edition_list()
 
-        if update:
-            print('Updating database information not implemented.')
-        else:
-            self.empty_db()
+        self.empty_db()
 
-        for edition in self.editions[0:9]:
+        for edition in self.editions[0:3]:
             cards = self.scrape_edition(edition, sleep=1)
             if self.debug:
                 print(str(len(cards)) + ' cards scraped.')
@@ -157,14 +163,6 @@ class Scraper:
                 print(str(len(cards)) + ' left after cleaning.')
                 self.insert_into_db(cards)
 
-            # db = {}
-            # for a in matches:
-            #     if ((str.find(a[0], ' - lightly played') == -1) and (str.find(a[0], '- foil') == -1)):
-            #         #print(a[0]+" "+a[1])
-            #         db[a[0].lower()] = {'cost': int(a[1]), 'title': a[0]}
-            #
-            # print(db)
-
 sc = Scraper()
-sc.run(update=False)
+sc.rebuild_db()
 # print(sc.scrape_edition('KLD'))
