@@ -18,13 +18,13 @@ USE `scrapknight`;
 
 -- Exportování struktury pro tabulka scrapknight.cards
 CREATE TABLE IF NOT EXISTS `cards` (
-  `id` varchar(20) COLLATE utf32_czech_ci NOT NULL COMMENT 'ID dané karty XXX1234',
-  `name` varchar(100) COLLATE utf32_czech_ci DEFAULT NULL COMMENT 'Title of the card',
-  `edition` varchar(10) COLLATE utf32_czech_ci DEFAULT NULL COMMENT 'Edition of the card in letter abbreviation.',
-  `manacost` varchar(10) COLLATE utf32_czech_ci DEFAULT NULL COMMENT 'Manacost (format?)',
-  `md5` varchar(50) COLLATE utf32_czech_ci DEFAULT NULL COMMENT 'MD5 hash of name.',
+  `id` varchar(20) COLLATE utf32_czech_ci NOT NULL COMMENT 'ID karty',
+  `name` varchar(100) COLLATE utf32_czech_ci DEFAULT NULL COMMENT 'Název karty',
+  `edition` varchar(10) COLLATE utf32_czech_ci DEFAULT NULL COMMENT 'Edice karty (zdratka)',
+  `manacost` varchar(10) COLLATE utf32_czech_ci DEFAULT NULL COMMENT 'Manacost (formát?)',
+  `md5` varchar(50) COLLATE utf32_czech_ci DEFAULT NULL COMMENT 'MD5 hash jména karty',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_czech_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_czech_ci COMMENT='Seznam všech karet v databázi.';
 
 -- Export dat nebyl vybrán.
 -- Exportování struktury pro tabulka scrapknight.costs
