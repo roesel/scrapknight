@@ -7,6 +7,7 @@ import urllib.request
 import flask
 from database import Database
 
+
 def process(user_input):
 
     Card.db = Database()
@@ -106,7 +107,7 @@ class Deck():
             else:
                 found_all = False
                 table.append([
-                    str(card.user_input), # tady bacha na nejaky user injection
+                    str(card.user_input),  # tady bacha na nejaky user injection
                     str(card.count),
                     '?',
                     '?'])
@@ -122,6 +123,7 @@ class Deck():
 
         return header, table, footer, found_all
 
+
 class Card():
 
     def __init__(self, name_req, edition_req=None):
@@ -135,15 +137,18 @@ class Card():
         print(edition_req)
 
         query = """
-            SELECT `id`, `name`, `edition`, `manacost`, `cost_buy`
-            FROM `cards`
+            SELECT `id`, `name`, `edition`, `manacost`, `buy`
+            FROM (
+                SELECT t1.*, t2.buy, t2.buy_foil
+                FROM cards AS t1 INNER JOIN costs AS t2 ON t1.id = t2.id
+                ) AS t3
             WHERE `md5` = '{}'
             """.format(self.md5)
 
         if self.edition_req:
             query += """
             AND `edition` = '{}'
-            """.format(self.edition_req) # zde to chce udelat zase pres md5 a pres join - tabulka karet a tabulka edic s FK -- PK
+            """.format(self.edition_req)  # zde to chce udelat zase pres md5 a pres join - tabulka karet a tabulka edic s FK -- PK
 
         result = self.db.query(query)
 
@@ -151,10 +156,10 @@ class Card():
             self.found = True
 
             self.id, \
-            self.name, \
-            self.edition, \
-            self.manacosts, \
-            self.cost = result[0]
+                self.name, \
+                self.edition, \
+                self.manacosts, \
+                self.cost = result[0]
 
         else:
             self.found = False
