@@ -2,7 +2,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="col-md-4">
+<div class="col-md-3">
   <div class="panel panel-default">
     <div class="panel-heading"><strong>1) Input decklist</strong></div>
     <div class="panel-body">
@@ -17,7 +17,16 @@
   </div>
 </div>
 {% if results %}
-<div class="col-md-6">
+<div class="col-md-2">
+  <div class="panel panel-default">
+    <div class="panel-heading">Card preview</div>
+    <div class="panel-body">
+        <img src="" id="card_pic" style="max-height: 323px; max-width: 410px; text-align: center; vertical-align: middle;" alt=""/>
+    </div>
+  </div>
+</div>
+
+<div class="col-md-4">
   <div class="panel panel-default">
     <div class="panel-heading"><strong>Output</strong></div>
     <div class="panel-body">
@@ -75,14 +84,6 @@
 </div>
 {% endif %}
 
-<div class="col-md-2">
-  <div class="panel panel-default">
-    <div class="panel-heading">Card preview</div>
-    <div class="panel-body">
-        <img src="" id="card_pic" style="max-height: 323px; max-width: 410px; text-align: center; vertical-align: middle;" alt=""/>
-    </div>
-  </div>
-</div>
 
 
 {% endblock %}
