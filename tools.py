@@ -101,7 +101,7 @@ class Deck():
                     'found': card.found,
                     'row': [
                         {'id': card.id.replace('_', '/'), 'name': card.name},
-                        {'id': card.edition, 'name': card.edition_name},
+                        {'id': card.edition_id, 'name': card.edition_name},
                         str(card.count),
                         str(card.cost),
                         str(multiprice)]})
@@ -142,15 +142,15 @@ class Card():
         self.md5 = hashlib.md5(self.name_req.lower().encode('utf-8')).hexdigest()
 
         query = """
-            SELECT `id`, `name`, `edition`, `edition_name`, `manacost`, `buy`
+            SELECT `id`, `name`, `edition_id`, `edition_name`, `manacost`, `buy`
             FROM (
                 SELECT
-                cards.id, cards.name, cards.edition, cards.manacost, cards.md5,
+                cards.id, cards.name, cards.edition_id, cards.manacost, cards.md5,
                 costs.buy, costs.buy_foil,
                 editions.name as edition_name
                 FROM cards
-                INNER JOIN costs ON cards.id = costs.id
-                INNER JOIN editions ON cards.edition = editions.id
+                INNER JOIN costs ON cards.id = costs.card_id
+                INNER JOIN editions ON cards.edition_id = editions.id
 
                 ) AS t3
             WHERE `md5` = '{}'
@@ -158,7 +158,7 @@ class Card():
 
         if self.edition_req:
             query += """
-            AND `edition` = '{}'
+            AND `edition_id` = '{}'
             """.format(self.edition_req)  # zde to chce udelat zase pres md5 a pres join - tabulka karet a tabulka edic s FK -- PK
 
         result = self.db.query(query)
@@ -168,7 +168,7 @@ class Card():
 
             self.id, \
                 self.name, \
-                self.edition, \
+                self.edition_id, \
                 self.edition_name, \
                 self.manacosts, \
                 self.cost = result[0]
@@ -196,15 +196,15 @@ class Card():
                 reason['edition'] = "Eddition {} was not found.".format(self.edition_req)
 
         query = """
-            SELECT `edition`
+            SELECT `edition_id`
             FROM (
                 SELECT
-                cards.id, cards.name, cards.edition, cards.manacost, cards.md5,
+                cards.id, cards.name, cards.edition_id, cards.manacost, cards.md5,
                 costs.buy, costs.buy_foil,
                 editions.name as edition_name
                 FROM cards
-                INNER JOIN costs ON cards.id = costs.id
-                INNER JOIN editions ON cards.edition = editions.id
+                INNER JOIN costs ON cards.id = costs.card_id
+                INNER JOIN editions ON cards.edition_id = editions.id
 
                 ) AS t3
             WHERE `md5` = '{}'
@@ -216,7 +216,7 @@ class Card():
             reason['card_name'] = "Card {} was not found in any edition.".format(self.name_req)
         else:
             eds = np.unique(result)  # edditions containing this card
-            
+
             if reason['edition']:
                 reason['edition'] += " "
             reason['edition'] += "Card {} was found in edition(s) {}.".format(self.name_req, ", ".join(eds))

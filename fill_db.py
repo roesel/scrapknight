@@ -56,8 +56,8 @@ class Scraper:
                 INSERT INTO `editions`
                 (`id`, `name`)
                 VALUES
-                ('%s', '%s')
-                """ % (edition[0], edition[1])
+                ('{}', '{}')
+                """.format(edition[0], edition[1])
 
             self.db.insert(query)
 
@@ -151,20 +151,20 @@ class Scraper:
             name_md5 = hashlib.md5(card['name'].lower().encode('utf-8')).hexdigest()
             query = """
                 INSERT INTO `cards`
-                (`id`, `name`, `edition`, `manacost`, `md5`)
+                (`id`, `name`, `edition_id`, `manacost`, `md5`)
                 VALUES
-                ('%s', '%s', '%s', '%s', '%s')
-                """ % (card_id, card['name'], card['edition'], card['manacost'], name_md5)
+                ('{}', '{}', '{}', '{}', '{}')
+                """.format(card_id, card['name'], card['edition'], card['manacost'], name_md5)
 
             self.db.insert(query)
 
             # Insert into costs
             query = """
                 INSERT INTO `costs`
-                (`id`, `buy`, `buy_foil`)
+                (`card_id`, `buy`, `buy_foil`)
                 VALUES
-                ('%s', %s, %s)
-                """ % (card_id, card['cost'], card['cost_buy_foil'])
+                ('{}', '{}', '{}')
+                """.format(card_id, card['cost'], card['cost_buy_foil'])
 
             self.db.insert(query)
 
