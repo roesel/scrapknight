@@ -99,6 +99,7 @@ class Deck():
                 multiprice = card.count * card.cost
                 table.append([
                     {'id': card.id.replace('_', '/'), 'name': card.name},
+                    card.edition,
                     str(card.count),
                     str(card.cost),
                     str(multiprice)])
@@ -107,7 +108,8 @@ class Deck():
             else:
                 found_all = False
                 table.append([
-                    str(card.user_input),  # tady bacha na nejaky user injection
+                    {'id': 'NotFound', 'name': card.name_req},  # tady bacha na nejaky user injection
+                    card.edition_req,
                     str(card.count),
                     '?',
                     '?'])
@@ -115,11 +117,11 @@ class Deck():
         footer = []
 
         if not found_all:
-            footer.append(["Minimum price - some cards not found", "", "", str(price) + " CZK"])
+            footer.append(["Minimum price - some cards not found", "", "", "", str(price) + " CZK"])
         else:
-            footer.append(["Full price", "", "",  str(price) + " CZK"])
+            footer.append(["Full price", "", "", "",  str(price) + " CZK"])
 
-        header = ["Card title", "Count", "PPU [CZK]", "Price [CZK]"]
+        header = ["Card title", "Edition", "Count", "PPU [CZK]", "Price [CZK]"]
 
         return header, table, footer, found_all
 
@@ -134,13 +136,13 @@ class Card():
         self.edition_req = edition_req
         self.md5 = hashlib.md5(self.name_req.lower().encode('utf-8')).hexdigest()
 
-        print(edition_req)
-
         query = """
             SELECT `id`, `name`, `edition`, `manacost`, `buy`
             FROM (
-                SELECT t1.*, t2.buy, t2.buy_foil
-                FROM cards AS t1 INNER JOIN costs AS t2 ON t1.id = t2.id
+                SELECT
+                cards.id, cards.name, cards.edition, cards.manacost, cards.md5,
+                costs.buy, costs.buy_foil
+                FROM cards INNER JOIN costs ON cards.id = costs.id
                 ) AS t3
             WHERE `md5` = '{}'
             """.format(self.md5)
