@@ -1,50 +1,45 @@
--- --------------------------------------------------------
--- Hostitel:                     127.0.0.1
--- Verze serveru:                10.1.19-MariaDB - mariadb.org binary distribution
--- OS serveru:                   Win32
--- HeidiSQL Verze:               9.4.0.5125
--- --------------------------------------------------------
+-- Adminer 4.2.5 MySQL dump
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET NAMES utf8 */;
-/*!50503 SET NAMES utf8mb4 */;
-/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+SET NAMES utf8;
+SET time_zone = '+00:00';
 
-
--- Exportování struktury databáze pro
-CREATE DATABASE IF NOT EXISTS `scrapknight` /*!40100 DEFAULT CHARACTER SET utf32 COLLATE utf32_czech_ci */;
+DROP DATABASE IF EXISTS `scrapknight`;
+CREATE DATABASE `scrapknight` /*!40100 DEFAULT CHARACTER SET utf32 COLLATE utf32_czech_ci */;
 USE `scrapknight`;
 
--- Exportování struktury pro tabulka scrapknight.cards
-CREATE TABLE IF NOT EXISTS `cards` (
+DROP TABLE IF EXISTS `cards`;
+CREATE TABLE `cards` (
   `id` varchar(20) COLLATE utf32_czech_ci NOT NULL COMMENT 'ID karty',
   `name` varchar(100) COLLATE utf32_czech_ci DEFAULT NULL COMMENT 'Název karty',
-  `edition` varchar(10) COLLATE utf32_czech_ci DEFAULT NULL COMMENT 'Edice karty (zdratka)',
+  `edition_id` varchar(50) COLLATE utf32_czech_ci DEFAULT NULL COMMENT 'Edice karty (zkratka)',
   `manacost` varchar(10) COLLATE utf32_czech_ci DEFAULT NULL COMMENT 'Manacost (formát?)',
   `md5` varchar(50) COLLATE utf32_czech_ci DEFAULT NULL COMMENT 'MD5 hash jména karty',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `md5` (`md5`),
+  KEY `edition_id` (`edition_id`),
+  CONSTRAINT `cards_ibfk_2` FOREIGN KEY (`edition_id`) REFERENCES `editions` (`id`) ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_czech_ci COMMENT='Seznam všech karet v databázi.';
 
--- Export dat nebyl vybrán.
--- Exportování struktury pro tabulka scrapknight.costs
-CREATE TABLE IF NOT EXISTS `costs` (
-  `id` varchar(20) COLLATE utf32_czech_ci NOT NULL COMMENT 'ID karty',
+
+DROP TABLE IF EXISTS `costs`;
+CREATE TABLE `costs` (
+  `card_id` varchar(20) COLLATE utf32_czech_ci NOT NULL COMMENT 'ID karty',
   `buy` smallint(5) unsigned DEFAULT NULL,
   `buy_foil` smallint(5) unsigned DEFAULT NULL,
   `sell` smallint(5) unsigned DEFAULT NULL,
   `sell_foil` smallint(5) unsigned DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`card_id`),
+  CONSTRAINT `costs_ibfk_3` FOREIGN KEY (`card_id`) REFERENCES `cards` (`id`) ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_czech_ci COMMENT='Různé ceny jednotlivých karet.';
 
--- Export dat nebyl vybrán.
--- Exportování struktury pro tabulka scrapknight.editions
-CREATE TABLE IF NOT EXISTS `editions` (
-  `id` varchar(50) COLLATE utf32_czech_ci DEFAULT NULL COMMENT 'ID edice (XXX...)',
-  `name` varchar(50) COLLATE utf32_czech_ci DEFAULT NULL COMMENT 'Plný název edice'
+
+DROP TABLE IF EXISTS `editions`;
+CREATE TABLE `editions` (
+  `id` varchar(50) COLLATE utf32_czech_ci NOT NULL COMMENT 'ID edice (XXX...)',
+  `name` varchar(50) COLLATE utf32_czech_ci DEFAULT NULL COMMENT 'Plný název edice',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_czech_ci COMMENT='Seznam zkratek edic a jejich plných názvů.';
 
--- Export dat nebyl vybrán.
-/*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
-/*!40014 SET FOREIGN_KEY_CHECKS=IF(@OLD_FOREIGN_KEY_CHECKS IS NULL, 1, @OLD_FOREIGN_KEY_CHECKS) */;
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+
+-- 2016-12-02 23:26:11
