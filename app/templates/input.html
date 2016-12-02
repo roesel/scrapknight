@@ -2,7 +2,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="col-md-5">
+<div class="col-md-4">
   <div class="panel panel-default">
     <div class="panel-heading"><strong>1) Input decklist</strong></div>
     <div class="panel-body">
@@ -17,7 +17,7 @@
   </div>
 </div>
 {% if results %}
-<div class="col-md-7">
+<div class="col-md-6">
   <div class="panel panel-default">
     <div class="panel-heading"><strong>Output</strong></div>
     <div class="panel-body">
@@ -35,7 +35,12 @@
         {% for row in results %}
             <tr>
                 {% for cell in row %}
-                    <td> {{ cell }} </td>
+                    {% if loop.index == 1 %}
+                        <td><span onmouseover="document.images.card_pic.src='http://cernyrytir.cz/images/kusovkymagic/{{cell['id']}}.jpg'">{{cell['name']}}</span></td>
+                    {% else %}
+                        <td>{{ cell }}</td>
+                    {% endif %}
+
                 {% endfor %}
             </tr>
         {% endfor %}
@@ -60,16 +65,24 @@
         {% endif %}
       </table>
     </div>
-  </div> 
+  </div>
 </div>
 {% else %}
-<div class="col-md-7">
+<div class="col-md-8">
   <div class="panel panel-default">
     <div class="panel-heading"><strong>No input.</strong></div>
   </div>
 </div>
 {% endif %}
 
-    
-  
+<div class="col-md-2">
+  <div class="panel panel-default">
+    <div class="panel-heading">Card preview</div>
+    <div class="panel-body">
+        <img src="" id="card_pic" style="max-height: 323px; max-width: 410px; text-align: center; vertical-align: middle;" alt=""/>
+    </div>
+  </div>
+</div>
+
+
 {% endblock %}

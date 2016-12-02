@@ -98,7 +98,7 @@ class Deck():
             if card.found:
                 multiprice = card.count * card.cost
                 table.append([
-                    str(card.name),
+                    {'id': card.id.replace('_', '/'), 'name': card.name},
                     str(card.count),
                     str(card.cost),
                     str(multiprice)])
