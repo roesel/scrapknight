@@ -111,6 +111,7 @@ class Deck():
                 found_all = False
                 table.append({
                     'found': card.found,
+                    'not_found_reason': card.not_found_reason(),
                     'row': [
                         {'id': 'NotFound', 'name': card.name_req},  # tady bacha na nejaky user injection
                         {'id': card.edition_req, 'name': card.edition_req},
@@ -141,7 +142,7 @@ class Card():
         self.md5 = hashlib.md5(self.name_req.lower().encode('utf-8')).hexdigest()
 
         query = """
-            SELECT `id`, `name`, `edition`, `edition_name`,`manacost`, `buy`
+            SELECT `id`, `name`, `edition`, `edition_name`, `manacost`, `buy`
             FROM (
                 SELECT
                 cards.id, cards.name, cards.edition, cards.manacost, cards.md5,
@@ -174,3 +175,50 @@ class Card():
 
         else:
             self.found = False
+
+    def not_found_reason(self):
+
+        reason = {
+            'card_name': "",
+            'edition': "",
+        }
+
+        if self.edition_req:
+            query = """
+                SELECT `name`
+                FROM editions
+                WHERE `id` = '{}'
+                """.format(self.edition_req)  # zde to chce udelat zase pres md5 a pres join - tabulka karet a tabulka edic s FK -- PK
+
+            result = self.db.query(query)
+
+            if not result:
+                reason['edition'] = "Eddition {} was not found.".format(self.edition_req)
+
+        query = """
+            SELECT `edition`
+            FROM (
+                SELECT
+                cards.id, cards.name, cards.edition, cards.manacost, cards.md5,
+                costs.buy, costs.buy_foil,
+                editions.name as edition_name
+                FROM cards
+                INNER JOIN costs ON cards.id = costs.id
+                INNER JOIN editions ON cards.edition = editions.id
+
+                ) AS t3
+            WHERE `md5` = '{}'
+            """.format(self.md5)
+
+        result = self.db.query(query)
+
+        if not result:
+            reason['card_name'] = "Card {} was not found in any edition.".format(self.name_req)
+        else:
+            eds = np.unique(result)  # edditions containing this card
+            
+            if reason['edition']:
+                reason['edition'] += " "
+            reason['edition'] += "Card {} was found in edition(s) {}.".format(self.name_req, ", ".join(eds))
+
+        return reason

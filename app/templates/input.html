@@ -57,9 +57,23 @@
             <tr class = "danger" >
                 {% for cell in row['row'] %}
                     {% if loop.index == 1 %}
-                        <td><span onmouseover="document.images.card_pic.src='{{ url_for('static',filename='img/card_back.jpg') }}'">{{cell['name']}}</span></td>
+                        <td title="{{ row['not_found_reason']['card_name']}}" >
+                            <span onmouseover="document.images.card_pic.src='{{ url_for('static',filename='img/card_back.jpg') }}'">
+                            {% if row['not_found_reason']['card_name'] %}
+                                <strong>{{cell['name']}}</strong>
+                            {% else %}
+                                {{cell['name']}}
+                            {% endif %}
+                            </span>
+                        </td>
                     {% elif loop.index == 2 %}
-                        <td title="{{cell['name']}}">{{ cell['id'] }}</td>
+                        <td title="{{ row['not_found_reason']['edition']}}" >
+                            {% if row['not_found_reason']['edition'] %}
+                                <strong>{{ cell['id'] }}</strong>
+                            {% else %}
+                                {{ cell['id'] }}
+                            {% endif %}
+                        </td>
                     {% else %}
                         <td>{{ cell }}</td>
                     {% endif %}
