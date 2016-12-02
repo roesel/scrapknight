@@ -24,14 +24,13 @@ class Scraper:
 
     def get_edition_size(self, edition):
         html = self.fetch_url(
-            'http://cernyrytir.cz/index.php3?akce=3&limit=0&edice_magic=' + edition + '&poczob=30&foil=R&triditpodle=ceny&hledej_pouze_magic=1&submit=Vyhledej')
+            'http://cernyrytir.cz/index.php3?akce=3&limit=0&edice_magic=' + edition + '&poczob=30&foil=A&triditpodle=ceny&hledej_pouze_magic=1&submit=Vyhledej')
         matches = re.findall(
             '<td><span class="kusovkytext">Nalezeno (\d*)', html, re.DOTALL)
 
         if (matches and (matches[0] == matches[1])):
             if self.debug:
-                print('Successfully found out edition ' + edition +
-                      ' should have ' + str(matches[0]) + ' cards.')
+                print(str(matches[0]) + ' rows should be available in edition ' + edition + '.')
             return int(matches[0])
         else:
             warnings.warn('Regex to get # of cards in ' + edition + ' failed.')
@@ -50,10 +49,7 @@ class Scraper:
 
     def insert_editions(self, editions):
 
-        query = """TRUNCATE `scrapknight`.`cards`;"""
-        self.db.insert(query)
-        if self.debug:
-            print('Truncated table `editions`.')
+        self.truncate_table('editions')
 
         for edition in editions:
             query = """
@@ -67,23 +63,24 @@ class Scraper:
 
     def scrape_edition(self, edition, sleep=0.1):
         size_of_edition = self.get_edition_size(edition)
-        cards = []
-
+        cards = {}
+        scraped_rows = 0
         for limit in np.arange(0, size_of_edition, 30):
             url = 'http://cernyrytir.cz/index.php3?akce=3&limit=' + \
                 str(limit) + '&edice_magic=' + str(edition) + \
-                '&poczob=100&foil=R&triditpodle=ceny&hledej_pouze_magic=1&submit=Vyhledej'
+                '&poczob=100&foil=A&triditpodle=ceny&hledej_pouze_magic=1&submit=Vyhledej'
             html = self.fetch_url(url)
             matches = re.findall(
                 '/images/kusovkymagicsmall/([^.]*)\.jpg.*?<font style="font-weight : bolder;">([^<]*)</font></div>.*?(/images/kusovky/.*?\.gif[^&]*).*?>(\d*)&nbsp;Kč', html, re.DOTALL)
 
             if matches:
+                scraped_rows += len(matches)
                 for match in matches:
                     manacosts = re.findall('/([0-9a-z]*?)\.gif', match[2], re.DOTALL)
                     manacost = ''.join(manacosts)
 
                     card = {}
-                    card['id'] = match[0].replace('/', '_')
+                    card_id = match[0].replace('/', '_')
                     card['name'] = match[1]
                     card['edition'] = edition
                     if manacost == edition.lower():
@@ -93,30 +90,52 @@ class Scraper:
 
                     card['cost'] = match[3]
 
-                    cards.append(card)
+                    # Foil vs non-foil business
+                    if card_id in cards:
+                        if not self.is_foil(card):
+                            foil_cost = cards[card_id]['cost_buy_foil']
+                            card['cost_buy_foil'] = foil_cost
+                            cards[card_id] = card
+                        else:
+                            cards[card_id]['cost_buy_foil'] = card['cost']
+                    else:
+                        if not self.is_foil(card):
+                            card['cost_buy_foil'] = 'NULL'
+                            cards[card_id] = card
+                        else:
+                            card['cost_buy_foil'] = card['cost']
+                            card['cost'] = 'NULL'
+                            card['name'] = card['name'].replace(' - foil', '')
+                            cards[card_id] = card
+
             else:
                 warnings.warn(
-                    'A scrape of a page was useless. Not a big deal but probably not correct anyway.')
+                    'A scrape of a page was useless. Not a big deal but possibly not correct.')
             time.sleep(sleep)
+
+        if self.debug:
+            print(str(scraped_rows) + ' rows scraped in edition ' + edition + '.')
 
         if not cards:
             warnings.warn('No cards found in edition ' + edition + '. Something is probably wrong.')
         else:
             if self.debug:
-                print(str(len(cards)) + ' cards found in edition ' + edition + '.')
+                print(str(len(cards)) + ' unique cards found in edition ' + edition + '.')
         return cards
 
     def format_edition(self, cards):
-        # check for - foil, actual ID, completeness, ...
-        cards_out = []
-        added_keys = []
-        for card in cards:
-            if (self.is_foil(card) == False) and (self.is_played(card) == False):
-                if card['id'] not in added_keys:
-                    added_keys.append(card['id'])
-                    cards_out.append(card)
+        # actual ID, completeness, ...
+        cards_out = {}
+
+        for card_id, card in cards.items():
+            if (self.is_played(card)):
+                pass
+            else:
+                if card_id not in cards_out:
+                    cards_out[card_id] = card
                 else:
-                    warnings.warn('A duplicate entry was attempted, something might be wrong.')
+                    warnings.warn(
+                        'A duplicate entry was attempted, something might be wrong.')
 
         return cards_out
 
@@ -127,7 +146,7 @@ class Scraper:
         return (str.find(card['name'], '- lightly played') != -1)
 
     def insert_into_db(self, cards):
-        for card in cards:
+        for card_id, card in cards.items():
             # Insert into list of cards
             name_md5 = hashlib.md5(card['name'].lower().encode('utf-8')).hexdigest()
             query = """
@@ -135,41 +154,41 @@ class Scraper:
                 (`id`, `name`, `edition`, `manacost`, `md5`)
                 VALUES
                 ('%s', '%s', '%s', '%s', '%s')
-                """ % (card['id'], card['name'], card['edition'], card['manacost'], name_md5)
+                """ % (card_id, card['name'], card['edition'], card['manacost'], name_md5)
 
             self.db.insert(query)
 
             # Insert into costs
             query = """
                 INSERT INTO `costs`
-                (`id`, `buy`)
+                (`id`, `buy`, `buy_foil`)
                 VALUES
-                ('%s', %s)
-                """ % (card['id'], card['cost'])
+                ('%s', %s, %s)
+                """ % (card_id, card['cost'], card['cost_buy_foil'])
 
             self.db.insert(query)
-            # print(query)
 
     def empty_db(self):
-        query = """TRUNCATE `scrapknight`.`cards`;"""
+        self.truncate_table('cards')
+        self.truncate_table('costs')
+
+    def truncate_table(self, table):
+        query = """TRUNCATE `scrapknight`.`""" + table + """`;"""
         self.db.insert(query)
         if self.debug:
-            print('Truncated table `cards`.')
+            print('Truncated table `' + table + '`.')
 
     def rebuild_db(self):
         self.get_edition_list()
 
         self.empty_db()
 
-        for edition in self.editions[0:3]:
-            cards = self.scrape_edition(edition, sleep=1)
-            if self.debug:
-                print(str(len(cards)) + ' cards scraped.')
+        for edition in self.editions[0:9]:
+            cards = self.scrape_edition(edition, sleep=0.5)
             cards = self.format_edition(cards)
             if self.debug:
-                print(str(len(cards)) + ' left after cleaning.')
-                self.insert_into_db(cards)
+                print(str(len(cards)) + ' cards left after cleaning. Inserting into database.')
+            self.insert_into_db(cards)
 
 sc = Scraper()
 sc.rebuild_db()
-# print(sc.scrape_edition('KLD'))
