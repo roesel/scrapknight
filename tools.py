@@ -97,22 +97,26 @@ class Deck():
 
             if card.found:
                 multiprice = card.count * card.cost
-                table.append([
-                    {'id': card.id.replace('_', '/'), 'name': card.name},
-                    {'id': card.edition, 'name': card.edition_name},
-                    str(card.count),
-                    str(card.cost),
-                    str(multiprice)])
+                table.append({
+                    'found': card.found,
+                    'row': [
+                        {'id': card.id.replace('_', '/'), 'name': card.name},
+                        {'id': card.edition, 'name': card.edition_name},
+                        str(card.count),
+                        str(card.cost),
+                        str(multiprice)]})
                 price += multiprice
 
             else:
                 found_all = False
-                table.append([
-                    {'id': 'NotFound', 'name': card.name_req},  # tady bacha na nejaky user injection
-                    {'id': card.edition_req, 'name': card.edition_req},
-                    str(card.count),
-                    '?',
-                    '?'])
+                table.append({
+                    'found': card.found,
+                    'row': [
+                        {'id': 'NotFound', 'name': card.name_req},  # tady bacha na nejaky user injection
+                        {'id': card.edition_req, 'name': card.edition_req},
+                        str(card.count),
+                        '?',
+                        '?']})
 
         footer = []
 
