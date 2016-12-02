@@ -30,7 +30,7 @@
   <div class="panel panel-default">
     <div class="panel-heading"><strong>Output</strong></div>
     <div class="panel-body">
-      <table class="table table-striped table-condensed">
+      <table class="table table-striped table-condensed table-hover">
         {% if results_header %}
             <thead>
             <tr>
@@ -43,10 +43,10 @@
         <tbody>
         {% for row in results %}
             {% if row['found'] == True %}
-            <tr>
+            <tr onmouseover="document.images.card_pic.src='http://cernyrytir.cz/images/kusovkymagic/{{row['row'][0]['id']}}.jpg'">
                 {% for cell in row['row'] %}
                     {% if loop.index == 1 %}
-                        <td><span onmouseover="document.images.card_pic.src='http://cernyrytir.cz/images/kusovkymagic/{{cell['id']}}.jpg'">{{cell['name']}}</span></td>
+                        <td>{{cell['name']}}</td>
                     {% elif loop.index == 2 %}
                         <td title="{{cell['name']}}">{{ cell['id'] }}</td>
                     {% else %}
@@ -54,17 +54,15 @@
                     {% endif %}
                 {% endfor %}
             {% else %}
-            <tr class = "danger" >
+            <tr class="danger" onmouseover="document.images.card_pic.src='{{ url_for('static',filename='img/card_back.jpg') }}'">
                 {% for cell in row['row'] %}
                     {% if loop.index == 1 %}
                         <td title="{{ row['not_found_reason']['card_name']}}" >
-                            <span onmouseover="document.images.card_pic.src='{{ url_for('static',filename='img/card_back.jpg') }}'">
                             {% if row['not_found_reason']['card_name'] %}
                                 <strong>{{cell['name']}}</strong>
                             {% else %}
                                 {{cell['name']}}
                             {% endif %}
-                            </span>
                         </td>
                     {% elif loop.index == 2 %}
                         <td title="{{ row['not_found_reason']['edition']}}" >
