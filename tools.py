@@ -99,7 +99,7 @@ class Deck():
                 multiprice = card.count * card.cost
                 table.append([
                     {'id': card.id.replace('_', '/'), 'name': card.name},
-                    card.edition,
+                    {'id': card.edition, 'name': card.edition_name},
                     str(card.count),
                     str(card.cost),
                     str(multiprice)])
@@ -109,7 +109,7 @@ class Deck():
                 found_all = False
                 table.append([
                     {'id': 'NotFound', 'name': card.name_req},  # tady bacha na nejaky user injection
-                    card.edition_req,
+                    {'id': card.edition_req, 'name': card.edition_req},
                     str(card.count),
                     '?',
                     '?'])
@@ -133,16 +133,20 @@ class Card():
         """
 
         self.name_req = name_req
-        self.edition_req = edition_req
+        self.edition_req = edition_req.upper()
         self.md5 = hashlib.md5(self.name_req.lower().encode('utf-8')).hexdigest()
 
         query = """
-            SELECT `id`, `name`, `edition`, `manacost`, `buy`
+            SELECT `id`, `name`, `edition`, `edition_name`,`manacost`, `buy`
             FROM (
                 SELECT
                 cards.id, cards.name, cards.edition, cards.manacost, cards.md5,
-                costs.buy, costs.buy_foil
-                FROM cards INNER JOIN costs ON cards.id = costs.id
+                costs.buy, costs.buy_foil,
+                editions.name as edition_name
+                FROM cards
+                INNER JOIN costs ON cards.id = costs.id
+                INNER JOIN editions ON cards.edition = editions.id
+
                 ) AS t3
             WHERE `md5` = '{}'
             """.format(self.md5)
@@ -160,6 +164,7 @@ class Card():
             self.id, \
                 self.name, \
                 self.edition, \
+                self.edition_name, \
                 self.manacosts, \
                 self.cost = result[0]
 
