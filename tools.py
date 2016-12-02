@@ -36,7 +36,7 @@ class Deck():
             row = row.strip()
 
             # Check that the row is not a comment
-            if not row[0] == '#':
+            if len(row) > 0 and not row[0] == '#':
 
                 # If the first character is not a digit, lets assume the
                 # number of cards is just ommited and should be equal to 1.
