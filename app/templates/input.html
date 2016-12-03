@@ -4,12 +4,12 @@
 {% block content %}
 <div class="col-md-3">
   <div class="panel panel-default">
-    <div class="panel-heading"><strong>1) Input decklist</strong></div>
+    <div class="panel-heading"><strong>Input decklist</strong></div>
     <div class="panel-body">
       <form action="" method="post" name="input">
         {{ form.hidden_tag() }}
         <div class="form-group">
-            <textarea class="form-control" name="text" rows="20" style="resize: vertical;">{{fill}}</textarea>
+            <textarea class="form-control" name="text" rows="20" style="resize: vertical;" placeholder="Input your decklist">{{fill}}</textarea>
         </div>
         <input type="submit" name="submit" value="2) Look it up!" class="btn btn-primary pull-right">
       </form>

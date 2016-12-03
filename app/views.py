@@ -18,18 +18,21 @@ def input():
     if form.validate_on_submit():
         #flash( 'Input containted: %s' % (form.text.data) )
         #return redirect('/')
-        
+
         headers, results, footer, success = process(form.text.data)
-        
-        return render_template('input.html',
-                               title = 'Output',
-                               form = form,
-                               results_header = headers,
-                               results = results,
-                               results_footer = footer,
-                               results_success = success,
-                               fill = form.text.data)
-    return render_template('input.html', 
-                           title='Input',
-                           fill = 'Input your decklist',
-                           form=form)
+
+        return render_template(
+            'input.html',
+            title = 'Output',
+            form = form,
+            results_header = headers,
+            results = results,
+            results_footer = footer,
+            results_success = success,
+            fill = form.text.data)
+
+    return render_template(
+        'input.html',
+        title='Input',
+        fill = '',
+        form=form)
