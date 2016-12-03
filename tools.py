@@ -24,8 +24,8 @@ class Deck():
         return all([card.found for card in self.cards])
 
     @property
-    def no_multicards(self):
-        return all([type(card) is Card for card in self.cards])
+    def any_multicards(self):
+        return any([type(card) is Multicard for card in self.cards])
 
     def __init__(self, user_input):
         """
@@ -79,30 +79,45 @@ class Deck():
                     raise ValueError(
                         "Error while processing input row {}: {}".format(i, row))
 
-                # If card was not found in the database, maybe the problem is
-                #  in the wrong apostrophe character.
+                # There may a problem with a wrong appostrophe character in the
+                # input. Loop over possible variants, break on first successfull
+                # search.
                 name_variants = [name, name.replace("'", "´")]
 
                 for name_var in name_variants:
-                    # Now get the card instance
+
+                    # Search for the card.
                     result = Card.search(name_var, edition)
+
                     if result:
-                        print(result)
+                        # If the result is a single row, there is no problem,
+                        # instantiate a Card.
                         if len(result) == 1:
                             card = Card(**result[0])
+
+                        # If there was more matches (should be only possible if
+                        # a card with the same name exist in multiple editios),
+                        # instantiate a Multicard. That is basically a list of
+                        # Card instances with some special methods.
                         else:
                             card = Multicard([Card(**c, count=count) for c in result])
 
+                        # Either way, the card was found, so we can break the
+                        # search loop.
                         card.found = True
                         break
+
                     else:
+                        # If the result is empty, we instantiate an empty Card.
                         card = Card()
                         card.found = False
 
+                # Store some requested properties.
                 card.count = count
                 card.name_req = name
                 card.edition_req = edition
 
+                # Append the card to the deck list.
                 self.cards.append(card)
 
     def print_price_table(self):
@@ -129,7 +144,7 @@ class Deck():
                     det['multicard'] = 'item'
                     table.append(det)
 
-        success = self.found_all and self.no_multicards
+        success = self.found_all and not self.any_multicards
 
         if not success:
             footer_text = "Minimum price --"
@@ -138,9 +153,9 @@ class Deck():
 
         if not self.found_all:
             footer_text += " some cards not found"
-            if not self.no_multicards:
+            if self.any_multicards:
                 footer_text += " and"
-        if not self.no_multicards:
+        if self.any_multicards:
             footer_text += " some cards have duplicates"
 
         footer.append([footer_text, "", "", "", str(price) + " CZK"])
