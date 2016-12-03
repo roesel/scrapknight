@@ -10,8 +10,6 @@ from database import Database
 
 def process(user_input):
 
-    Card.db = Database()
-
     mydeck = Deck(user_input)
 
     return mydeck.print_price_table()
@@ -212,6 +210,8 @@ class Multicard():
             raise StopIteration
 
 class Card():
+
+    db = Database()
 
     @staticmethod
     def hash_name(name):
