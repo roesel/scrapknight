@@ -170,7 +170,18 @@ class Card():
             self.found = False
 
     def parse_edition(self, edition):
+        """
+        In the appliation input, one can specify the edition either by its name
+        or by its abbreviation. The syntax is the same, so we don't know what it
+        stands for. This function tries both options and returns the edition
+        name and its abbreviation as a dictionary.
 
+        Args:
+            edition: string specifing the edition.
+
+        returns:
+            dictionary with id and name keys specifing the edition.
+        """
         # We dont know, if edition is edition id or edition name.
         # Let's assume that these are unique if joined.
 
