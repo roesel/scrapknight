@@ -40,32 +40,15 @@ Add this repository to your favourite git client. Let's assume you put it into `
     flask\Scripts\pip install flipflop
     flask\Scripts\pip install coverage
     flask\Scripts\pip install numpy
+    flask\Scripts\pip install mysql-connector
     ```
  * You can also copy and paste this one-liner:
 
     ```
-    flask/bin/pip install flask flask-login flask-openid flask-mail flask-sqlalchemy sqlalchemy-migrate flask-whooshalchemy flask-wtf flask-babel guess_language flipflop coverage numpy
+    flask/bin/pip install flask flask-login flask-openid flask-mail flask-sqlalchemy sqlalchemy-migrate flask-whooshalchemy flask-wtf flask-babel guess_language flipflop coverage numpy mysql-connector
     ```
 6. Install MySQL (we use XAMPP on Windows, linux has packages for sure).
-7. Install MySQL-python. You can try running the following:
-
-    ```
-    flask\Scripts\pip install MySQL-python
-    ```
-
- * But this doesn't work too well on Windows for most of us and we get the following error:
-
-    ```
-    error: unable to find vcvarsall.bat
-    ```
-
- * The solution (or workaround?) is to download an already compiled wheel package specific for your bitness (32/64) and your Python version (3.5). We can download the package from [this site](http://www.lfd.uci.edu/~gohlke/pythonlibs/#mysqlclient), for example `mysqlclient‑1.3.9‑cp35‑cp35m‑win_amd64.whl` and then run:
-
-    ```
-    flask\Scripts\pip install mysqlclient‑1.3.9‑cp35‑cp35m‑win_amd64.whl
-    ```
-
-8. The environment should be ready now.
+7. The environment should be ready now.
 
 ### Moving configuration files
 If you have done everything correctly (and a little more), you have everything you need to run the app, just in the wrong place. Let's fix that.
@@ -75,8 +58,22 @@ If you have done everything correctly (and a little more), you have everything y
  * Changing `SECRET_KEY` in `config.py` is probably a good idea.
  * Changing the database login information might be required for the site to work.
  * Changing the IP address/port in `run.py` might be necessary.
-3. If you're on Linux, you need to properly chmod the `run.py` file with the following
+3. Import the database structure form `init_db.sql`
+4. If you're on Linux, you might need to properly chmod the `run.py` and `fill_db.py` file with the following
  * `chmod a+x run.py`
+ * `chmod a+x fill_db.py`
+
+
+### Filling the database
+To gather the data and fill the database, run:
+
+    cd C:\Repa\scrapknight
+    flask\Scripts\python fill_db.py
+
+or on Linux:
+
+    cd ~/repa/scrapknight
+    ./fill_db.py
 
 
 ### Running the server
