@@ -47,7 +47,7 @@ Add this repository to your favourite git client. Let's assume you put it into `
     ```
     flask/bin/pip install flask flask-login flask-openid flask-mail flask-sqlalchemy sqlalchemy-migrate flask-whooshalchemy flask-wtf flask-babel guess_language flipflop coverage numpy mysql-connector
     ```
-6. Install MySQL (we use XAMPP on Windows, linux has packages for sure).
+6. Install MySQL version >= 5.6.
 7. The environment should be ready now.
 
 ### Moving configuration files
