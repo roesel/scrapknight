@@ -203,24 +203,40 @@ class Card():
 
 
     def not_found_reason(self):
+        """
+        Search for a reson, why a card was not found in the database. These are:
+        1) Requested card does not exist.
+        2) Requested edition does not exist.
+        3) Card name exist, but in different edition than requested.
 
+        We also want to distinguish between cases, where the problem is caused
+        by only one of the factors (card name, edition).
+
+        It is worthy to note, that this function assumes, that the card was
+        NOT found in the database using the __init__ function.
+
+        Returns:
+            reason ... dictionary with text explanation of error reason.
+        """
+
+        # Initialize the return value as a dictionary of empty strings.
         reason = {
             'card_name': "",
             'edition': "",
         }
 
+        # First of all, the problem may lie in the edition request
         if self.edition_req:
-            query = """
-                SELECT `name`
-                FROM editions
-                WHERE `id` = '{}'
-                """.format(self.edition_req)  # zde to chce udelat zase pres md5 a pres join - tabulka karet a tabulka edic s FK -- PK
 
-            result = self.db.query(query)
+            # Get edition name and id from unspecified field edition_req
+            ed = self.parse_edition(self.edition_req)
 
-            if not result:
+            # If the edition record was not found, log it.
+            if not ed['id']:
                 reason['edition'] = "Eddition {} was not found.".format(self.edition_req)
 
+        # Second problem may be that the does not exist or was found in
+        # a different edition. Let's ask for the card details based on its md5.
         query = """
             SELECT `edition_id`
             FROM card_details
@@ -229,11 +245,15 @@ class Card():
 
         result = self.db.query(query)
 
+        # If there is no result, the card name is wrong.
         if not result:
             reason['card_name'] = "Card {} was not found in any edition.".format(self.name_req)
+
+        # Otherwise, there are editions, that contain requested card
         else:
             eds = np.unique(result)  # edditions containing this card
 
+            # Log the reason (appen to previous if applicable).
             if reason['edition']:
                 reason['edition'] += " "
             reason['edition'] += "Card {} was found in edition(s) {}.".format(self.name_req, ", ".join(eds))
