@@ -44,64 +44,59 @@
         {% for row in results %}
             {% if row['found'] == True %}
                 {% if row['multicard'] == 'head' %}
-                    <tr class="warning" data-toggle="collapse" data-target=".{{row['md5']}}" onmouseover="document.images.card_pic.src='{{ url_for('static',filename='img/card_back.jpg') }}'">
-                {% elif row['multicard'] == 'item' %}
-                    <tr class="{{row['md5']}} warning collapse out" onmouseover="document.images.card_pic.src='http://cernyrytir.cz/images/kusovkymagic/{{row['row'][0]['id']}}.jpg'">
-                {% else %}
-                    <tr onmouseover="document.images.card_pic.src='http://cernyrytir.cz/images/kusovkymagic/{{row['row'][0]['id']}}.jpg'">
-                {% endif %}
-                {% for cell in row['row'] %}
-                    {% if loop.index == 1 %}
+                    <tr class="warning"
+                        data-toggle="collapse" data-target=".{{row['md5']}}"
+                        onmouseover="document.images.card_pic.src='{{ url_for('static',filename='img/card_back.jpg') }}'">
                         <td>
-                        {% if row['multicard'] == 'head' %}
-                            <strong>{{cell['name']}}</strong> --- <em>Click to expand list</em>
-                        {% else %}
-                            {{cell['name']}}
-                        {% endif %}
+                            <strong>{{row['row'][0]['name']}}</strong> --- <em>Click to expand list</em>
                         </td>
-                    {% elif loop.index == 2 %}
-                        <td title="{{cell['name']}}">{{ cell['id'] }}</td>
-                    {% else %}
+                {% elif row['multicard'] == 'item' %}
+                    <tr class="{{row['md5']}} warning collapse out"
+                        onmouseover="document.images.card_pic.src='http://cernyrytir.cz/images/kusovkymagic/{{row['row'][0]['id']}}.jpg'">
+                        <td>{{row['row'][0]['name']}}</td>
+                {% else %}
+                    <tr class="{{row['md5']}}"
+                        onmouseover="document.images.card_pic.src='http://cernyrytir.cz/images/kusovkymagic/{{row['row'][0]['id']}}.jpg'">
+                        <td>{{row['row'][0]['name']}}</td>
+                {% endif %}
+                        <td title="{{row['row'][1]['name']}}">
+                            {{ row['row'][1]['id'] }}
+                        </td>
+                {% for cell in row['row'][2:] %}
                         <td>{{ cell }}</td>
-                    {% endif %}
                 {% endfor %}
             {% else %}
-            <tr class="danger" onmouseover="document.images.card_pic.src='{{ url_for('static',filename='img/card_back.jpg') }}'">
-                {% for cell in row['row'] %}
-                    {% if loop.index == 1 %}
-                        <td title="{{ row['not_found_reason']['card_name']}}" >
-                            {% if row['not_found_reason']['card_name'] %}
-                                <strong>{{cell['name']}}</strong>
-                            {% else %}
-                                {{cell['name']}}
-                            {% endif %}
-                        </td>
-                    {% elif loop.index == 2 %}
-                        <td title="{{ row['not_found_reason']['edition']}}" >
-                            {% if row['not_found_reason']['edition'] %}
-                                <strong>{{ cell['id'] }}</strong>
-                            {% else %}
-                                {{ cell['id'] }}
-                            {% endif %}
-                        </td>
-                    {% else %}
-                        <td>{{ cell }}</td>
-                    {% endif %}
+                <tr class="danger"
+                    onmouseover="document.images.card_pic.src='{{ url_for('static',filename='img/card_back.jpg') }}'">
+                    <td title="{{ row['not_found_reason']['card_name']}}" >
+                        {% if row['not_found_reason']['card_name'] %}
+                            <strong>{{row['row'][0]['name']}}</strong>
+                        {% else %}
+                            {{row['row'][0]['name']}}
+                        {% endif %}
+                    </td>
+                    <td title="{{ row['not_found_reason']['edition']}}" >
+                        {% if row['not_found_reason']['edition'] %}
+                            <strong>{{ row['row'][1]['id'] }}</strong>
+                        {% else %}
+                            {{ row['row'][1]['id'] }}
+                        {% endif %}
+                    </td>
+                {% for cell in row['row'][2:] %}
+                    <td>{{ cell }}</td>
                 {% endfor %}
             {% endif %}
-            </tr>
+                </tr>
         {% endfor %}
         </tbody>
         {% if results_footer %}
             <tfoot>
             {% for row in results_footer %}
-                <tr
                 {% if results_success %}
-                    class = "success"
+                    <tr class="success">
                 {% else %}
-                    class = "danger"
+                    <tr class="danger">
                 {% endif %}
-                >
                     {% for cell in row %}
                         <th> {{ cell }} </th>
                     {% endfor %}
