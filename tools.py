@@ -7,8 +7,11 @@ import urllib.request
 import flask
 from database import Database
 
+log = []
 
 def process(user_input):
+
+    log = []
 
     Card.db = Database()
 
@@ -115,6 +118,8 @@ class Deck():
                     edition = match.group(3).replace("[", "").replace("]", "")
 
                 else:
+                    log.append("Error while processing input row {}: {}".format(i, row))
+                    continue
                     raise ValueError(
                         "Error while processing input row {}: {}".format(i, row))
 
@@ -214,7 +219,7 @@ class Deck():
 
         footer.append([footer_text, "", "", "", str(price) + " CZK"])
 
-        return header, table, footer, success
+        return header, table, footer, success, np.unique(log)
 
 class Multicard(object):
 

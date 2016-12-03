@@ -19,20 +19,21 @@ def input():
         #flash( 'Input containted: %s' % (form.text.data) )
         #return redirect('/')
 
-        headers, results, footer, success = process(form.text.data)
+        headers, results, footer, success, log = process(form.text.data)
 
         return render_template(
             'input.html',
-            title = 'Output',
-            form = form,
-            results_header = headers,
-            results = results,
-            results_footer = footer,
-            results_success = success,
-            fill = form.text.data)
+            title='Output',
+            form=form,
+            results_header=headers,
+            results=results,
+            results_footer=footer,
+            results_success=success,
+            fill=form.text.data,
+            log=log)
 
     return render_template(
         'input.html',
         title='Input',
-        fill = '',
+        fill='',
         form=form)
