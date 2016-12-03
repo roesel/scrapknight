@@ -35,7 +35,7 @@
             <thead>
             <tr>
             {% for heading in results_header %}
-                <th> {{ heading }} </th>
+                <th class="col-md-{{ heading['width'] }}"> {{ heading['text'] }} </th>
             {% endfor %}
             </tr>
             </thead>
@@ -62,7 +62,31 @@
                         <td title="{{row['row'][1]['name']}}">
                             {{ row['row'][1]['id'] }}
                         </td>
-                {% for cell in row['row'][2:] %}
+                        {% if not row['multicard'] == 'head' %}
+                        <td>
+                            <div class="input-group">
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn btn-default btn-number btn-sm" disabled="disabled" data-type="minus" data-field="quant[{{ row['md5'] }}]">
+                                        <span class="glyphicon glyphicon-minus"></span>
+                                    </button>
+                                </span>
+                                <input type="text"
+                                    name="quant[{{ row['md5'] }}]"
+                                    class="form-control input-number input-sm"
+                                    value="{{ row['row'][2] }}"
+                                    min="0"
+                                    max="1000">
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn btn-default btn-number btn-sm" data-type="plus" data-field="quant[{{ row['md5'] }}]">
+                                        <span class="glyphicon glyphicon-plus"></span>
+                                    </button>
+                                </span>
+                            </div>
+                        </td>
+                        {% else %}
+                        <td>{{ row['row'][2] }}</td>
+                        {% endif %}
+                {% for cell in row['row'][3:] %}
                         <td>{{ cell }}</td>
                 {% endfor %}
             {% else %}

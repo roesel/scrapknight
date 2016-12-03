@@ -134,7 +134,7 @@ class Deck():
                         # If the result is a single row, there is no problem,
                         # instantiate a Card.
                         if len(result) == 1:
-                            card = Card(**result[0])
+                            card = Card(**result[0], count=count)
 
                         # If there was more matches (should be only possible if
                         # a card with the same name exist in multiple editios),
@@ -142,7 +142,7 @@ class Deck():
                         # Card instances with some special methods.
                         else:
                             card = Multicard(
-                                [Card(**c, count=count, search_hash=search_hash) for c in result])
+                                [Card(**c, count=0, search_hash=search_hash) for c in result])
 
                         # Either way, the card was found, so we can break the
                         # search loop.
@@ -154,7 +154,7 @@ class Deck():
 
                         if similar:
                             card = Multicard(
-                                [Card(**c, count=count, search_hash=search_hash) for c in similar])
+                                [Card(**c, count=0, search_hash=search_hash) for c in similar])
                             card.found = True
                             card.name = name
 
@@ -164,7 +164,7 @@ class Deck():
                             card.found = False
 
                 # Store some requested properties.
-                card.count = count
+                # card.count = count
                 card.name_req = name
                 card.edition_req = edition
                 card.search_hash = search_hash
@@ -180,7 +180,9 @@ class Deck():
         table = []
         footer = []
 
-        header = ["Card title", "Edition", "Count", "PPU [CZK]", "Price [CZK]"]
+        header_texts = ["Card title", "Edition", "Count", "PPU [CZK]", "Price [CZK]"]
+        header_widths = [6, 2, 2, 4, 4]
+        header = [{'text': text, 'width': width} for text, width in zip(header_texts, header_widths)]
 
         for card in self.cards:
 
@@ -266,7 +268,7 @@ class Multicard(object):
             'row': [
                 {'id': "", 'name': self.name},
                 {'id': "", 'name': ""},
-                str(self.count),
+                "",  # str(self.count),
                 str_costs,
                 ""]}
 
@@ -500,12 +502,22 @@ class Card():
         }
 
         if self.found:
+            if self.cost:
+                str_cost = str(self.cost)
+            else:
+                str_cost = ""
+
+            if self.multiprice:
+                str_multiprice = str(self.multiprice)
+            else:
+                str_multiprice = ""
+
             det['row'] = [
                     {'id': self.id.replace('_', '/'), 'name': self.name},
                     {'id': self.edition_id, 'name': self.edition_name},
                     str(self.count),
-                    str(self.cost),
-                    str(self.multiprice)]
+                    str_cost,
+                    str_multiprice]
 
         else:
             det['not_found_reason'] = Card.not_found_reason(self.name_req, self.edition_req)
