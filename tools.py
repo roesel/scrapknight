@@ -10,12 +10,22 @@ from database import Database
 
 def process(user_input):
 
+    Card.db = Database()
+
     mydeck = Deck(user_input)
 
     return mydeck.print_price_table()
 
 
 class Deck():
+
+    @property
+    def found_all(self):
+        return all([card.found for card in self.cards])
+
+    @property
+    def no_multicards(self):
+        return all([type(card) is Card for card in self.cards])
 
     def __init__(self, user_input):
         """
@@ -81,12 +91,12 @@ class Deck():
                         if len(result) == 1:
                             card = Card(**result[0])
                         else:
-                            card = Multicard([Card(**c) for c in result])
+                            card = Multicard([Card(**c, count=count) for c in result])
 
                         card.found = True
                         break
                     else:
-                        card = Multicard([])
+                        card = Card()
                         card.found = False
 
                 card.count = count
@@ -99,91 +109,43 @@ class Deck():
         """
         """
 
-        found_all = True
         price = 0
         table = []
-
-        for card in self.cards:
-
-            if card.found:
-
-                if type(card) is Card:
-
-                    if card.cost:
-                        multiprice = card.count * card.cost
-                        price += multiprice
-                    else:
-                        found_all = False
-                        multiprice = "?"
-
-                    table.append({
-                        'found': card.found,
-                        'multicard': False,
-                        'row': [
-                            {'id': card.id.replace('_', '/'), 'name': card.name},
-                            {'id': card.edition_id, 'name': card.edition_name},
-                            str(card.count),
-                            str(card.cost),
-                            str(multiprice)]})
-
-                elif type(card) is Multicard:
-
-                    found_all = False
-                    multiprice = "?"
-
-                    table.append({
-                        'found': card.found,
-                        'multicard': 'head',
-                        'md5': card.md5,
-                        'row': [
-                            {'id': "", 'name': card.name},
-                            {'id': "", 'name': ""},
-                            str(card.count),
-                            "",
-                            ""]})
-
-                    for c in card:
-                        if c.cost:
-                            multiprice = card.count * c.cost
-                        else:
-                            multiprice = "?"
-
-                        table.append({
-                            'found': c.found,
-                            'multicard': 'item',
-                            'md5': c.md5,
-                            'row': [
-                                {'id': c.id.replace('_', '/'), 'name': c.name},
-                                {'id': c.edition_id, 'name': c.edition_name},
-                                str(card.count),
-                                str(c.cost),
-                                str(multiprice)]})
-
-            else:
-                found_all = False
-                table.append({
-                    'found': card.found,
-                    'multicard': False,
-                    'not_found_reason': Card.not_found_reason(card.name_req, card.edition_req),
-                    'row': [
-                        {'id': 'NotFound', 'name': card.name_req},  # tady bacha na nejaky user injection
-                        {'id': card.edition_req, 'name': card.edition_req},
-                        str(card.count),
-                        '?',
-                        '?']})
-
         footer = []
-
-        if not found_all:
-            footer.append(["Minimum price - some cards not found", "", "", "", str(price) + " CZK"])
-        else:
-            footer.append(["Full price", "", "", "",  str(price) + " CZK"])
 
         header = ["Card title", "Edition", "Count", "PPU [CZK]", "Price [CZK]"]
 
-        print(table)
+        for card in self.cards:
 
-        return header, table, footer, found_all
+            table.append(card.details_table_row())
+
+            if type(card) is Card:
+                if card.cost:
+                    price += card.multiprice
+
+            elif type(card) is Multicard:
+                for c in card:
+                    det = c.details_table_row()
+                    det['multicard'] = 'item'
+                    table.append(det)
+
+        success = self.found_all and self.no_multicards
+
+        if not success:
+            footer_text = "Minimum price --"
+        else:
+            footer_text = "Full price"
+
+        if not self.found_all:
+            footer_text += " some cards not found"
+            if not self.no_multicards:
+                footer_text += " and"
+        if not self.no_multicards:
+            footer_text += " some cards have duplicates"
+
+        footer.append([footer_text, "", "", "", str(price) + " CZK"])
+
+        return header, table, footer, success
 
 class Multicard():
 
@@ -209,9 +171,29 @@ class Multicard():
         else:
             raise StopIteration
 
-class Card():
 
-    db = Database()
+    def details_table_row(self):
+
+        costs = np.unique([card.cost for card in self.card_list if card.cost])
+        if not costs:
+            str_costs = ""
+        elif len(costs) == 1:
+            str_costs = str(costs[0])
+        else:
+            str_costs = "{}--{}".format(costs.min(), costs.max())
+
+        return {
+            'found': self.found,
+            'multicard': 'head',
+            'md5': self.md5,
+            'row': [
+                {'id': "", 'name': self.name},
+                {'id': "", 'name': ""},
+                str(self.count),
+                str_costs,
+                ""]}
+
+class Card():
 
     @staticmethod
     def hash_name(name):
@@ -247,10 +229,11 @@ class Card():
             return False
 
 
-    def __init__(self, id, name, edition_id, edition_name, manacost, md5, buy=None):
+    def __init__(self, id=None, name=None, edition_id=None, edition_name=None,
+                 manacost=None, md5=None, buy=None, found=True, count=1):
         """
         """
-        self.found = True
+        self.found = found
         self.id = id
         self.name = name
         self.edition_id = edition_id
@@ -258,6 +241,7 @@ class Card():
         self.manacost = manacost
         self.md5 = md5
         self.cost = buy
+        self.count = count
 
     @classmethod
     def parse_edition(cls, edition):
@@ -363,3 +347,40 @@ class Card():
             reason['edition'] += "Card {} was found in edition(s) {}.".format(name_req, ", ".join(eds))
 
         return reason
+
+    @property
+    def multiprice(self):
+        if self.cost:
+            return self.count * self.cost
+        else:
+            return None
+
+
+    def details_table_row(self):
+
+        det = {
+            'found': self.found,
+            'multicard': False,
+            'md5': self.md5,
+            'row': []
+        }
+
+        if self.found:
+            det['row'] = [
+                    {'id': self.id.replace('_', '/'), 'name': self.name},
+                    {'id': self.edition_id, 'name': self.edition_name},
+                    str(self.count),
+                    str(self.cost),
+                    str(self.multiprice)]
+
+        else:
+            det['not_found_reason'] = Card.not_found_reason(self.name_req, self.edition_req)
+
+            det['row'] = [
+                    {'id': 'NotFound', 'name': self.name_req},  # tady bacha na nejaky user injection
+                    {'id': self.edition_req, 'name': self.edition_req},
+                    str(self.count),
+                    '?',
+                    '?']
+
+        return det
