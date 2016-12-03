@@ -6,6 +6,6 @@ CREATE VIEW card_details(id, name, edition_id, edition_name, manacost, buy, sell
 AS (
 SELECT cards.id, cards.name, cards.edition_id, editions.name as edition_name, cards.manacost, costs.buy, costs.sell, costs.buy_foil, costs.sell_foil, cards.md5
 FROM cards
-INNER JOIN costs ON cards.id = costs.card_id
-INNER JOIN editions ON cards.edition_id = editions.id
+LEFT JOIN costs ON cards.id = costs.card_id
+LEFT JOIN editions ON cards.edition_id = editions.id
 );
