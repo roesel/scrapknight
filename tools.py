@@ -71,17 +71,29 @@ class Deck():
                     raise ValueError(
                         "Error while processing input row {}: {}".format(i, row))
 
-                # Now get the card instance
-                card = Card(name, edition)
-
                 # If card was not found in the database, maybe the problem is
                 #  in the wrong apostrophe character.
-                if not card.found:
-                    name = name.replace("'", "´")
-                    card = Card(name, edition)
+                name_variants = [name, name.replace("'", "´")]
+
+                for name_var in name_variants:
+                    # Now get the card instance
+                    result = Card.search(name_var, edition)
+                    if result:
+                        print(result)
+                        if len(result) == 1:
+                            card = Card(**result[0])
+                        else:
+                            card = Multicard([Card(**c) for c in result])
+
+                        card.found = True
+                        break
+                    else:
+                        card = Multicard([])
+                        card.found = False
 
                 card.count = count
-                card.user_input = name
+                card.name_req = name
+                card.edition_req = edition
 
                 self.cards.append(card)
 
@@ -96,22 +108,65 @@ class Deck():
         for card in self.cards:
 
             if card.found:
-                multiprice = card.count * card.cost
-                table.append({
-                    'found': card.found,
-                    'row': [
-                        {'id': card.id.replace('_', '/'), 'name': card.name},
-                        {'id': card.edition_id, 'name': card.edition_name},
-                        str(card.count),
-                        str(card.cost),
-                        str(multiprice)]})
-                price += multiprice
+
+                if type(card) is Card:
+
+                    if card.cost:
+                        multiprice = card.count * card.cost
+                        price += multiprice
+                    else:
+                        found_all = False
+                        multiprice = "?"
+
+                    table.append({
+                        'found': card.found,
+                        'multicard': False,
+                        'row': [
+                            {'id': card.id.replace('_', '/'), 'name': card.name},
+                            {'id': card.edition_id, 'name': card.edition_name},
+                            str(card.count),
+                            str(card.cost),
+                            str(multiprice)]})
+
+                elif type(card) is Multicard:
+
+                    found_all = False
+                    multiprice = "?"
+
+                    table.append({
+                        'found': card.found,
+                        'multicard': 'head',
+                        'md5': card.md5,
+                        'row': [
+                            {'id': "", 'name': card.name},
+                            {'id': "", 'name': ""},
+                            str(card.count),
+                            "",
+                            ""]})
+
+                    for c in card:
+                        if c.cost:
+                            multiprice = card.count * c.cost
+                        else:
+                            multiprice = "?"
+
+                        table.append({
+                            'found': c.found,
+                            'multicard': 'item',
+                            'md5': c.md5,
+                            'row': [
+                                {'id': c.id.replace('_', '/'), 'name': c.name},
+                                {'id': c.edition_id, 'name': c.edition_name},
+                                str(card.count),
+                                str(c.cost),
+                                str(multiprice)]})
 
             else:
                 found_all = False
                 table.append({
                     'found': card.found,
-                    'not_found_reason': card.not_found_reason(),
+                    'multicard': False,
+                    'not_found_reason': Card.not_found_reason(card.name_req, card.edition_req),
                     'row': [
                         {'id': 'NotFound', 'name': card.name_req},  # tady bacha na nejaky user injection
                         {'id': card.edition_req, 'name': card.edition_req},
@@ -128,48 +183,84 @@ class Deck():
 
         header = ["Card title", "Edition", "Count", "PPU [CZK]", "Price [CZK]"]
 
+        print(table)
+
         return header, table, footer, found_all
 
+class Multicard():
+
+    def __init__(self, card_list):
+        self.card_list = card_list
+
+    @property
+    def name(self):
+        return self.card_list[0].name
+
+    @property
+    def md5(self):
+        return self.card_list[0].md5
+
+    def __iter__(self):
+        self._iter_current = 0
+        return self
+
+    def __next__(self):
+        if self._iter_current < len(self.card_list):
+            self._iter_current += 1
+            return self.card_list[self._iter_current - 1]
+        else:
+            raise StopIteration
 
 class Card():
 
-    def __init__(self, name_req, edition_req=None):
-        """
-        """
+    @staticmethod
+    def hash_name(name):
+        return hashlib.md5(name.lower().encode('utf-8')).hexdigest()
 
-        self.name_req = name_req
-        self.edition_req = edition_req.upper()
-        self.md5 = hashlib.md5(self.name_req.lower().encode('utf-8')).hexdigest()
+
+    @classmethod
+    def search(cls, name_req, edition_req=None):
+        """
+        """
+        edition_req = edition_req.upper()
+        md5 = cls.hash_name(name_req)
 
         query = """
-            SELECT `id`, `name`, `edition_id`, `edition_name`, `manacost`, `buy`
+            SELECT `id`, `name`, `edition_id`, `edition_name`, `manacost`, `md5`, `buy`
             FROM card_details
             WHERE `md5` = '{}'
-            """.format(self.md5)
+            """.format(md5)
 
-        if self.edition_req:
-            ed = self.parse_edition(self.edition_req)
+        if edition_req:
+            ed = cls.parse_edition(edition_req)
 
             query += """
             AND `edition_id` = '{}'
             """.format(ed['id'])
 
-        result = self.db.query(query)
+        result = cls.db.query(query)
 
         if result:
-            self.found = True
-
-            self.id, \
-                self.name, \
-                self.edition_id, \
-                self.edition_name, \
-                self.manacosts, \
-                self.cost = result[0]
-
+            keys = ['id', 'name', 'edition_id', 'edition_name', 'manacost', 'md5', 'buy']
+            return [dict(zip(keys, values)) for values in result]
         else:
-            self.found = False
+            return False
 
-    def parse_edition(self, edition):
+
+    def __init__(self, id, name, edition_id, edition_name, manacost, md5, buy=None):
+        """
+        """
+        self.found = True
+        self.id = id
+        self.name = name
+        self.edition_id = edition_id
+        self.edition_name = edition_name
+        self.manacost = manacost
+        self.md5 = md5
+        self.cost = buy
+
+    @classmethod
+    def parse_edition(cls, edition):
         """
         In the appliation input, one can specify the edition either by its name
         or by its abbreviation. The syntax is the same, so we don't know what it
@@ -191,7 +282,7 @@ class Card():
             FROM editions
             WHERE `id` = '{}'
             """.format(edition)
-        result = self.db.query(query)
+        result = cls.db.query(query)
 
         # If so, then return.
         if result:
@@ -203,7 +294,7 @@ class Card():
             FROM editions
             WHERE `name` = '{}'
             """.format(edition)
-        result = self.db.query(query)
+        result = cls.db.query(query)
 
         # If so, then return.
         if result:
@@ -212,8 +303,8 @@ class Card():
         # Otherwise return None for both id and name.
         return {'id': None, 'name': None}
 
-
-    def not_found_reason(self):
+    @classmethod
+    def not_found_reason(cls, name_req, edition_req=None):
         """
         Search for a reson, why a card was not found in the database. These are:
         1) Requested card does not exist.
@@ -236,15 +327,17 @@ class Card():
             'edition': "",
         }
 
+        md5 = cls.hash_name(name_req)
+
         # First of all, the problem may lie in the edition request
-        if self.edition_req:
+        if edition_req:
 
             # Get edition name and id from unspecified field edition_req
-            ed = self.parse_edition(self.edition_req)
+            ed = cls.parse_edition(edition_req)
 
             # If the edition record was not found, log it.
             if not ed['id']:
-                reason['edition'] = "Eddition {} was not found.".format(self.edition_req)
+                reason['edition'] = "Eddition {} was not found.".format(edition_req)
 
         # Second problem may be that the does not exist or was found in
         # a different edition. Let's ask for the card details based on its md5.
@@ -252,13 +345,13 @@ class Card():
             SELECT `edition_id`
             FROM card_details
             WHERE `md5` = '{}'
-            """.format(self.md5)
+            """.format(md5)
 
-        result = self.db.query(query)
+        result = cls.db.query(query)
 
         # If there is no result, the card name is wrong.
         if not result:
-            reason['card_name'] = "Card {} was not found in any edition.".format(self.name_req)
+            reason['card_name'] = "Card {} was not found in any edition.".format(name_req)
 
         # Otherwise, there are editions, that contain requested card
         else:
@@ -267,6 +360,6 @@ class Card():
             # Log the reason (appen to previous if applicable).
             if reason['edition']:
                 reason['edition'] += " "
-            reason['edition'] += "Card {} was found in edition(s) {}.".format(self.name_req, ", ".join(eds))
+            reason['edition'] += "Card {} was found in edition(s) {}.".format(name_req, ", ".join(eds))
 
         return reason

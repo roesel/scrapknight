@@ -43,10 +43,22 @@
         <tbody>
         {% for row in results %}
             {% if row['found'] == True %}
-            <tr onmouseover="document.images.card_pic.src='http://cernyrytir.cz/images/kusovkymagic/{{row['row'][0]['id']}}.jpg'">
+                {% if row['multicard'] == 'head' %}
+                    <tr class="warning" data-toggle="collapse" data-target=".{{row['md5']}}" onmouseover="document.images.card_pic.src='{{ url_for('static',filename='img/card_back.jpg') }}'">
+                {% elif row['multicard'] == 'item' %}
+                    <tr class="{{row['md5']}} warning collapse out" onmouseover="document.images.card_pic.src='http://cernyrytir.cz/images/kusovkymagic/{{row['row'][0]['id']}}.jpg'">
+                {% else %}
+                    <tr onmouseover="document.images.card_pic.src='http://cernyrytir.cz/images/kusovkymagic/{{row['row'][0]['id']}}.jpg'">
+                {% endif %}
                 {% for cell in row['row'] %}
                     {% if loop.index == 1 %}
-                        <td>{{cell['name']}}</td>
+                        <td>
+                        {% if row['multicard'] == 'head' %}
+                            <strong>{{cell['name']}}</strong> --- <em>Click to expand list</em>
+                        {% else %}
+                            {{cell['name']}}
+                        {% endif %}
+                        </td>
                     {% elif loop.index == 2 %}
                         <td title="{{cell['name']}}">{{ cell['id'] }}</td>
                     {% else %}
