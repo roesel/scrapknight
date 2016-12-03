@@ -59,7 +59,7 @@ def levenshtein(source, target):
 
     return previous_row[-1]
 
-class Deck():
+class Deck(object):
 
     @property
     def found_all(self):
@@ -281,7 +281,7 @@ class Multicard(object):
                 str_costs,
                 ""]}
 
-class Card():
+class Card(object):
 
     @staticmethod
     def hash_name(name):
