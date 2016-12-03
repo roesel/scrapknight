@@ -32,10 +32,6 @@ CREATE TABLE `cards` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_czech_ci COMMENT='Seznam všech karet v databázi.';
 
 
-DROP VIEW IF EXISTS `card_details`;
-CREATE TABLE `card_details` (`id` varchar(20), `name` varchar(100), `edition_id` varchar(50), `edition_name` varchar(50), `manacost` varchar(10), `buy` smallint(5) unsigned, `sell` smallint(5) unsigned, `buy_foil` smallint(5) unsigned, `sell_foil` smallint(5) unsigned, `md5` varchar(50));
-
-
 DROP TABLE IF EXISTS `costs`;
 CREATE TABLE `costs` (
   `card_id` varchar(20) COLLATE utf32_czech_ci NOT NULL COMMENT 'ID karty',
@@ -48,7 +44,24 @@ CREATE TABLE `costs` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_czech_ci COMMENT='Různé ceny jednotlivých karet.';
 
 
-DROP TABLE IF EXISTS `card_details`;
-CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `card_details` AS (select `cards`.`id` AS `id`,`cards`.`name` AS `name`,`cards`.`edition_id` AS `edition_id`,`editions`.`name` AS `edition_name`,`cards`.`manacost` AS `manacost`,`costs`.`buy` AS `buy`,`costs`.`sell` AS `sell`,`costs`.`buy_foil` AS `buy_foil`,`costs`.`sell_foil` AS `sell_foil`,`cards`.`md5` AS `md5` from ((`cards` join `costs` on((`cards`.`id` = `costs`.`card_id`))) join `editions` on((`cards`.`edition_id` = `editions`.`id`))));
+DROP VIEW IF EXISTS `card_details`;
+CREATE VIEW card_details(
+  `id`, `name`, `edition_id`, `edition_name`, `manacost`, `buy`, `sell`, `buy_foil`, `sell_foil`, `md5`)
+  AS (
+    SELECT
+      `cards`.`id`,
+      `cards`.`name`,
+      `cards`.`edition_id`,
+      `editions`.`name` as `edition_name`,
+      `cards`.`manacost`,
+      `costs`.`buy`,
+      `costs`.`sell`,
+      `costs`.`buy_foil`,
+      `costs`.`sell_foil`,
+      `cards`.`md5`
+    FROM `cards`
+    LEFT JOIN `costs` ON `cards`.`id` = `costs`.`card_id`
+    LEFT JOIN `editions` ON `cards`.`edition_id` = `editions`.`id`
+);
 
 -- 2016-12-03 00:15:11
