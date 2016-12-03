@@ -143,23 +143,16 @@ class Card():
 
         query = """
             SELECT `id`, `name`, `edition_id`, `edition_name`, `manacost`, `buy`
-            FROM (
-                SELECT
-                cards.id, cards.name, cards.edition_id, cards.manacost, cards.md5,
-                costs.buy, costs.buy_foil,
-                editions.name as edition_name
-                FROM cards
-                INNER JOIN costs ON cards.id = costs.card_id
-                INNER JOIN editions ON cards.edition_id = editions.id
-
-                ) AS t3
+            FROM card_details
             WHERE `md5` = '{}'
             """.format(self.md5)
 
         if self.edition_req:
+            ed = self.parse_edition(self.edition_req)
+
             query += """
             AND `edition_id` = '{}'
-            """.format(self.edition_req)  # zde to chce udelat zase pres md5 a pres join - tabulka karet a tabulka edic s FK -- PK
+            """.format(ed['id'])
 
         result = self.db.query(query)
 
@@ -175,6 +168,39 @@ class Card():
 
         else:
             self.found = False
+
+    def parse_edition(self, edition):
+
+        # We dont know, if edition is edition id or edition name.
+        # Let's assume that these are unique if joined.
+
+        # First try if edition is in fact edition id:
+        query = """
+            SELECT `name`
+            FROM editions
+            WHERE `id` = '{}'
+            """.format(edition)
+        result = self.db.query(query)
+
+        # If so, then return.
+        if result:
+            return {'id': edition, 'name': result[0]}
+
+        # First try if edition is in fact edition name:
+        query = """
+            SELECT `id`
+            FROM editions
+            WHERE `name` = '{}'
+            """.format(edition)
+        result = self.db.query(query)
+
+        # If so, then return.
+        if result:
+            return {'id': result[0], 'name': edition}
+
+        # Otherwise return None for both id and name.
+        return {'id': None, 'name': None}
+
 
     def not_found_reason(self):
 
@@ -197,16 +223,7 @@ class Card():
 
         query = """
             SELECT `edition_id`
-            FROM (
-                SELECT
-                cards.id, cards.name, cards.edition_id, cards.manacost, cards.md5,
-                costs.buy, costs.buy_foil,
-                editions.name as edition_name
-                FROM cards
-                INNER JOIN costs ON cards.id = costs.card_id
-                INNER JOIN editions ON cards.edition_id = editions.id
-
-                ) AS t3
+            FROM card_details
             WHERE `md5` = '{}'
             """.format(self.md5)
 

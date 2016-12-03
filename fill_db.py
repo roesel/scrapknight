@@ -173,10 +173,10 @@ class Scraper:
         self.truncate_table('costs')
 
     def truncate_table(self, table):
-        query = """TRUNCATE `scrapknight`.`""" + table + """`;"""
+        query = """TRUNCATE `scrapknight`.`{}`;""".format(table)
         self.db.insert(query)
         if self.debug:
-            print('Truncated table `' + table + '`.')
+            print('Truncated table `{}`.'.format(table))
 
     def rebuild_db(self):
         self.get_edition_list()
