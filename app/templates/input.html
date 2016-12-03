@@ -45,17 +45,17 @@
             {% if row['found'] == True %}
                 {% if row['multicard'] == 'head' %}
                     <tr class="warning"
-                        data-toggle="collapse" data-target=".{{row['md5']}}"
+                        data-toggle="collapse" data-target=".{{row['search_hash']}}"
                         onmouseover="document.images.card_pic.src='{{ url_for('static',filename='img/card_back.jpg') }}'">
                         <td>
                             <strong>{{row['row'][0]['name']}}</strong> --- <em>Click to expand list</em>
                         </td>
                 {% elif row['multicard'] == 'item' %}
-                    <tr class="{{row['md5']}} warning collapse out"
+                    <tr class="{{row['search_hash']}} warning collapse out"
                         onmouseover="document.images.card_pic.src='http://cernyrytir.cz/images/kusovkymagic/{{row['row'][0]['id']}}.jpg'">
                         <td>{{row['row'][0]['name']}}</td>
                 {% else %}
-                    <tr class="{{row['md5']}}"
+                    <tr class="{{row['search_hash']}}"
                         onmouseover="document.images.card_pic.src='http://cernyrytir.cz/images/kusovkymagic/{{row['row'][0]['id']}}.jpg'">
                         <td>{{row['row'][0]['name']}}</td>
                 {% endif %}

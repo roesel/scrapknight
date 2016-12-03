@@ -16,6 +16,45 @@ def process(user_input):
 
     return mydeck.print_price_table()
 
+def levenshtein(source, target):
+    """
+    Source: https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#Python
+    """
+    if len(source) < len(target):
+        return levenshtein(target, source)
+
+    # So now we have len(source) >= len(target).
+    if len(target) == 0:
+        return len(source)
+
+    # We call tuple() to force strings to be used as sequences
+    # ('c', 'a', 't', 's') - numpy uses them as values by default.
+    source = np.array(tuple(source))
+    target = np.array(tuple(target))
+
+    # We use a dynamic programming algorithm, but with the
+    # added optimization that we only need the last two rows
+    # of the matrix.
+    previous_row = np.arange(target.size + 1)
+    for s in source:
+        # Insertion (target grows longer than source):
+        current_row = previous_row + 1
+
+        # Substitution or matching:
+        # Target and source items are aligned, and either
+        # are different (cost of 1), or are the same (cost of 0).
+        current_row[1:] = np.minimum(
+                current_row[1:],
+                np.add(previous_row[:-1], target != s))
+
+        # Deletion (target grows shorter than source):
+        current_row[1:] = np.minimum(
+                current_row[1:],
+                current_row[0:-1] + 1)
+
+        previous_row = current_row
+
+    return previous_row[-1]
 
 class Deck():
 
@@ -79,6 +118,8 @@ class Deck():
                     raise ValueError(
                         "Error while processing input row {}: {}".format(i, row))
 
+                search_hash = Card.hash_name(name)
+
                 # There may a problem with a wrong appostrophe character in the
                 # input. Loop over possible variants, break on first successfull
                 # search.
@@ -100,7 +141,8 @@ class Deck():
                         # instantiate a Multicard. That is basically a list of
                         # Card instances with some special methods.
                         else:
-                            card = Multicard([Card(**c, count=count) for c in result])
+                            card = Multicard(
+                                [Card(**c, count=count, search_hash=search_hash) for c in result])
 
                         # Either way, the card was found, so we can break the
                         # search loop.
@@ -108,14 +150,24 @@ class Deck():
                         break
 
                     else:
-                        # If the result is empty, we instantiate an empty Card.
-                        card = Card()
-                        card.found = False
+                        similar = Card.search_similar(name_var, limit=None)
+
+                        if similar:
+                            card = Multicard(
+                                [Card(**c, count=count, search_hash=search_hash) for c in similar])
+                            card.found = True
+                            card.name = name
+
+                        else:
+                            # If the result is empty, we instantiate an empty Card.
+                            card = Card()
+                            card.found = False
 
                 # Store some requested properties.
                 card.count = count
                 card.name_req = name
                 card.edition_req = edition
+                card.search_hash = search_hash
 
                 # Append the card to the deck list.
                 self.cards.append(card)
@@ -162,14 +214,22 @@ class Deck():
 
         return header, table, footer, success
 
-class Multicard():
+class Multicard(object):
 
     def __init__(self, card_list):
         self.card_list = card_list
 
     @property
     def name(self):
-        return self.card_list[0].name
+        try:
+            return self._name
+        except AttributeError as e:
+            return self.card_list[0].name
+
+    @name.setter
+    def name(self, value):
+        self._name = value
+
 
     @property
     def md5(self):
@@ -190,7 +250,8 @@ class Multicard():
     def details_table_row(self):
 
         costs = np.unique([card.cost for card in self.card_list if card.cost])
-        if not costs:
+
+        if not any(costs):
             str_costs = ""
         elif len(costs) == 1:
             str_costs = str(costs[0])
@@ -201,6 +262,7 @@ class Multicard():
             'found': self.found,
             'multicard': 'head',
             'md5': self.md5,
+            'search_hash': self.search_hash,
             'row': [
                 {'id': "", 'name': self.name},
                 {'id': "", 'name': ""},
@@ -213,7 +275,6 @@ class Card():
     @staticmethod
     def hash_name(name):
         return hashlib.md5(name.lower().encode('utf-8')).hexdigest()
-
 
     @classmethod
     def search(cls, name_req, edition_req=None):
@@ -243,9 +304,39 @@ class Card():
         else:
             return False
 
+    @classmethod
+    def search_similar(cls, name_req, limit=10):
+        """
+        """
+        query = """
+            SELECT `id`, `name`, `edition_id`, `edition_name`, `manacost`, `md5`, `buy`
+            FROM card_details
+            WHERE MATCH (`name`)
+            AGAINST ('{}*' IN BOOLEAN MODE)
+            """.format(name_req)
+
+        if limit:
+            query += """
+            LIMIT {}
+            """.format(limit)
+
+        result = cls.db.query(query)
+
+        if result:
+            keys = ['id', 'name', 'edition_id', 'edition_name', 'manacost', 'md5', 'buy']
+
+            dist = [levenshtein(name_req, res[1]) for res in result]
+            sorted_idx = np.argsort(dist)
+
+            sorted_result = [result[idx] for idx in sorted_idx]
+
+            return [dict(zip(keys, values)) for values in sorted_result]
+        else:
+            return False
 
     def __init__(self, id=None, name=None, edition_id=None, edition_name=None,
-                 manacost=None, md5=None, buy=None, found=True, count=1):
+                 manacost=None, md5=None, buy=None, found=True, count=1,
+                 search_hash=None):
         """
         """
         self.found = found
@@ -257,6 +348,7 @@ class Card():
         self.md5 = md5
         self.cost = buy
         self.count = count
+        self.search_hash = search_hash
 
     @classmethod
     def parse_edition(cls, edition):
@@ -352,6 +444,10 @@ class Card():
         if not result:
             reason['card_name'] = "Card {} was not found in any edition.".format(name_req)
 
+            similar = Card.match_name(name_req)
+            if similar:
+                reason['card_name'] += "Similar cards found: " + ", ".join(similar)
+
         # Otherwise, there are editions, that contain requested card
         else:
             eds = np.unique(result)  # edditions containing this card
@@ -362,6 +458,28 @@ class Card():
             reason['edition'] += "Card {} was found in edition(s) {}.".format(name_req, ", ".join(eds))
 
         return reason
+
+    @classmethod
+    def match_name(cls, name, limit=10):
+        """
+        """
+
+        query = """
+            SELECT `name` FROM `card_details`
+            WHERE MATCH (`name`)
+            AGAINST ('{}*' IN BOOLEAN MODE)
+            LIMIT {}
+            """.format(name, limit)
+
+        result = cls.db.query(query)
+
+        dist = [levenshtein(name, res[0]) for res in result]
+        sorted_idx = np.argsort(dist)
+
+        sorted_result = [result[idx][0] for idx in sorted_idx]
+
+        return sorted_result
+
 
     @property
     def multiprice(self):
@@ -377,6 +495,7 @@ class Card():
             'found': self.found,
             'multicard': False,
             'md5': self.md5,
+            'search_hash': self.search_hash,
             'row': []
         }
 
