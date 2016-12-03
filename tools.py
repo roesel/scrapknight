@@ -130,6 +130,8 @@ class Deck():
                 # search.
                 name_variants = [name, name.replace("'", "´")]
 
+                card = None
+
                 for name_var in name_variants:
 
                     # Search for the card.
@@ -154,19 +156,21 @@ class Deck():
                         card.found = True
                         break
 
+                # If the card was not found yet, search for similar names using
+                # fulltext search.
+                if not card:
+                    similar = Card.search_similar(name, limit=None)
+
+                    if similar:
+                        card = Multicard(
+                            [Card(**c, count=0, search_hash=search_hash) for c in similar])
+                        card.found = True
+                        card.name = name
+
                     else:
-                        similar = Card.search_similar(name_var, limit=None)
-
-                        if similar:
-                            card = Multicard(
-                                [Card(**c, count=0, search_hash=search_hash) for c in similar])
-                            card.found = True
-                            card.name = name
-
-                        else:
-                            # If the result is empty, we instantiate an empty Card.
-                            card = Card()
-                            card.found = False
+                        # If the result is empty, we instantiate an empty Card.
+                        card = Card()
+                        card.found = False
 
                 # Store some requested properties.
                 # card.count = count
