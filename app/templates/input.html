@@ -70,12 +70,13 @@
                                         class="btn btn-default btn-number btn-sm"
                                         disabled="disabled"
                                         data-type="minus"
-                                        data-field="{{ row['md5'] }}">
+                                        data-field="{{ loop.index }}{{ row['card_id'] }}">
                                         <span class="glyphicon glyphicon-minus"></span>
                                     </button>
                                 </span>
                                 <input type="text"
-                                    name="{{ row['md5'] }}"
+                                    name="count"
+                                    data-field="{{ loop.index }}{{ row['card_id'] }}"
                                     class="form-control input-number input-sm"
                                     value="{{ row['row'][2] }}"
                                     min="0"
@@ -84,14 +85,14 @@
                                     <button type="button"
                                         class="btn btn-default btn-number btn-sm"
                                         data-type="plus"
-                                        data-field="{{ row['md5'] }}">
+                                        data-field="{{ loop.index }}{{ row['card_id'] }}">
                                         <span class="glyphicon glyphicon-plus"></span>
                                     </button>
                                 </span>
                             </div>
                         </td>
-                        <td><span name="price" data-field="{{ row['md5'] }}">{{ row['row'][3] }}</span></td>
-                        <td><span name="multiprice" data-field="{{ row['md5'] }}">{{ row['row'][4] }}</span></td>
+                        <td><span name="price" data-field="{{ loop.index }}{{ row['card_id'] }}">{{ row['row'][3] }}</span></td>
+                        <td><span name="multiprice" data-field="{{ loop.index }}{{ row['card_id'] }}">{{ row['row'][4] }}</span></td>
                         {% else %}
                         <td>{{ row['row'][2] }}</td>
                         <td>{{ row['row'][3] }}</td>

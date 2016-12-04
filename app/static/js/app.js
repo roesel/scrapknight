@@ -5,7 +5,7 @@ $('.btn-number').click(function(e){
 
     fieldName = $(this).attr('data-field');
     type      = $(this).attr('data-type');
-    var input = $("input[name='"+fieldName+"']");
+    var input = $("input[data-field='"+fieldName+"']");
     var currentVal = parseInt(input.val());
     if (!isNaN(currentVal)) {
         if(type == 'minus') {
@@ -40,24 +40,22 @@ $('.input-number').change(function() {
     maxValue =  parseInt($(this).attr('max'));
     valueCurrent = parseInt($(this).val());
 
-    name = $(this).attr('name');
+    df = $(this).attr('data-field');
     if(valueCurrent >= minValue) {
-        $(".btn-number[data-type='minus'][data-field='"+name+"']").removeAttr('disabled')
+        $(".btn-number[data-type='minus'][data-field='"+df+"']").removeAttr('disabled')
     } else {
         //alert('Sorry, the minimum value was reached');
         $(this).val($(this).data('oldValue'));
     }
     if(valueCurrent <= maxValue) {
-        $(".btn-number[data-type='plus'][data-field='"+name+"']").removeAttr('disabled')
+        $(".btn-number[data-type='plus'][data-field='"+df+"']").removeAttr('disabled')
     } else {
         //alert('Sorry, the maximum value was reached');
         $(this).val($(this).data('oldValue'));
     }
 
-    fieldName = $(this).attr('name');
-
-    var price = $("span[name='price'][data-field='"+fieldName+"']");
-    var multiprice = $("span[name='multiprice'][data-field='"+fieldName+"']");
+    var price = $("span[name='price'][data-field='"+df+"']");
+    var multiprice = $("span[name='multiprice'][data-field='"+df+"']");
 
     valueCurrent = parseInt($(this).val());
     priceCurrent = parseInt(price.text());

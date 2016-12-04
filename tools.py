@@ -506,6 +506,7 @@ class Card(object):
             'found': self.found,
             'multicard': False,
             'md5': self.md5,
+            'card_id': self.id,
             'search_hash': self.search_hash,
             'row': []
         }
