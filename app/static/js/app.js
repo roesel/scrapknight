@@ -44,13 +44,13 @@ $('.input-number').change(function() {
     if(valueCurrent >= minValue) {
         $(".btn-number[data-type='minus'][data-field='"+name+"']").removeAttr('disabled')
     } else {
-        alert('Sorry, the minimum value was reached');
+        //alert('Sorry, the minimum value was reached');
         $(this).val($(this).data('oldValue'));
     }
     if(valueCurrent <= maxValue) {
         $(".btn-number[data-type='plus'][data-field='"+name+"']").removeAttr('disabled')
     } else {
-        alert('Sorry, the maximum value was reached');
+        //alert('Sorry, the maximum value was reached');
         $(this).val($(this).data('oldValue'));
     }
 
@@ -61,8 +61,15 @@ $('.input-number').change(function() {
 
     valueCurrent = parseInt($(this).val());
     priceCurrent = parseInt(price.text());
+    multipriceOld = parseInt(multiprice.text());
+
+    if (multipriceOld > 0) {
+    } else {
+        multipriceOld = 0;
+    }
 
     multipriceNew = valueCurrent * priceCurrent;
+    multipriceDiff = multipriceNew - multipriceOld;
 
     if (multipriceNew > 0) {
         multiprice.text(multipriceNew);
@@ -70,7 +77,28 @@ $('.input-number').change(function() {
         multiprice.text("");
     }
 
+    if (multipriceDiff != 0 && !isNaN(multipriceDiff)){
+        var totalprice = $("span[name='totalprice']");
+
+        totalPriceValue = parseInt(totalprice.text());
+        totalprice.text(totalPriceValue + multipriceDiff);
+    }
 });
+
+function recalculateTotalPrice() {
+
+    totalPriceValue = 0;
+
+    $(".span[name='multiprice']").each(function(i, obj) {
+        multipriceValue = parseInt(obj.text());
+        if (multipriceValue > 0) {
+            totalPriceValue = totalPriceValue + multipriceValue
+        }
+    });
+
+    $(".span[name='totalprice']").text(totalPriceValue)
+}
+
 $(".input-number").keydown(function (e) {
         // Allow: backspace, delete, tab, escape, enter and .
         if ($.inArray(e.keyCode, [46, 8, 9, 27, 13, 190]) !== -1 ||

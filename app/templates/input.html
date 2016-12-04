@@ -129,9 +129,10 @@
                 {% else %}
                     <tr class="danger">
                 {% endif %}
-                    {% for cell in row %}
+                    {% for cell in row[:4] %}
                         <th> {{ cell }} </th>
                     {% endfor %}
+                        <th><span name="totalprice">{{ row[4] }}</span></th>
                 </tr>
             {% endfor %}
             </tr>

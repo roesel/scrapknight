@@ -221,7 +221,7 @@ class Deck(object):
         if self.any_multicards:
             footer_text += " some cards have duplicates"
 
-        footer.append([footer_text, "", "", "", str(price) + " CZK"])
+        footer.append([footer_text, "", "", "", str(price)])
 
         return header, table, footer, success, np.unique(log)
 
