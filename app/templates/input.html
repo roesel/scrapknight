@@ -4,22 +4,28 @@
 {% block content %}
 <div class="col-md-3">
   <div class="panel panel-default">
-    <div class="panel-heading"><strong>Input decklist</strong></div>
+    <div class="panel-heading">
+      <strong>Input decklist</strong>
+    </div>
+    <form action="" method="post" name="input">
     <div class="panel-body">
-      <form action="" method="post" name="input">
         {{ form.hidden_tag() }}
         <div class="form-group">
             <textarea class="form-control" name="text" rows="20" style="resize: vertical;" placeholder="Input your decklist">{{fill}}</textarea>
         </div>
-        <input type="submit" name="submit" value="Look it up!" class="btn btn-primary pull-right">
-      </form>
     </div>
+    <div class="panel-footer clearfix">
+        <input type="submit" name="submit" value="Look it up!" class="btn btn-primary pull-right">
+    </div>
+    </form>
   </div>
 </div>
 {% if results %}
 <div class="col-md-3">
   <div class="panel panel-default">
-    <div class="panel-heading">Card preview</div>
+    <div class="panel-heading">
+      <strong>Card preview</strong>
+    </div>
     <div class="panel-body">
         <img src="{{ url_for('static',filename='img/card_back.jpg') }}" id="card_pic" style="max-height: 310px; max-width: 223px; text-align: center; vertical-align: middle;" alt=""/>
     </div>
@@ -146,18 +152,26 @@
         {% endif %}
       </table>
       <div>
-        <input type="button" name="exportCardList" value="Export card list" class="btn btn-primary">
       </div>
+    </div>
+    <div class="panel-footer">
+        <input type="button" name="exportCardList" value="Export card list" class="btn btn-primary">
     </div>
   </div>
   <div class="panel panel-default" id="export_card_list_panel" hidden>
     <div class="panel-heading clearfix">
     <h5 class="pull-left"><strong>Exported Card List</strong></h5>
       <div class="btn-group pull-right">
+        <a id="shareExportedCardList"
+            class="btn btn-default"
+        >Share</a>
+        <a id="saveExportedCardList"
+            class="btn btn-default"
+        >Save</a>
         <a id="downloadExportedCardList"
             class="btn btn-default"
             href="" download="card_list.txt"
-        >Download card list</a>
+        >Download</a>
       </div>
     </div>
     <div class="panel-body">
