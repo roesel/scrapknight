@@ -48,6 +48,7 @@ Add this repository to your favourite git client. Let's assume you put it into `
     flask/bin/pip install flask flask-login flask-openid flask-mail flask-sqlalchemy sqlalchemy-migrate flask-whooshalchemy flask-wtf flask-babel guess_language flipflop coverage numpy mysql-connector
     ```
 6. Install MySQL version >= 5.6.
+ * For example from here: [http://dev.mysql.com/downloads/mysql/](http://dev.mysql.com/downloads/mysql/)
 7. The environment should be ready now.
 
 ### Moving configuration files
