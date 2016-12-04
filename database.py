@@ -17,8 +17,8 @@ class Database:
         except:
             self.cnx.rollback()
 
-    def query(self, query):
-        self.cursor.execute(query)
+    def query(self, query, *args):
+        self.cursor.execute(query, *args)
 
         return self.cursor.fetchall()
 

@@ -168,7 +168,7 @@ class Deck(object):
 
                     # Prevent db query errors when card name contained "'".
                     # This is somewhat dirty solution...
-                    name = name.replace("'", "´")
+                    # name = name.replace("'", "´")
 
                     similar = Card.search_similar(name, limit=None)
 
@@ -319,17 +319,19 @@ class Card(object):
         query = """
             SELECT `id`, `name`, `edition_id`, `edition_name`, `manacost`, `md5`, `buy`
             FROM card_details
-            WHERE `md5` = '{}'
-            """.format(md5)
+            WHERE `md5` = %s
+            """
 
         if edition_req:
             ed = cls.parse_edition(edition_req)
 
             query += """
-            AND `edition_id` = '{}'
-            """.format(ed['id'])
+            AND `edition_id` = %s
+            """
 
-        result = cls.db.query(query)
+            result = cls.db.query(query, (md5, ed['id'],))
+        else:
+            result = cls.db.query(query, (md5,))
 
         if result:
             keys = ['id', 'name', 'edition_id', 'edition_name', 'manacost', 'md5', 'buy']
@@ -345,15 +347,16 @@ class Card(object):
             SELECT `id`, `name`, `edition_id`, `edition_name`, `manacost`, `md5`, `buy`
             FROM card_details
             WHERE MATCH (`name`)
-            AGAINST ('{}*' IN BOOLEAN MODE)
-            """.format(name_req)
+            AGAINST (%s IN BOOLEAN MODE)
+            """
 
         if limit:
             query += """
-            LIMIT {}
-            """.format(limit)
-
-        result = cls.db.query(query)
+            LIMIT %s
+            """
+            result = cls.db.query(query, (name_req + "*", limit,))
+        else:
+            result = cls.db.query(query, (name_req + "*",))
 
         if result:
             keys = ['id', 'name', 'edition_id', 'edition_name', 'manacost', 'md5', 'buy']
@@ -411,9 +414,9 @@ class Card(object):
         query = """
             SELECT `name`
             FROM editions
-            WHERE `id` = '{}'
-            """.format(edition)
-        result = cls.db.query(query)
+            WHERE `id` = %s
+            """
+        result = cls.db.query(query, (edition,))
 
         # If so, then return.
         if result:
@@ -423,9 +426,9 @@ class Card(object):
         query = """
             SELECT `id`
             FROM editions
-            WHERE `name` = '{}'
-            """.format(edition)
-        result = cls.db.query(query)
+            WHERE `name` = %s
+            """
+        result = cls.db.query(query, (edition,))
 
         # If so, then return.
         if result:
@@ -475,10 +478,10 @@ class Card(object):
         query = """
             SELECT `edition_id`
             FROM card_details
-            WHERE `md5` = '{}'
-            """.format(md5)
+            WHERE `md5` = %s
+            """
 
-        result = cls.db.query(query)
+        result = cls.db.query(query, (md5,))
 
         # If there is no result, the card name is wrong.
         if not result:
@@ -507,11 +510,11 @@ class Card(object):
         query = """
             SELECT `name` FROM `card_details`
             WHERE MATCH (`name`)
-            AGAINST ('{}*' IN BOOLEAN MODE)
-            LIMIT {}
-            """.format(name, limit)
+            AGAINST (%s IN BOOLEAN MODE)
+            LIMIT %s
+            """
 
-        result = cls.db.query(query)
+        result = cls.db.query(query, (name, limit,))
 
         dist = [levenshtein(name, res[0]) for res in result]
         sorted_idx = np.argsort(dist)
