@@ -3,6 +3,8 @@
 
 {% block content %}
 <div class="col-md-3">
+<!-- <div class="row"> -->
+    <!-- <div class="col-lg-auto"> -->
   <div class="panel panel-default">
     <div class="panel-heading">
       <strong>Input decklist</strong>
@@ -20,19 +22,25 @@
     </form>
   </div>
 </div>
-{% if results %}
-<div class="col-md-3">
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      <strong>Card preview</strong>
-    </div>
-    <div class="panel-body">
-        <img src="{{ url_for('static',filename='img/card_back.jpg') }}" id="card_pic" style="max-height: 310px; max-width: 223px; text-align: center; vertical-align: middle;" alt=""/>
-    </div>
-  </div>
-</div>
 
-<div class="col-md-6">
+{% if results %}
+<div class="col-md-9">
+    <div style="width: 270px; position:fixed;">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <strong>Card preview</strong>
+        </div>
+        <div class="panel-body">
+            <img src="{{ url_for('static',filename='img/card_back.jpg') }}"
+                id="card_pic"
+                class="center-block"
+                style="max-height: 310px; max-width: 223px; text-align: center; vertical-align: middle;"
+                alt=""/>
+        </div>
+      </div>
+    </div>
+  <div class="row">
+  <div class="col-md-12" style="padding-left:315px;">
   <div class="panel panel-default">
     <div class="panel-heading"><strong>Output</strong></div>
     <div class="panel-body">
@@ -179,8 +187,12 @@
     </div>
   <div>
 </div>
+</div>
+</div>
+</div>
+</div>
 {% else %}
-<div class="col-md-8">
+<div class="col-md-9">
   <div class="panel panel-default">
     <div class="panel-heading"><strong>No input.</strong></div>
   </div>
@@ -188,7 +200,7 @@
 {% endif %}
 
 {% if log %}
-<div class="col-md-8">
+<div class="col-md-9">
   <div class="panel panel-default">
     <div class="panel-heading"><strong>Log</strong></div>
     <div class="panel-body">
