@@ -69,6 +69,11 @@ class Deck(object):
     def any_multicards(self):
         return any([type(card) is Multicard for card in self.cards])
 
+    @property
+    def found_all_costs(self):
+        return all([card.cost_found for card in self.cards])
+
+
     def __init__(self, user_input):
         """
         """
@@ -159,6 +164,11 @@ class Deck(object):
                 # If the card was not found yet, search for similar names using
                 # fulltext search.
                 if not card:
+
+                    # Prevent db query errors when card name contained "'".
+                    # This is somewhat dirty solution...
+                    name = name.replace("'", "´")
+
                     similar = Card.search_similar(name, limit=None)
 
                     if similar:
@@ -207,19 +217,23 @@ class Deck(object):
                     det['multicard'] = 'item'
                     table.append(det)
 
-        success = self.found_all and not self.any_multicards
+        success = self.found_all and not self.any_multicards and self.found_all_costs
 
         if not success:
-            footer_text = "Minimum price --"
+            footer_text = "Minimum price -- "
+            not_success_reason = []
+
+            if not self.found_all:
+                not_success_reason.append("some cards not found")
+            if self.any_multicards:
+                not_success_reason.append("some cards have duplicates")
+            if not self.found_all_costs:
+                not_success_reason.append("some prices not found")
+
+            footer_text += " and ".join(not_success_reason)
+
         else:
             footer_text = "Full price"
-
-        if not self.found_all:
-            footer_text += " some cards not found"
-            if self.any_multicards:
-                footer_text += " and"
-        if self.any_multicards:
-            footer_text += " some cards have duplicates"
 
         footer.append([footer_text, "", "", "", str(price)])
 
@@ -241,10 +255,13 @@ class Multicard(object):
     def name(self, value):
         self._name = value
 
-
     @property
     def md5(self):
         return self.card_list[0].md5
+
+    @property
+    def cost_found(self):
+        return all([card.cost_found for card in self.card_list])
 
     def __iter__(self):
         self._iter_current = 0
@@ -342,6 +359,13 @@ class Card(object):
             sorted_result = [result[idx] for idx in sorted_idx]
 
             return [dict(zip(keys, values)) for values in sorted_result]
+        else:
+            return False
+
+    @property
+    def cost_found(self):
+        if self.cost is not None:
+            return True
         else:
             return False
 
