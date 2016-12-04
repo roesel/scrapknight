@@ -112,3 +112,30 @@ $(".input-number").keydown(function (e) {
             e.preventDefault();
         }
     });
+
+
+$("input[name='exportCardList']").click(function(e){
+    e.preventDefault();
+
+    exportText = "";
+
+    $("span[name='cardname']").each(function(i, obj) {
+
+        md5 = $(this).attr('data-field');
+        edition = $("span[name='edition'][data-field='"+md5+"']").text();
+        count = $("input[name='count'][data-field='"+md5+"']").val();
+
+        if (count > 0) {
+            exportText += count + " x ";
+            exportText += $(this).text();
+            exportText += " [" + edition + "]";
+            exportText += "\n";
+        }
+
+    });
+
+    $("#export_card_list_panel").removeAttr('hidden')
+
+    $("#export_card_list").text(exportText);
+
+});

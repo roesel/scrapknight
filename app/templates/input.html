@@ -11,7 +11,7 @@
         <div class="form-group">
             <textarea class="form-control" name="text" rows="20" style="resize: vertical;" placeholder="Input your decklist">{{fill}}</textarea>
         </div>
-        <input type="submit" name="submit" value="2) Look it up!" class="btn btn-primary pull-right">
+        <input type="submit" name="submit" value="Look it up!" class="btn btn-primary pull-right">
       </form>
     </div>
   </div>
@@ -53,14 +53,14 @@
                 {% elif row['multicard'] == 'item' %}
                     <tr class="{{row['search_hash']}} warning collapse out"
                         onmouseover="document.images.card_pic.src='http://cernyrytir.cz/images/kusovkymagic/{{row['row'][0]['id']}}.jpg'">
-                        <td>{{row['row'][0]['name']}}</td>
+                        <td><span name="cardname" data-field="{{ loop.index }}{{ row['card_id'] }}">{{row['row'][0]['name']}}</span></td>
                 {% else %}
                     <tr class="{{row['search_hash']}}"
                         onmouseover="document.images.card_pic.src='http://cernyrytir.cz/images/kusovkymagic/{{row['row'][0]['id']}}.jpg'">
-                        <td>{{row['row'][0]['name']}}</td>
+                        <td><span name="cardname" data-field="{{ loop.index }}{{ row['card_id'] }}">{{row['row'][0]['name']}}</span></td>
                 {% endif %}
                         <td title="{{row['row'][1]['name']}}">
-                            {{ row['row'][1]['id'] }}
+                            <span name="edition" data-field="{{ loop.index }}{{ row['card_id'] }}">{{ row['row'][1]['id'] }}</span>
                         </td>
                         {% if not row['multicard'] == 'head' %}
                         <td>
@@ -140,8 +140,17 @@
             </tfoot>
         {% endif %}
       </table>
+      <div>
+        <input type="button" name="exportCardList" value="Export card list" class="btn btn-primary">
+      </div>
     </div>
   </div>
+  <div class="panel panel-default" id="export_card_list_panel" hidden>
+    <div class="panel-heading"><strong>Exported Card List</strong></div>
+    <div class="panel-body">
+      <span id="export_card_list" style="white-space: pre-wrap; font-family: monospace;"></span>
+    </div>
+  <div>
 </div>
 {% else %}
 <div class="col-md-8">
