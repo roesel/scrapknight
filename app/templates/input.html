@@ -66,29 +66,37 @@
                         <td>
                             <div class="input-group">
                                 <span class="input-group-btn">
-                                    <button type="button" class="btn btn-default btn-number btn-sm" disabled="disabled" data-type="minus" data-field="quant[{{ row['md5'] }}]">
+                                    <button type="button"
+                                        class="btn btn-default btn-number btn-sm"
+                                        disabled="disabled"
+                                        data-type="minus"
+                                        data-field="{{ row['md5'] }}">
                                         <span class="glyphicon glyphicon-minus"></span>
                                     </button>
                                 </span>
                                 <input type="text"
-                                    name="quant[{{ row['md5'] }}]"
+                                    name="{{ row['md5'] }}"
                                     class="form-control input-number input-sm"
                                     value="{{ row['row'][2] }}"
                                     min="0"
                                     max="1000">
                                 <span class="input-group-btn">
-                                    <button type="button" class="btn btn-default btn-number btn-sm" data-type="plus" data-field="quant[{{ row['md5'] }}]">
+                                    <button type="button"
+                                        class="btn btn-default btn-number btn-sm"
+                                        data-type="plus"
+                                        data-field="{{ row['md5'] }}">
                                         <span class="glyphicon glyphicon-plus"></span>
                                     </button>
                                 </span>
                             </div>
                         </td>
+                        <td><span name="price" data-field="{{ row['md5'] }}">{{ row['row'][3] }}</span></td>
+                        <td><span name="multiprice" data-field="{{ row['md5'] }}">{{ row['row'][4] }}</span></td>
                         {% else %}
                         <td>{{ row['row'][2] }}</td>
+                        <td>{{ row['row'][3] }}</td>
+                        <td>{{ row['row'][4] }}</td>
                         {% endif %}
-                {% for cell in row['row'][3:] %}
-                        <td>{{ cell }}</td>
-                {% endfor %}
             {% else %}
                 <tr class="danger"
                     onmouseover="document.images.card_pic.src='{{ url_for('static',filename='img/card_back.jpg') }}'">

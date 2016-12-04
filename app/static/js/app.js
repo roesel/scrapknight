@@ -54,6 +54,21 @@ $('.input-number').change(function() {
         $(this).val($(this).data('oldValue'));
     }
 
+    fieldName = $(this).attr('name');
+
+    var price = $("span[name='price'][data-field='"+fieldName+"']");
+    var multiprice = $("span[name='multiprice'][data-field='"+fieldName+"']");
+
+    valueCurrent = parseInt($(this).val());
+    priceCurrent = parseInt(price.text());
+
+    multipriceNew = valueCurrent * priceCurrent;
+
+    if (multipriceNew > 0) {
+        multiprice.text(multipriceNew);
+    } else {
+        multiprice.text("");
+    }
 
 });
 $(".input-number").keydown(function (e) {
