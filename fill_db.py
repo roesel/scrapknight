@@ -56,10 +56,10 @@ class Scraper:
                 INSERT INTO `editions`
                 (`id`, `name`)
                 VALUES
-                ('{}', '{}')
-                """.format(edition[0], edition[1])
+                (%s, %s)
+                """
 
-            self.db.insert(query)
+            self.db.insert(query, (edition[0], edition[1],))
 
     def scrape_edition(self, edition, sleep=0.1):
         size_of_edition = self.get_edition_size(edition)
@@ -153,24 +153,25 @@ class Scraper:
                 INSERT INTO `cards`
                 (`id`, `name`, `edition_id`, `manacost`, `md5`)
                 VALUES
-                ('{}', '{}', '{}', '{}', '{}')
-                """.format(card_id, card['name'], card['edition'], card['manacost'], name_md5)
+                (%s, %s, %s, %s, %s)
+                """
 
-            self.db.insert(query)
+            self.db.insert(query, (card_id, card['name'], card['edition'], card['manacost'], name_md5,))
 
             # Insert into costs
             query = """
                 INSERT INTO `costs`
                 (`card_id`, `buy`, `buy_foil`)
                 VALUES
-                ('{}', '{}', '{}')
-                """.format(card_id, card['cost'], card['cost_buy_foil'])
+                (%s, %s, %s)
+                """
 
-            self.db.insert(query)
+            self.db.insert(query, (card_id, card['cost'], card['cost_buy_foil'],))
 
     def empty_db(self):
         self.truncate_table('cards')
         self.truncate_table('costs')
+        self.truncate_table('editions')
 
     def truncate_table(self, table):
         query = """TRUNCATE `scrapknight`.`{}`;""".format(table)

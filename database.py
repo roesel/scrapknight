@@ -10,9 +10,9 @@ class Database:
         self.cnx = mysql.connector.connect(**config)
         self.cursor = self.cnx.cursor()
 
-    def insert(self, query):
+    def insert(self, query, *args):
         try:
-            self.cursor.execute(query)
+            self.cursor.execute(query, *args)
             self.cnx.commit()
         except:
             self.cnx.rollback()
