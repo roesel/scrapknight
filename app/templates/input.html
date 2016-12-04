@@ -55,7 +55,7 @@
                         data-toggle="collapse" data-target=".{{row['search_hash']}}"
                         onmouseover="document.images.card_pic.src='{{ url_for('static',filename='img/card_back.jpg') }}'">
                         <td>
-                            <strong>{{row['row'][0]['name']}}</strong> --- <em>Click to expand list</em>
+                            <strong>{{row['row'][0]['name']}}</strong> &#8212; <em>Click to expand list</em> {# &#8212; is emdash #}
                         </td>
                 {% elif row['multicard'] == 'item' %}
                     <tr class="{{row['search_hash']}} {{ row_class }} collapse out"
@@ -69,7 +69,7 @@
                         <td title="{{row['row'][1]['name']}}">
                             <span name="edition" data-field="{{ loop.index }}{{ row['card_id'] }}">{{ row['row'][1]['id'] }}</span>
                         </td>
-                        {% if not row['multicard'] == 'head' %}
+                    {% if not row['multicard'] == 'head' %}
                         <td>
                             <div class="input-group">
                                 <span class="input-group-btn">
@@ -100,11 +100,11 @@
                         </td>
                         <td><span name="price" data-field="{{ loop.index }}{{ row['card_id'] }}">{{ row['row'][3] }}</span></td>
                         <td><span name="multiprice" data-field="{{ loop.index }}{{ row['card_id'] }}">{{ row['row'][4] }}</span></td>
-                        {% else %}
+                    {% else %}
                         <td>{{ row['row'][2] }}</td>
                         <td>{{ row['row'][3] }}</td>
                         <td>{{ row['row'][4] }}</td>
-                        {% endif %}
+                    {% endif %}
             {% else %}
                 <tr class="danger"
                     onmouseover="document.images.card_pic.src='{{ url_for('static',filename='img/card_back.jpg') }}'">

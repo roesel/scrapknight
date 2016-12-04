@@ -222,7 +222,7 @@ class Deck(object):
         success = self.found_all and not self.any_multicards and self.found_all_costs
 
         if not success:
-            footer_text = "Minimum price -- "
+            footer_text = "Minimum price " + u'\u2014' + " "  # u'\u2014' is emdash
             not_success_reason = []
 
             if not self.found_all:
@@ -286,7 +286,7 @@ class Multicard(object):
         elif len(costs) == 1:
             str_costs = str(costs[0])
         else:
-            str_costs = "{}--{}".format(costs.min(), costs.max())
+            str_costs = str(costs.min())+ " " + u'\u2013' + " " + str(costs.max())  # u'\u2013' is endash
 
         return {
             'found': self.found,
