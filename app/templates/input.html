@@ -43,15 +43,22 @@
         <tbody>
         {% for row in results %}
             {% if row['found'] == True %}
+                {% if row['multicard'] %}
+                    {% if row['multicard_info'] == 'similar_search' %}
+                        {% set row_class="warning" %}
+                    {% elif row['multicard_info'] == 'multiple_cards' %}
+                        {% set row_class="info" %}
+                    {% endif %}
+                {% endif %}
                 {% if row['multicard'] == 'head' %}
-                    <tr class="warning"
+                    <tr class="{{ row_class }}"
                         data-toggle="collapse" data-target=".{{row['search_hash']}}"
                         onmouseover="document.images.card_pic.src='{{ url_for('static',filename='img/card_back.jpg') }}'">
                         <td>
                             <strong>{{row['row'][0]['name']}}</strong> --- <em>Click to expand list</em>
                         </td>
                 {% elif row['multicard'] == 'item' %}
-                    <tr class="{{row['search_hash']}} warning collapse out"
+                    <tr class="{{row['search_hash']}} {{ row_class }} collapse out"
                         onmouseover="document.images.card_pic.src='http://cernyrytir.cz/images/kusovkymagic/{{row['row'][0]['id']}}.jpg'">
                         <td><span name="cardname" data-field="{{ loop.index }}{{ row['card_id'] }}">{{row['row'][0]['name']}}</span></td>
                 {% else %}

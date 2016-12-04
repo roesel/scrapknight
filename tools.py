@@ -155,6 +155,7 @@ class Deck(object):
                         else:
                             card = Multicard(
                                 [Card(**c, count=0, search_hash=search_hash) for c in result])
+                            card.multicard_info = "multiple_cards"
 
                         # Either way, the card was found, so we can break the
                         # search loop.
@@ -176,6 +177,7 @@ class Deck(object):
                             [Card(**c, count=0, search_hash=search_hash) for c in similar])
                         card.found = True
                         card.name = name
+                        card.multicard_info = "similar_search"
 
                     else:
                         # If the result is empty, we instantiate an empty Card.
@@ -291,6 +293,7 @@ class Multicard(object):
             'multicard': 'head',
             'md5': self.md5,
             'search_hash': self.search_hash,
+            'multicard_info': self.multicard_info,
             'row': [
                 {'id': "", 'name': self.name},
                 {'id': "", 'name': ""},
