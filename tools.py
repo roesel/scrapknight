@@ -563,7 +563,7 @@ class Card(object):
                     {'id': 'NotFound', 'name': self.name_req},  # tady bacha na nejaky user injection
                     {'id': self.edition_req, 'name': self.edition_req},
                     str(self.count),
-                    '?',
-                    '?']
+                    '',
+                    '']
 
         return det
