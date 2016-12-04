@@ -139,3 +139,8 @@ $("input[name='exportCardList']").click(function(e){
     $("#export_card_list").text(exportText);
 
 });
+
+$("a#downloadExportedCardList").click(function(){
+    var text = $("#export_card_list").text();
+    this.href = "data:text/plain;charset=UTF-8,"  + encodeURIComponent(text);
+});
