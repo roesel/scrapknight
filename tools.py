@@ -222,7 +222,7 @@ class Deck(object):
         success = self.found_all and not self.any_multicards and self.found_all_costs
 
         if not success:
-            footer_text = "Minimum price " + u'\u2014' + " "  # u'\u2014' is emdash
+            footer_text = "Minimum price"
             not_success_reason = []
 
             if not self.found_all:
@@ -232,12 +232,14 @@ class Deck(object):
             if not self.found_all_costs:
                 not_success_reason.append("some prices not found")
 
-            footer_text += " and ".join(not_success_reason)
+            footer_text_2 = u'\u2014' + " "  # u'\u2014' is emdash
+            footer_text_2 += " and ".join(not_success_reason)
 
         else:
             footer_text = "Full price"
+            footer_text_2 = ""
 
-        footer.append([footer_text, "", "", "", str(price)])
+        footer.append([footer_text, footer_text_2, str(price)])
 
         return header, table, footer, success, np.unique(log)
 
