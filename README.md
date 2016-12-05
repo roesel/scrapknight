@@ -14,7 +14,7 @@ or just simply a working Anaconda installation.
 ### Clone this repo
 Add this repository to your favourite git client. Let's assume you put it into `C:\Repa\scrapknight`.
 
-### Setting up a virtual environment on Windows
+### Setting up a virtual environment
 
 1. Open up terminal
 2. Make sure that `virtualenv` and `flask` python packages are installed.
