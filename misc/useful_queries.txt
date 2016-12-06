@@ -1,0 +1,38 @@
+
+/* See which editions mismatch between CR and SDK. */
+SELECT * FROM (
+	(SELECT cr.id as cr_id, cr.name as cr_name, sdk.id, sdk.name
+	FROM editions as cr
+	LEFT JOIN sdk_editions as sdk
+	ON cr.id=sdk.id)
+
+	UNION ALL
+
+	(SELECT cr.id as cr_id, cr.name as cr_name, sdk.id, sdk.name
+	FROM editions as cr
+	RIGHT JOIN sdk_editions as sdk
+	ON cr.id=sdk.id)
+
+) as fulljoinsdk_editions WHERE (cr_id IS NULL OR id IS NULL) AND (cr_id NOT IN (SELECT id_cr from `rel_editions`) or id NOT IN (SELECT id_sdk from `rel_editions`));
+
+
+/* Select all matched editions, both directly and relatively. */
+SELECT editions.id, editions.name
+FROM editions
+    INNER JOIN rel_editions
+        ON rel_editions.id_cr = editions.id
+    INNER JOIN sdk_editions
+        ON sdk_editions.id = rel_editions.id_sdk
+
+UNION ALL
+
+SELECT editions.id, editions.name
+FROM editions
+    JOIN sdk_editions
+        ON editions.id = sdk_editions.id;
+
+/* Select all directly matching editions */
+SELECT editions.id, editions.name
+FROM editions
+    JOIN sdk_editions
+        ON editions.id = sdk_editions.id;
