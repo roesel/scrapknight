@@ -15,6 +15,19 @@ CREATE TABLE `editions` (
   UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Seznam zkratek edic a jejich plných názvů.';
 
+DROP TABLE IF EXISTS `sdk_editions`;
+CREATE TABLE IF NOT EXISTS `sdk_editions` (
+  `code` varchar(50) NOT NULL COMMENT 'ID edice (XXX...)',
+  `name` varchar(50) DEFAULT NULL COMMENT 'Plný název edice',
+  `gatherer_code` varchar(50) DEFAULT NULL COMMENT 'Kód gathereru.',
+  `magic_cards_info_code` varchar(50) DEFAULT NULL COMMENT '?',
+  `release_date` date DEFAULT NULL COMMENT 'Datum vydání edice.',
+  `border` varchar(50) DEFAULT NULL COMMENT 'Barva okraje.',
+  `type` varchar(50) DEFAULT NULL COMMENT 'Typ edice.',
+  `block` varchar(50) DEFAULT NULL COMMENT 'Block edice.',
+  PRIMARY KEY (`code`),
+  UNIQUE KEY `name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Edice natažené z SDK.';
 
 DROP TABLE IF EXISTS `cards`;
 CREATE TABLE `cards` (

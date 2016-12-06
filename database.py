@@ -4,11 +4,13 @@ import mysql.connector
 
 
 class Database:
+    debug = False
 
-    def __init__(self):
+    def __init__(self, debug=False):
 
         self.cnx = mysql.connector.connect(**config)
         self.cursor = self.cnx.cursor()
+        self.debug = debug
 
     def insert(self, query, *args):
         try:
@@ -24,3 +26,12 @@ class Database:
 
     def __del__(self):
         self.cnx.close()
+
+    def truncate_table(self, table):
+        """
+        Truncates specified table.
+        """
+        query = """TRUNCATE `scrapknight`.`{}`;""".format(table)
+        self.insert(query)
+        if self.debug:
+            print('Truncated table `{}`.'.format(table))
