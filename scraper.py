@@ -11,20 +11,31 @@ from datetime import datetime
 
 
 class Scraper:
-    debug = True
-    time = ''
-    editions = []
+    """
+    Object encapsulating scraping CR eshop, (re)building and checking DB.
+    Updating shoud be implemented. Possibly dates of last build per edition.
+    """
+    debug = True  # Switch of crazy printing of everything
 
     def __init__(self):
+        """
+        """
         self.db = Database()
 
     def fetch_url(self, url):
+        """
+        Downloads HTML contents of a webpage in encoding windows-1250.
+        """
         response = urllib.request.urlopen(url)
         data = response.read()              # a `bytes` object
         text = data.decode('windows-1250')  # a `str`; this step can't be used if data is binary
         return text
 
     def get_edition_size(self, edition):
+        """
+        Looks up number of cards on CR eshop in a specific edition, any foil.
+        Expects edition ID like KLD, SOI or M16 and returns int.
+        """
         html = self.fetch_url(
             'http://cernyrytir.cz/index.php3?akce=3&limit=0&edice_magic=' + edition + '&poczob=30&foil=A&triditpodle=ceny&hledej_pouze_magic=1&submit=Vyhledej')
         matches = re.findall(
@@ -38,6 +49,10 @@ class Scraper:
             warnings.warn('Regex to get # of cards in ' + edition + ' failed.')
 
     def get_edition_list(self):
+        """
+        Looks up the list of all available editions on CR eshop.
+        Does not return, inserts into DB instead.
+        """
         html = self.fetch_url('http://cernyrytir.cz/index.php3?akce=3')
         select = re.findall('<select name="edice_magic"(.*?)</select>', html, re.DOTALL)
         matches = re.findall('<option value="([^"]*)" >([^<]*)</option>', select[0], re.DOTALL)
@@ -46,11 +61,13 @@ class Scraper:
         for match in matches:
             if (match[0] != 'standard') and (match[0] != 'modern'):
                 editions.append(match)
-                self.editions.append(match[0])
         self.insert_editions(editions)
+        return editions
 
     def insert_editions(self, editions):
-
+        """
+        Truncates `editions` table, then inserts pairs of (edition_id, edition_name into DB).
+        """
         self.truncate_table('editions')
 
         for edition in editions:
@@ -64,10 +81,15 @@ class Scraper:
             self.db.insert(query, (edition[0], edition[1],))
 
     def scrape_edition(self, edition, sleep=0.1):
+        """
+        Scrapes CR eshop for all cards in specific edition and takes note of all foil and non-foil costs.
+        Keeps card info in a dictionary, future uses might change this to Card() object.
+        Sleep tries to be kind to the eshop by sleeping sleep = 0.1 seconds by default between each request.
+        """
         size_of_edition = self.get_edition_size(edition)
         cards = {}
         scraped_rows = 0
-        for limit in np.arange(0, size_of_edition, 30):
+        for limit in np.arange(0, size_of_edition, 30):  # Assuming pagesize 30
             url = 'http://cernyrytir.cz/index.php3?akce=3&limit=' + \
                 str(limit) + '&edice_magic=' + str(edition) + \
                 '&poczob=100&foil=A&triditpodle=ceny&hledej_pouze_magic=1&submit=Vyhledej'
@@ -85,6 +107,7 @@ class Scraper:
                     card_id = match[0].replace('/', '_')
                     card['name'] = match[1]
                     card['edition'] = edition
+                    # Fixing lands having no manacost
                     if manacost == edition.lower():
                         card['manacost'] = "-"
                     else:
@@ -92,7 +115,7 @@ class Scraper:
 
                     card['cost'] = match[3]
 
-                    # Foil vs non-foil business
+                    # Foil vs non-foil X existing non-existing
                     if card_id in cards:
                         if not self.is_foil(card):
                             foil_cost = cards[card_id]['cost_buy_foil']
@@ -126,9 +149,11 @@ class Scraper:
         return cards
 
     def format_edition(self, cards):
-        # actual ID, completeness, ...
+        """
+        Filters scraped cards. Currently only filters played cards, but could filter more in the future.
+        Not sure how it handles used foils?
+        """
         cards_out = {}
-
         for card_id, card in cards.items():
             if (self.is_played(card)):
                 pass
@@ -142,12 +167,15 @@ class Scraper:
         return cards_out
 
     def is_foil(self, card):
+        """ Returns if card dictionary item is or isn't foil. """
         return (str.find(card['name'], '- foil') != -1)
 
     def is_played(self, card):
+        """ Returns if card dictionary item is or isn't played. """
         return (str.find(card['name'], '- lightly played') != -1)
 
     def update_build_time(self):
+        """ Inserts current time into the DB as build time into `info`.`created`. """
         dtime = time.strftime('%Y-%m-%d %H:%M:%S')
         query = """
             INSERT INTO info (`key`, `created`) VALUES (1, "{}") ON DUPLICATE KEY UPDATE `created` = "{}";
@@ -155,11 +183,15 @@ class Scraper:
         self.db.insert(query)
 
     def get_build_time(self):
+        """ Returns current build time from DB. """
         query = """SELECT `created` from `info` WHERE `key`=1;"""
         result = self.db.query(query)
         return result[0][0]
 
     def insert_into_db(self, cards):
+        """
+        Inserts dictionary of cards into database, split into `cards` and `costs`.
+        """
         for card_id, card in cards.items():
             # Insert into list of cards
             name_md5 = hashlib.md5(card['name'].lower().encode('utf-8')).hexdigest()
@@ -170,7 +202,8 @@ class Scraper:
                 (%s, %s, %s, %s, %s)
                 """
 
-            self.db.insert(query, (card_id, card['name'], card['edition'], card['manacost'], name_md5,))
+            self.db.insert(query, (card_id, card['name'], card[
+                           'edition'], card['manacost'], name_md5,))
 
             # Insert into costs
             query = """
@@ -183,21 +216,24 @@ class Scraper:
             self.db.insert(query, (card_id, card['cost'], card['cost_buy_foil'],))
 
     def empty_db(self):
+        """ Calls for truncate of all re-fillable tables. """
         self.truncate_table('cards')
         self.truncate_table('costs')
         self.truncate_table('editions')
 
     def truncate_table(self, table):
+        """ Truncates specified table. """
         query = """TRUNCATE `scrapknight`.`{}`;""".format(table)
         self.db.insert(query)
         if self.debug:
             print('Truncated table `{}`.'.format(table))
 
     def rebuild_db(self):
-        self.get_edition_list()
+        """ Truncates all tables, then rebuilds them. """
+        editions = self.get_edition_list()
         self.empty_db()
         self.update_build_time()
-        for edition in self.editions[0:9]:
+        for edition, edition_name in editions[0:9]:
             cards = self.scrape_edition(edition, sleep=0.5)
             cards = self.format_edition(cards)
             if self.debug:
@@ -205,6 +241,7 @@ class Scraper:
             self.insert_into_db(cards)
 
     def get_db_info(self):
+        """ Fetches and returns database statistics in the form of a list of strings. """
         print('--- Finished. Statistics: ---')
         query = """SELECT COUNT(*) FROM `cards`;"""
         result = self.db.query(query)
@@ -234,7 +271,8 @@ class Scraper:
         created = self.get_build_time()
 
         out = ["Database built on {}.".format(created),
-               "{} cards, {} editions out of {} known.".format(number_of_cards, number_of_editions, known_editions),
+               "{} cards, {} editions out of {} known.".format(
+                   number_of_cards, number_of_editions, known_editions),
                "Loaded editions: {}.".format(editions),
                "{} normal costs, {} unique.".format(number_of_normal_costs, number_of_unique_costs),
                ]
