@@ -28,7 +28,7 @@ CREATE TABLE `cards` (
   KEY `name` (`name`),
   KEY `manacost` (`manacost`),
   KEY `md5` (`md5`),
-  FULLTEXT `name_fulltext` (`name`),
+  FULLTEXT KEY `name_fulltext` (`name`),
   CONSTRAINT `cards_ibfk_2` FOREIGN KEY (`edition_id`) REFERENCES `editions` (`id`) ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Seznam všech karet v databázi.';
 
@@ -43,6 +43,14 @@ CREATE TABLE `costs` (
   PRIMARY KEY (`card_id`),
   CONSTRAINT `costs_ibfk_3` FOREIGN KEY (`card_id`) REFERENCES `cards` (`id`) ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Různé ceny jednotlivých karet.';
+
+
+DROP TABLE IF EXISTS `info`;
+CREATE TABLE `info` (
+  `key` tinyint(3) unsigned NOT NULL COMMENT 'Klíč jen pro snazší práci.',
+  `created` datetime DEFAULT NULL COMMENT 'Datum buildu databáze.',
+  PRIMARY KEY (`key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Informace o databázi a aplikaci. (Časem možná i nastavení?)';
 
 
 DROP VIEW IF EXISTS `card_details`;
