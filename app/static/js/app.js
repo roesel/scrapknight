@@ -144,3 +144,9 @@ $("a#downloadExportedCardList").click(function(){
     var text = $("#export_card_list").text();
     this.href = "data:text/plain;charset=UTF-8,"  + encodeURIComponent(text);
 });
+
+$("a#useExportedCardListAsInput").click(function(){
+    var text = $("#export_card_list").text();
+    $("#card_list_input_textarea").text(text);
+    $("#card_list_input_form").submit(); // this is somehow not working
+});
