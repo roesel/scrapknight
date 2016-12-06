@@ -114,9 +114,20 @@ $(".input-number").keydown(function (e) {
     });
 
 
+$("#out_table").change(function(){
+    exportCardList();
+})
+
+$( document ).ready(function() {
+    exportCardList();
+});
+
 $("input[name='exportCardList']").click(function(e){
     e.preventDefault();
+    exportCardList();
+});
 
+function exportCardList() {
     exportText = "";
 
     $("span[name='cardname']").each(function(i, obj) {
@@ -137,8 +148,7 @@ $("input[name='exportCardList']").click(function(e){
     $("#export_card_list_panel").removeAttr('hidden')
 
     $("#export_card_list").text(exportText);
-
-});
+}
 
 $("a#downloadExportedCardList").click(function(){
     var text = $("#export_card_list").text();
