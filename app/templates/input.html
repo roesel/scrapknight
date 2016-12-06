@@ -38,14 +38,20 @@
                 alt=""/>
         </div>
       </div>
-	  <div class="panel panel-default">
+      {% if db_info %}
+      <div class="panel panel-default">
         <div class="panel-heading">
           <strong>DB info</strong>
         </div>
         <div class="panel-body">
-            Test.
+            <p style="font-size:0.8em;">
+                {% for line in db_info %}
+                    {{line}}<br/>
+                {% endfor %}
+            </p>
         </div>
       </div>
+      {% endif %}
     </div>
   <div class="row">
   <div class="col-md-12" style="padding-left:315px;">

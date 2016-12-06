@@ -2,6 +2,7 @@ from flask import render_template, flash, redirect
 from app import app
 from .forms import InputForm
 from tools import *
+from scraper import Scraper
 
 @app.route('/')
 
@@ -15,6 +16,7 @@ def index():
 @app.route('/input', methods=['GET', 'POST'])
 def input():
     form = InputForm()
+    sc = Scraper()
     if form.validate_on_submit():
         #flash( 'Input containted: %s' % (form.text.data) )
         #return redirect('/')
@@ -30,7 +32,8 @@ def input():
             results_footer=footer,
             results_success=success,
             fill=form.text.data,
-            log=log)
+            log=log,
+            db_info = sc.get_db_info())
 
     return render_template(
         'input.html',
