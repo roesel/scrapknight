@@ -1,4 +1,4 @@
-![ScrapKnight logo](app/static/img/logo_full.png)
+![ScrapKnight logo](app/static/img/logo_github.png)
 
 Magic scrapper/multitool.
 
