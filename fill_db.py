@@ -7,10 +7,12 @@ import time
 import warnings
 from database import Database
 import hashlib
+from datetime import datetime
 
 
 class Scraper:
     debug = True
+    time = ''
     editions = []
 
     def __init__(self):
@@ -181,15 +183,49 @@ class Scraper:
 
     def rebuild_db(self):
         self.get_edition_list()
-
         self.empty_db()
-
+        self.time = str(datetime.now())
         for edition in self.editions[0:9]:
             cards = self.scrape_edition(edition, sleep=0.5)
             cards = self.format_edition(cards)
             if self.debug:
                 print(str(len(cards)) + ' cards left after cleaning. Inserting into database.')
             self.insert_into_db(cards)
+            
+    def get_db_info(self):
+        print('--- Finished. Statistics: ---')
+        query = """SELECT COUNT(*) FROM `cards`;"""
+        result = self.db.query(query)
+        number_of_cards = result[0][0]
+        
+        query = """SELECT COUNT(*) FROM `editions`;"""
+        result = self.db.query(query)
+        known_editions = result[0][0]
+        
+        query = """SELECT COUNT(DISTINCT `edition_id`) FROM `cards`;"""
+        result = self.db.query(query)
+        number_of_editions = result[0][0]
+        
+        query = """SELECT COUNT(`buy`) FROM `costs`;"""
+        result = self.db.query(query)
+        number_of_normal_costs = result[0][0]
+        
+        query = """SELECT COUNT(*) FROM `costs` WHERE `buy` IS NOT NULL OR `buy_foil` IS NOT NULL OR `sell` IS NOT NULL OR `sell_foil` IS NOT NULL;"""
+        result = self.db.query(query)
+        number_of_unique_costs = result[0][0]
+        
+        query = """SELECT DISTINCT `edition_id` from `cards`;"""
+        result = self.db.query(query)
+        result_list = [ed[0] for ed in result]
+        editions = ','.join(result_list)
+        
+        out = """Database built on {}.\n{} cards, {} editions out of {} known.\nLoaded editions: {}.\n{} normal costs, {} unique.
+              """.format(self.time, number_of_cards, number_of_editions, known_editions, editions, number_of_normal_costs, number_of_unique_costs)
+        
+        return out
+
 
 sc = Scraper()
-sc.rebuild_db()
+#sc.rebuild_db()
+print(sc.get_db_info())
+
