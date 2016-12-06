@@ -1,4 +1,5 @@
-# ScrapKnight
+![ScrapKnight logo](app/static/img/logo_full.png)
+
 Magic scrapper/multitool.
 
 ## Installation of dev environment
