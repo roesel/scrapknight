@@ -109,7 +109,9 @@
                                 <span class="input-group-btn">
                                     <button type="button"
                                         class="btn btn-default btn-number btn-sm"
+                                        {% if row['row'][2] == 0 %}
                                         disabled="disabled"
+                                        {% endif %}
                                         data-type="minus"
                                         data-field="{{ loop.index }}{{ row['card_id'] }}">
                                         <span class="glyphicon glyphicon-minus"></span>
