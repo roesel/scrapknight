@@ -84,6 +84,12 @@
                         onmouseover="document.images.card_pic.src='{{ url_for('static',filename='img/card_back.jpg') }}'">
                         <td>
                             <strong>{{row['row'][0]['name']}}</strong> &#8212; <em>Click to expand list</em> {# &#8212; is emdash #}
+                            <input type="button"
+                                name="acceptMulticardSelection"
+                                value="Accept selection"
+                                data-field="{{row['search_hash']}}"
+                                class="btn btn-default btn-xs"
+                                style="margin-left: 10pt;">
                         </td>
                 {% elif row['multicard'] == 'item' %}
                     <tr class="{{row['search_hash']}} {{ row_class }} collapse out"
