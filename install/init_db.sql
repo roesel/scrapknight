@@ -1,4 +1,4 @@
--- Adminer 4.2.5 MySQL dump
+-- Adminer 4.2.5 MySQL dump + HeidiSQL edits
 
 SET NAMES utf8;
 SET time_zone = '+00:00';
@@ -45,6 +45,22 @@ CREATE TABLE `cards` (
   CONSTRAINT `cards_ibfk_2` FOREIGN KEY (`edition_id`) REFERENCES `editions` (`id`) ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Seznam všech karet v databázi.';
 
+CREATE TABLE IF NOT EXISTS `sdk_cards` (
+  `name` varchar(100) DEFAULT NULL COMMENT 'Název',
+  `mid` mediumint(9) NOT NULL COMMENT 'Multiverse ID',
+  `layout` varchar(50) DEFAULT NULL COMMENT 'Rozvržení',
+  `mana_cost` varchar(50) DEFAULT NULL COMMENT 'Manacost (formát?)',
+  `type` varchar(50) DEFAULT NULL COMMENT 'Typ',
+  `rarity` varchar(50) DEFAULT NULL COMMENT 'Rarita',
+  `set` varchar(50) DEFAULT NULL COMMENT 'Edice',
+  `id` varchar(50) DEFAULT NULL COMMENT 'ID karty (hash)',
+  PRIMARY KEY (`mid`),
+  KEY `edition_id` (`layout`),
+  KEY `manacost` (`mana_cost`),
+  KEY `md5` (`id`),
+  KEY `name` (`name`),
+  FULLTEXT KEY `name_fulltext` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='Seznam všech karet v databázi, bráno z SDK.';
 
 DROP TABLE IF EXISTS `costs`;
 CREATE TABLE `costs` (
@@ -57,14 +73,12 @@ CREATE TABLE `costs` (
   CONSTRAINT `costs_ibfk_3` FOREIGN KEY (`card_id`) REFERENCES `cards` (`id`) ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Různé ceny jednotlivých karet.';
 
-
 DROP TABLE IF EXISTS `info`;
 CREATE TABLE `info` (
   `key` tinyint(3) unsigned NOT NULL COMMENT 'Klíč jen pro snazší práci.',
   `created` datetime DEFAULT NULL COMMENT 'Datum buildu databáze.',
   PRIMARY KEY (`key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Informace o databázi a aplikaci. (Časem možná i nastavení?)';
-
 
 DROP VIEW IF EXISTS `card_details`;
 CREATE VIEW card_details(
@@ -85,5 +99,3 @@ CREATE VIEW card_details(
     LEFT JOIN `costs` ON `cards`.`id` = `costs`.`card_id`
     LEFT JOIN `editions` ON `cards`.`edition_id` = `editions`.`id`
 );
-
--- 2016-12-03 00:15:11

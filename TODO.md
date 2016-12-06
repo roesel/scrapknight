@@ -13,3 +13,6 @@
  * trading system
  * cachování náhledů karet
  * propojení s nějakým mtg api
+ * rozdělit build na Bulider, Scraper a Connector
+ * přesunout databázový funkce do Database objektu a hlavně zařídit aby vracel selhání !!
+ * vyčistit/okomentovat před pokračováním sdk.py a spol
