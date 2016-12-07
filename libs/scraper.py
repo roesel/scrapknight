@@ -223,13 +223,11 @@ class Scraper:
     def empty_db(self):
         """ Calls for truncate of all re-fillable tables. """
 
+        self.db.insert("SET FOREIGN_KEY_CHECKS=0");
         self.truncate_table('editions')
-
-        # table cards must be deleted AFTER table editions (FK)
         self.truncate_table('cards')
-
-        # table costs must be deleted AFTER table cards (FK)
         self.truncate_table('costs')
+        self.db.insert("SET FOREIGN_KEY_CHECKS=1");
 
     def truncate_table(self, table):
         """ Truncates specified table. """
