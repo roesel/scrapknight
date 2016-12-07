@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -
 
-from database import Database
 from mtgsdk import Set
 from mtgsdk import Card
 import time
+
+from lib.database import Database
 
 
 class Connector:
@@ -13,10 +14,10 @@ class Connector:
     """
     debug = True
 
-    def __init__(self):
+    def __init__(self, db_config):
         """
         """
-        self.db = Database()
+        self.db = Database(db_config)
 
     def load_editions(self):
         """
@@ -143,8 +144,3 @@ class Connector:
             time.sleep(5)
             print("Loading edition {} from API...".format(e))
             self.load_cards(e)
-
-
-sdk = Connector()
-# sdk.load_editions()
-sdk.load_list_of_editions(['KLD', 'SOI', 'BFZ'])

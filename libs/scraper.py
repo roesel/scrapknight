@@ -1,13 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -
+
 import re
 import numpy as np
 import urllib.request
 import time
 import warnings
-from database import Database
 import hashlib
 from datetime import datetime
+
+
+from lib.database import Database
 
 
 class Scraper:
@@ -17,10 +20,10 @@ class Scraper:
     """
     debug = True  # Switch of crazy printing of everything
 
-    def __init__(self):
+    def __init__(self, db_config):
         """
         """
-        self.db = Database()
+        self.db = Database(db_config)
 
     def fetch_url(self, url):
         """
@@ -233,7 +236,7 @@ class Scraper:
         editions = self.get_edition_list()
         self.empty_db()
         self.update_build_time()
-        for edition, edition_name in editions[0:9]:
+        for edition, edition_name in editions[2:6]:
             cards = self.scrape_edition(edition, sleep=0.5)
             cards = self.format_edition(cards)
             if self.debug:

@@ -5,19 +5,23 @@ import hashlib
 import numpy as np
 import urllib.request
 import flask
-from database import Database
+
+from libs.database import Database
+from config_db import config
 
 log = []
+
 
 def process(user_input):
 
     log = []
 
-    Card.db = Database()
+    Card.db = Database(config)
 
     mydeck = Deck(user_input)
 
     return mydeck.print_price_table()
+
 
 def levenshtein(source, target):
     """
@@ -47,17 +51,18 @@ def levenshtein(source, target):
         # Target and source items are aligned, and either
         # are different (cost of 1), or are the same (cost of 0).
         current_row[1:] = np.minimum(
-                current_row[1:],
-                np.add(previous_row[:-1], target != s))
+            current_row[1:],
+            np.add(previous_row[:-1], target != s))
 
         # Deletion (target grows shorter than source):
         current_row[1:] = np.minimum(
-                current_row[1:],
-                current_row[0:-1] + 1)
+            current_row[1:],
+            current_row[0:-1] + 1)
 
         previous_row = current_row
 
     return previous_row[-1]
+
 
 class Deck(object):
 
@@ -72,7 +77,6 @@ class Deck(object):
     @property
     def found_all_costs(self):
         return all([card.cost_found for card in self.cards])
-
 
     def __init__(self, user_input):
         """
@@ -203,7 +207,8 @@ class Deck(object):
 
         header_texts = ["Card title", "Edition", "Count", "PPU [CZK]", "Price [CZK]"]
         header_widths = [6, 2, 2, 4, 4]
-        header = [{'text': text, 'width': width} for text, width in zip(header_texts, header_widths)]
+        header = [{'text': text, 'width': width}
+                  for text, width in zip(header_texts, header_widths)]
 
         for card in self.cards:
 
@@ -243,6 +248,7 @@ class Deck(object):
 
         return header, table, footer, success, np.unique(log)
 
+
 class Multicard(object):
 
     def __init__(self, card_list):
@@ -278,7 +284,6 @@ class Multicard(object):
         else:
             raise StopIteration
 
-
     def details_table_row(self):
 
         costs = np.unique([card.cost for card in self.card_list if card.cost])
@@ -288,7 +293,8 @@ class Multicard(object):
         elif len(costs) == 1:
             str_costs = str(costs[0])
         else:
-            str_costs = str(costs.min())+ " " + u'\u2013' + " " + str(costs.max())  # u'\u2013' is endash
+            str_costs = str(costs.min()) + " " + u'\u2013' + " " + \
+                str(costs.max())  # u'\u2013' is endash
 
         return {
             'found': self.found,
@@ -302,6 +308,7 @@ class Multicard(object):
                 "",  # str(self.count),
                 str_costs,
                 ""]}
+
 
 class Card(object):
 
@@ -498,7 +505,8 @@ class Card(object):
             # Log the reason (appen to previous if applicable).
             if reason['edition']:
                 reason['edition'] += " "
-            reason['edition'] += "Card {} was found in edition(s) {}.".format(name_req, ", ".join(eds))
+            reason[
+                'edition'] += "Card {} was found in edition(s) {}.".format(name_req, ", ".join(eds))
 
         return reason
 
@@ -523,14 +531,12 @@ class Card(object):
 
         return sorted_result
 
-
     @property
     def multiprice(self):
         if self.cost:
             return self.count * self.cost
         else:
             return None
-
 
     def details_table_row(self):
 
@@ -555,20 +561,20 @@ class Card(object):
                 str_multiprice = ""
 
             det['row'] = [
-                    {'id': self.id.replace('_', '/'), 'name': self.name},
-                    {'id': self.edition_id, 'name': self.edition_name},
-                    str(self.count),
-                    str_cost,
-                    str_multiprice]
+                {'id': self.id.replace('_', '/'), 'name': self.name},
+                {'id': self.edition_id, 'name': self.edition_name},
+                str(self.count),
+                str_cost,
+                str_multiprice]
 
         else:
             det['not_found_reason'] = Card.not_found_reason(self.name_req, self.edition_req)
 
             det['row'] = [
-                    {'id': 'NotFound', 'name': self.name_req},  # tady bacha na nejaky user injection
-                    {'id': self.edition_req, 'name': self.edition_req},
-                    str(self.count),
-                    '',
-                    '']
+                {'id': 'NotFound', 'name': self.name_req},  # tady bacha na nejaky user injection
+                {'id': self.edition_req, 'name': self.edition_req},
+                str(self.count),
+                '',
+                '']
 
         return det

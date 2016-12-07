@@ -1,4 +1,5 @@
-from config_nonflask import config
+#!/usr/bin/env python
+# -*- coding: utf-8 -
 
 import mysql.connector
 
@@ -6,7 +7,7 @@ import mysql.connector
 class Database:
     debug = False
 
-    def __init__(self, debug=False):
+    def __init__(self, config, debug=False):
 
         self.cnx = mysql.connector.connect(**config)
         self.cursor = self.cnx.cursor()
@@ -16,7 +17,15 @@ class Database:
         try:
             self.cursor.execute(query, *args)
             self.cnx.commit()
-        except:
+        except mysql.connector.Error as err:
+            # Go through possible errors.
+            if err.errno == mysql.connector.errorcode.ER_ACCESS_DENIED_ERROR:
+                print("Something is wrong with your user name or password")
+            elif err.errno == mysql.connector.errorcode.ER_BAD_DB_ERROR:
+                print("Database does not exist")
+            else:
+                print(err)
+            # In any case, roll back (?)
             self.cnx.rollback()
 
     def query(self, query, *args):
