@@ -1,11 +1,13 @@
 from flask import render_template, flash, redirect
 from app import app
 from .forms import InputForm
+
+from config_db import config
 from tools import *
-from scraper import Scraper
+from lib.scraper import Scraper
+
 
 @app.route('/')
-
 @app.route('/index')
 def index():
     user = {'nickname': 'Miguel'}  # fake user
@@ -13,13 +15,14 @@ def index():
                            title='Home',
                            user=user)
 
+
 @app.route('/input', methods=['GET', 'POST'])
 def input():
     form = InputForm()
-    sc = Scraper()
+    sc = Scraper(config)
     if form.validate_on_submit():
         #flash( 'Input containted: %s' % (form.text.data) )
-        #return redirect('/')
+        # return redirect('/')
 
         headers, results, footer, success, log = process(form.text.data)
 
@@ -33,7 +36,7 @@ def input():
             results_success=success,
             fill=form.text.data,
             log=log,
-            db_info = sc.get_db_info())
+            db_info=sc.get_db_info())
 
     return render_template(
         'input.html',
