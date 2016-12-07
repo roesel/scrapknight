@@ -1,7 +1,7 @@
 # Custom
 flask/
 /config.py
-/config_nonflask.py
+/config_db.py
 /run.py
 
 Thumbs.db
