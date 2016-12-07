@@ -6,7 +6,7 @@ import numpy as np
 import urllib.request
 import flask
 
-from lib.database import Database
+from libs.database import Database
 from config_db import config
 
 log = []

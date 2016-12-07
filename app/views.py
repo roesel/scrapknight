@@ -4,7 +4,7 @@ from .forms import InputForm
 
 from config_db import config
 from tools import *
-from lib.scraper import Scraper
+from libs.scraper import Scraper
 
 
 @app.route('/')

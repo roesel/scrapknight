@@ -7,7 +7,7 @@ The object is then thrown away, so any results must be stored elsewhere to persi
 This only gets data from CR eshop and nothing else.
 """
 
-from lib.connector import Connector
+from libs.connector import Connector
 from config_db import config
 
 
