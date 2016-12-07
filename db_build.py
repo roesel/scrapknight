@@ -11,14 +11,20 @@ import logging
 import pprint
 
 HELP = '''
+DESCRIPTION:
 Builds the database according to functions specified in build(). It should be able to (IN THEORY) run either
     a) with enough privileges to create database and then drop and create everything from scratch, or
     b) on a database called `scrapknight` already created and with sufficient privileges to drop tables/views and create after.
-Only the first is implemented as of now.
+Only a) is implemented as of now.
 
 The idea is that Builder is the only object you need to call and it calls Scraper/Connector itself down the line. But this might change.
-
 If this wasn't enough ingormation, please feel free to #helpyourself.
+
+OPTIONS
+-v (--verbose)
+    Raises logging level to DEBUG, prints anything in log.debug()
+-h (--help)
+    Show a summary of command line options and exit.
 '''
 
 
@@ -55,6 +61,8 @@ def setup():
 
 def build():
     """
+    (Re)builds the database completely from scratch, to the state we consider the "default".
+    What "default" is can change drastically between commits.
     """
 
     log = logging.getLogger()
