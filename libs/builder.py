@@ -9,12 +9,15 @@ from libs.database import Database
 from libs.connector import Connector
 from libs.scraper import Scraper
 
+import logging
+import pprint
+
+log = logging.getLogger()
 
 class Builder:
     """
     Dedicated to building the DB.
     """
-    debug = True
     # self.sc = Scraper()
     # self.co = Connector()
 
@@ -36,4 +39,5 @@ class Builder:
                 statement = statement.strip()
 
                 if statement is not "":
+                    log.debug("executing SQL statement:\n+++{}+++".format(statement))
                     self.db.insert(statement)
