@@ -10,7 +10,7 @@ import hashlib
 from datetime import datetime
 
 
-from lib.database import Database
+from libs.database import Database
 
 
 class Scraper:

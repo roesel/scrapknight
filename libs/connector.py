@@ -5,7 +5,7 @@ from mtgsdk import Set
 from mtgsdk import Card
 import time
 
-from lib.database import Database
+from libs.database import Database
 
 
 class Connector:
