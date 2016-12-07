@@ -35,14 +35,20 @@ class Scraper:
         else:
             self.db = Database(db)
 
-    def fetch_url(self, url):
-        """
-        Downloads HTML contents of a webpage in encoding windows-1250.
-        """
-        response = urllib.request.urlopen(url)
-        data = response.read()              # a `bytes` object
-        text = data.decode('windows-1250')  # a `str`; this step can't be used if data is binary
-        return text
+    def rebuild_db(self):
+        """ Truncates all tables, then rebuilds them. """
+        self.empty_db()
+        editions = self.get_edition_list()
+        self.insert_editions(editions)
+        self.update_build_time()
+        for edition, edition_name in editions[2:6]:
+            log.info("[{}] Starting to scrape edition {}.".format(edition, edition_name))
+            cards = self.scrape_edition(edition, sleep=0.5)
+            cards = self.format_cards(cards)
+            log.info('[{}] {} cards left after cleaning. Inserting into database.'.format(
+                edition, str(len(cards))))
+            self.insert_cards(cards)
+        log.info('Done.')
 
     def get_edition_size(self, edition):
         """
@@ -164,7 +170,7 @@ class Scraper:
             log.info('[{}] {} unique cards found.'.format(edition, str(len(cards))))
         return cards
 
-    def format_edition(self, cards):
+    def format_cards(self, cards):
         """
         Filters scraped cards. Currently only filters played cards, but could filter more in the future.
         Not sure how it handles used foils?
@@ -181,29 +187,7 @@ class Scraper:
 
         return cards_out
 
-    def is_foil(self, card):
-        """ Returns if card dictionary item is or isn't foil. """
-        return (str.find(card['name'], '- foil') != -1)
-
-    def is_played(self, card):
-        """ Returns if card dictionary item is or isn't played. """
-        return (str.find(card['name'], '- lightly played') != -1)
-
-    def update_build_time(self):
-        """ Inserts current time into the DB as build time into `info`.`created`. """
-        dtime = time.strftime('%Y-%m-%d %H:%M:%S')
-        query = """
-            INSERT INTO info (`key`, `created`) VALUES (1, "{}") ON DUPLICATE KEY UPDATE `created` = "{}";
-            """.format(dtime, dtime)
-        self.db.insert(query)
-
-    def get_build_time(self):
-        """ Returns current build time from DB. """
-        query = """SELECT `created` from `info` WHERE `key`=1;"""
-        result = self.db.query(query)
-        return result[0][0]
-
-    def insert_into_db(self, cards):
+    def insert_cards(self, cards):
         """
         Inserts dictionary of cards into database, split into `cards` and `costs`.
         """
@@ -231,34 +215,13 @@ class Scraper:
             self.db.insert(query, (card_id, card['cost'], card['cost_buy_foil'],))
 
     def empty_db(self):
-        """ Calls for truncate of all re-fillable tables. """
+        """ Calls for truncate of all tables used by Scraper. """
 
         self.db.insert("SET FOREIGN_KEY_CHECKS=0")
-        self.truncate_table('editions')
-        self.truncate_table('cards')
-        self.truncate_table('costs')
+        self.db.truncate_table('editions')
+        self.db.truncate_table('cards')
+        self.db.truncate_table('costs')
         self.db.insert("SET FOREIGN_KEY_CHECKS=1")
-
-    def truncate_table(self, table):
-        """ Truncates specified table. """
-        query = """TRUNCATE `scrapknight`.`{}`;""".format(table)
-        self.db.insert(query)
-        log.info('Truncated table `{}`.'.format(table))
-
-    def rebuild_db(self):
-        """ Truncates all tables, then rebuilds them. """
-        self.empty_db()
-        editions = self.get_edition_list()
-        self.insert_editions(editions)
-        self.update_build_time()
-        for edition, edition_name in editions[2:6]:
-            log.info("[{}] Starting to scrape edition {}.".format(edition, edition_name))
-            cards = self.scrape_edition(edition, sleep=0.5)
-            cards = self.format_edition(cards)
-            log.info('[{}] {} cards left after cleaning. Inserting into database.'.format(
-                edition, str(len(cards))))
-            self.insert_into_db(cards)
-        log.info('Done.')
 
     def get_db_info(self):
         """ Fetches and returns database statistics in the form of a list of strings. """
@@ -298,3 +261,34 @@ class Scraper:
         ]
 
         return out
+
+    def is_foil(self, card):
+        """ Returns if card dictionary item is or isn't foil. """
+        return (str.find(card['name'], '- foil') != -1)
+
+    def is_played(self, card):
+        """ Returns if card dictionary item is or isn't played. """
+        return (str.find(card['name'], '- lightly played') != -1)
+
+    def update_build_time(self):
+        """ Inserts current time into the DB as build time into `info`.`created`. """
+        dtime = time.strftime('%Y-%m-%d %H:%M:%S')
+        query = """
+            INSERT INTO info (`key`, `created`) VALUES (1, "{}") ON DUPLICATE KEY UPDATE `created` = "{}";
+            """.format(dtime, dtime)
+        self.db.insert(query)
+
+    def get_build_time(self):
+        """ Returns current build time from DB. """
+        query = """SELECT `created` from `info` WHERE `key`=1;"""
+        result = self.db.query(query)
+        return result[0][0]
+
+    def fetch_url(self, url):
+        """
+        Downloads HTML contents of a webpage in encoding windows-1250.
+        """
+        response = urllib.request.urlopen(url)
+        data = response.read()              # a `bytes` object
+        text = data.decode('windows-1250')  # a `str`; this step can't be used if data is binary
+        return text
