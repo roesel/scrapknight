@@ -82,8 +82,14 @@ class Scraper:
                 VALUES
                 (%s, %s)
                 """
+            try:
+                self.db.insert(query, (edition[0], edition[1],))
+            except Error as err:
+                if err.errno == errorcode.ER_DUP_ENTRY:
+                    print("Edition {} is already in the database, skipping...".format(edition))
+                else:
+                    raise
 
-            self.db.insert(query, (edition[0], edition[1],))
 
     def scrape_edition(self, edition, sleep=0.1):
         """
