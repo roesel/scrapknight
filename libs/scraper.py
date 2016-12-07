@@ -240,8 +240,8 @@ class Scraper:
 
     def rebuild_db(self):
         """ Truncates all tables, then rebuilds them. """
-        editions = self.get_edition_list()
         self.empty_db()
+        editions = self.get_edition_list()
         self.update_build_time()
         for edition, edition_name in editions[2:6]:
             cards = self.scrape_edition(edition, sleep=0.5)
