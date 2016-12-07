@@ -11,7 +11,7 @@ import logging
 import pprint
 
 HELP = '''
-DESCRIPTION:
+DESCRIPTION
 Builds the database according to functions specified in build(). It should be able to (IN THEORY) run either
     a) with enough privileges to create database and then drop and create everything from scratch, or
     b) on a database called `scrapknight` already created and with sufficient privileges to drop tables/views and create after.
@@ -55,7 +55,7 @@ def setup():
 
     # Set logging level
     logging.basicConfig(
-        format='%(levelname)s:%(message)s',
+        format='%(levelname)s: %(message)s',
         level=logging_level)
 
 
@@ -69,13 +69,14 @@ def build():
 
     bu = Builder(config)
 
-    log.info("Deleting database")
+    log.info("Loading SQL files:")
+    log.info("  - Deleting database")
     bu.load_sql('install/empty_db.sql')
 
-    log.info("Initializing database")
+    log.info("  - Initializing database")
     bu.load_sql('install/init_db.sql')
 
-    log.info("Linking editions")
+    log.info("  - Linking editions")
     bu.load_sql('install/rel_editions.sql')
 
 
