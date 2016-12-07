@@ -14,7 +14,7 @@ def setup():
     """
     """
 
-    # Parse input parameters
+    # Parse command line parameters
     try:
         opts, args = getopt.getopt(sys.argv[1:], "ho:v", ["help"])
     except getopt.GetoptError as err:
@@ -47,7 +47,7 @@ def build():
 
     bu = Builder(config)
 
-    log.info("Truncating database")
+    log.info("Deleting database")
     bu.load_sql('install/empty_db.sql')
 
     log.info("Initializing database")
