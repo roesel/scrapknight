@@ -10,11 +10,10 @@ from config_db import config
 import logging
 import pprint
 
-def main():
+def setup():
     """
     """
 
-    # ==========================================================================
     # Parse input parameters
     try:
         opts, args = getopt.getopt(sys.argv[1:], "ho:v", ["help"])
@@ -25,6 +24,7 @@ def main():
         sys.exit(2)
 
     logging_level = logging.INFO
+
     for o, a in opts:
         if o in ("-v", "--verbose"):
             logging_level = logging.DEBUG
@@ -34,16 +34,17 @@ def main():
         else:
             assert False, "unhandled option"
 
-    # ==========================================================================
     # Set logging level
     logging.basicConfig(
         format='%(levelname)s:%(message)s',
         level=logging_level)
 
+def build():
+    """
+    """
+
     log = logging.getLogger()
 
-    # ===========================================================================
-    # Buid database
     bu = Builder(config)
 
     log.info("Truncating database")
@@ -57,4 +58,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    setup()
+    build()
