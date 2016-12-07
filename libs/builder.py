@@ -31,4 +31,9 @@ class Builder:
             contents = in_file.read()
             statements = contents.split(';')
             for statement in statements:
-                self.db.insert(statement)
+
+                #trim whitespace
+                statement = statement.strip()
+
+                if statement is not "":
+                    self.db.insert(statement)
