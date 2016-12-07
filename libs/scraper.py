@@ -9,6 +9,8 @@ import warnings
 import hashlib
 from datetime import datetime
 
+import mysql.connector
+from mysql.connector import Error, errorcode
 
 from libs.database import Database
 
