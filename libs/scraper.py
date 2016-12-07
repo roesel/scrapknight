@@ -5,7 +5,6 @@ import re
 import numpy as np
 import urllib.request
 import time
-import warnings
 import hashlib
 from datetime import datetime
 
@@ -14,18 +13,27 @@ from mysql.connector import Error, errorcode
 
 from libs.database import Database
 
+import logging
+import pprint
+
+log = logging.getLogger()
+
 
 class Scraper:
     """
     Object encapsulating scraping CR eshop, (re)building and checking DB.
     Updating shoud be implemented. Possibly dates of last build per edition.
     """
-    debug = True  # Switch of crazy printing of everything
+    # self.db = Database()
 
-    def __init__(self, db_config):
+    def __init__(self, db):
         """
+        Takes either a Database() object or config sufficient for creating one.
         """
-        self.db = Database(db_config)
+        if isinstance(db, Database):
+            self.db = db
+        else:
+            self.db = Database(db)
 
     def fetch_url(self, url):
         """
@@ -47,11 +55,10 @@ class Scraper:
             '<td><span class="kusovkytext">Nalezeno (\d*)', html, re.DOTALL)
 
         if (matches and (matches[0] == matches[1])):
-            if self.debug:
-                print(str(matches[0]) + ' rows should be available in edition ' + edition + '.')
+            log.debug(str(matches[0]) + ' rows should be available in edition ' + edition + '.')
             return int(matches[0])
         else:
-            warnings.warn('Regex to get # of cards in ' + edition + ' failed.')
+            log.info('(!) Regex to get # of cards in ' + edition + ' failed.')
 
     def get_edition_list(self):
         """
@@ -66,7 +73,6 @@ class Scraper:
         for match in matches:
             if (match[0] != 'standard') and (match[0] != 'modern'):
                 editions.append(match)
-        self.insert_editions(editions)
         return editions
 
     def insert_editions(self, editions):
@@ -74,7 +80,7 @@ class Scraper:
         Inserts pairs of (edition_id, edition_name into DB). Assumes that
         table `editions` is empty.
         """
-
+        duplicates = 0
         for edition in editions:
             query = """
                 INSERT INTO `editions`
@@ -86,10 +92,12 @@ class Scraper:
                 self.db.insert(query, (edition[0], edition[1],))
             except Error as err:
                 if err.errno == errorcode.ER_DUP_ENTRY:
-                    print("Edition {} is already in the database, skipping...".format(edition))
+                    log.debug("Edition {} is already in the database, skipping...".format(edition))
+                    duplicates += 1
                 else:
                     raise
-
+        if duplicates:
+            log.info("(~) There were {} duplicates in edition list. Probs OK. ".format(duplicates))
 
     def scrape_edition(self, edition, sleep=0.1):
         """
@@ -145,18 +153,15 @@ class Scraper:
                             cards[card_id] = card
 
             else:
-                warnings.warn(
-                    'A scrape of a page was useless. Not a big deal but possibly not correct.')
+                log.info('(!) A scrape of a page was useless. Not a big deal but possibly not correct.')
             time.sleep(sleep)
 
-        if self.debug:
-            print(str(scraped_rows) + ' rows scraped in edition ' + edition + '.')
+        log.info('[{}] {} rows scraped in edition.'.format(edition, str(scraped_rows)))
 
         if not cards:
-            warnings.warn('No cards found in edition ' + edition + '. Something is probably wrong.')
+            log.info('[{}] No cards found, something is probably wrong.'.format(edition))
         else:
-            if self.debug:
-                print(str(len(cards)) + ' unique cards found in edition ' + edition + '.')
+            log.info('[{}] {} unique cards found.'.format(edition, str(len(cards))))
         return cards
 
     def format_edition(self, cards):
@@ -172,8 +177,7 @@ class Scraper:
                 if card_id not in cards_out:
                     cards_out[card_id] = card
                 else:
-                    warnings.warn(
-                        'A duplicate entry was attempted, something might be wrong.')
+                    log.info('(!) A duplicate entry was attempted, something might be wrong.')
 
         return cards_out
 
@@ -229,30 +233,32 @@ class Scraper:
     def empty_db(self):
         """ Calls for truncate of all re-fillable tables. """
 
-        self.db.insert("SET FOREIGN_KEY_CHECKS=0");
+        self.db.insert("SET FOREIGN_KEY_CHECKS=0")
         self.truncate_table('editions')
         self.truncate_table('cards')
         self.truncate_table('costs')
-        self.db.insert("SET FOREIGN_KEY_CHECKS=1");
+        self.db.insert("SET FOREIGN_KEY_CHECKS=1")
 
     def truncate_table(self, table):
         """ Truncates specified table. """
         query = """TRUNCATE `scrapknight`.`{}`;""".format(table)
         self.db.insert(query)
-        if self.debug:
-            print('Truncated table `{}`.'.format(table))
+        log.info('Truncated table `{}`.'.format(table))
 
     def rebuild_db(self):
         """ Truncates all tables, then rebuilds them. """
         self.empty_db()
         editions = self.get_edition_list()
+        self.insert_editions(editions)
         self.update_build_time()
         for edition, edition_name in editions[2:6]:
+            log.info("[{}] Starting to scrape edition {}.".format(edition, edition_name))
             cards = self.scrape_edition(edition, sleep=0.5)
             cards = self.format_edition(cards)
-            if self.debug:
-                print(str(len(cards)) + ' cards left after cleaning. Inserting into database.')
+            log.info('[{}] {} cards left after cleaning. Inserting into database.'.format(
+                edition, str(len(cards))))
             self.insert_into_db(cards)
+        log.info('Done.')
 
     def get_db_info(self):
         """ Fetches and returns database statistics in the form of a list of strings. """
@@ -286,9 +292,9 @@ class Scraper:
 
         out = ["Database built on {}.".format(created),
                "{} cards, {} editions out of {} known.".format(
-                   number_of_cards, number_of_editions, known_editions),
-               "Loaded editions: {}.".format(editions),
-               "{} normal costs, {} unique.".format(number_of_normal_costs, number_of_unique_costs),
-               ]
+            number_of_cards, number_of_editions, known_editions),
+            "Loaded editions: {}.".format(editions),
+            "{} normal costs, {} unique.".format(number_of_normal_costs, number_of_unique_costs),
+        ]
 
         return out

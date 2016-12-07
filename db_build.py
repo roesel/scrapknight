@@ -62,7 +62,7 @@ def setup():
 def build():
     """
     (Re)builds the database completely from scratch, to the state we consider the "default".
-    What "default" is can change drastically between commits.
+    What "default" is can change drastically between commits though.
     """
 
     log = logging.getLogger()
@@ -78,6 +78,10 @@ def build():
 
     log.info("  - Linking editions")
     bu.load_sql('install/rel_editions.sql')
+
+    log.info("Filling up database:")
+    log.info("  - Scraping CR")
+    bu.scrape()
 
 
 if __name__ == "__main__":
