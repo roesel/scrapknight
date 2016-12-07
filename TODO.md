@@ -1,4 +1,6 @@
 ## TODO
+ * opravit problémy s foreign keys a views
+ * přesunout a rozházet věci z tools.py do libs/
  * +- čudlíky vertikálně kompaktní
  * onchange -- updatovat celkovou cenu multikarty
  * čudlík -- potvrdit podvýběr multikarty
