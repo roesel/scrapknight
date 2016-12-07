@@ -71,9 +71,9 @@ class Scraper:
 
     def insert_editions(self, editions):
         """
-        Truncates `editions` table, then inserts pairs of (edition_id, edition_name into DB).
+        Inserts pairs of (edition_id, edition_name into DB). Assumes that
+        table `editions` is empty.
         """
-        self.truncate_table('editions')
 
         for edition in editions:
             query = """
