@@ -39,7 +39,7 @@ CREATE TABLE `cards` (
   KEY `manacost` (`manacost`),
   KEY `md5` (`md5`),
   FULLTEXT KEY `name_fulltext` (`name`),
-  CONSTRAINT `cards_ibfk_2` FOREIGN KEY (`edition_id`) REFERENCES `editions` (`id`) ON UPDATE CASCADE
+  CONSTRAINT `cards_ibfk_2` FOREIGN KEY (`edition_id`) REFERENCES `editions` (`id`) ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Seznam všech karet v databázi.';
 
 CREATE TABLE IF NOT EXISTS `sdk_cards` (
@@ -66,7 +66,7 @@ CREATE TABLE `costs` (
   `sell` smallint(5) unsigned DEFAULT NULL,
   `sell_foil` smallint(5) unsigned DEFAULT NULL,
   PRIMARY KEY (`card_id`),
-  CONSTRAINT `costs_ibfk_3` FOREIGN KEY (`card_id`) REFERENCES `cards` (`id`) ON UPDATE CASCADE
+  CONSTRAINT `costs_ibfk_3` FOREIGN KEY (`card_id`) REFERENCES `cards` (`id`) ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Různé ceny jednotlivých karet.';
 
 CREATE TABLE `info` (
