@@ -7,7 +7,6 @@ DROP DATABASE IF EXISTS `scrapknight`;
 CREATE DATABASE `scrapknight` /*!40100 DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci */;
 USE `scrapknight`;
 
-DROP TABLE IF EXISTS `editions`;
 CREATE TABLE `editions` (
   `id` varchar(50) NOT NULL COMMENT 'ID edice (XXX...)',
   `name` varchar(50) DEFAULT NULL COMMENT 'Plný název edice',
@@ -15,7 +14,6 @@ CREATE TABLE `editions` (
   UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Seznam zkratek edic a jejich plných názvů.';
 
-DROP TABLE IF EXISTS `sdk_editions`;
 CREATE TABLE IF NOT EXISTS `sdk_editions` (
   `code` varchar(50) NOT NULL COMMENT 'ID edice (XXX...)',
   `name` varchar(50) DEFAULT NULL COMMENT 'Plný název edice',
@@ -29,7 +27,6 @@ CREATE TABLE IF NOT EXISTS `sdk_editions` (
   UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Edice natažené z SDK.';
 
-DROP TABLE IF EXISTS `cards`;
 CREATE TABLE `cards` (
   `id` varchar(20) NOT NULL COMMENT 'ID karty',
   `name` varchar(100) DEFAULT NULL COMMENT 'Název karty',
@@ -62,7 +59,6 @@ CREATE TABLE IF NOT EXISTS `sdk_cards` (
   FULLTEXT KEY `name_fulltext` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='Seznam všech karet v databázi, bráno z SDK.';
 
-DROP TABLE IF EXISTS `costs`;
 CREATE TABLE `costs` (
   `card_id` varchar(20) NOT NULL COMMENT 'ID karty',
   `buy` smallint(5) unsigned DEFAULT NULL,
@@ -73,14 +69,12 @@ CREATE TABLE `costs` (
   CONSTRAINT `costs_ibfk_3` FOREIGN KEY (`card_id`) REFERENCES `cards` (`id`) ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Různé ceny jednotlivých karet.';
 
-DROP TABLE IF EXISTS `info`;
 CREATE TABLE `info` (
   `key` tinyint(3) unsigned NOT NULL COMMENT 'Klíč jen pro snazší práci.',
   `created` datetime DEFAULT NULL COMMENT 'Datum buildu databáze.',
   PRIMARY KEY (`key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Informace o databázi a aplikaci. (Časem možná i nastavení?)';
 
-DROP VIEW IF EXISTS `card_details`;
 CREATE VIEW card_details(
   `id`, `name`, `edition_id`, `edition_name`, `manacost`, `buy`, `sell`, `buy_foil`, `sell_foil`, `md5`)
   AS (
