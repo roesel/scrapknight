@@ -2,29 +2,36 @@
 # -*- coding: utf-8 -
 
 import mysql.connector
-
+from mysql.connector import Error, errorcode
 
 class Database:
     debug = False
 
     def __init__(self, config, debug=False):
 
-        self.cnx = mysql.connector.connect(**config)
-        self.cursor = self.cnx.cursor()
-        self.debug = debug
+        try:
+            self.cnx = mysql.connector.connect(**config)
+            self.cursor = self.cnx.cursor()
+            self.debug = debug
+
+        except Error as err:
+            if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+                print("Access denied -- check user name and password in config_db.py")
+                raise
+            else:
+                raise
 
     def insert(self, query, *args):
         try:
             self.cursor.execute(query, *args)
             self.cnx.commit()
-        except mysql.connector.Error as err:
-            # Go through possible errors.
-            if err.errno == mysql.connector.errorcode.ER_ACCESS_DENIED_ERROR:
-                print("Something is wrong with your user name or password")
-            elif err.errno == mysql.connector.errorcode.ER_BAD_DB_ERROR:
+
+        except Error as err:
+            if err.errno == errorcode.ER_BAD_DB_ERROR:
                 print("Database does not exist")
+                raise
             else:
-                print(err)
+                raise
             # In any case, roll back (?)
             self.cnx.rollback()
 
@@ -34,7 +41,8 @@ class Database:
         return self.cursor.fetchall()
 
     def __del__(self):
-        self.cnx.close()
+        if hasattr(self, 'cnx'):
+            self.cnx.close()
 
     def truncate_table(self, table):
         """
