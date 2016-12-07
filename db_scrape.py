@@ -1,12 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""
-This script creates a new Scraper object and builds the database according to the methods called.
-The object is then thrown away, so any results must be stored elsewhere to persist.
-This only gets data from CR eshop and nothing else.
-"""
-
 import sys
 import getopt
 
@@ -15,6 +9,12 @@ from config_db import config
 
 import logging
 import pprint
+
+HELP = """
+This script creates a new Scraper object and builds the database according to the methods called.
+The object is then thrown away, so any results must be stored elsewhere to persist.
+This only gets data from CR eshop and nothing else.
+"""
 
 def setup():
     """
@@ -35,7 +35,7 @@ def setup():
         if o in ("-v", "--verbose"):
             logging_level = logging.DEBUG
         elif o in ("-h", "--help"):
-            print("No help so far, sorry!")
+            print(HELP)
             sys.exit()
         else:
             assert False, "unhandled option"

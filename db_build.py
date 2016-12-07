@@ -10,6 +10,10 @@ from config_db import config
 import logging
 import pprint
 
+HELP = """
+No help so far, sorry!
+"""
+
 def setup():
     """
     """
@@ -29,7 +33,7 @@ def setup():
         if o in ("-v", "--verbose"):
             logging_level = logging.DEBUG
         elif o in ("-h", "--help"):
-            print("No help so far, sorry!")
+            print(HELP)
             sys.exit()
         else:
             assert False, "unhandled option"
