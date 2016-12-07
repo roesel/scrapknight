@@ -136,11 +136,11 @@ class Scraper:
                             cards[card_id]['cost_buy_foil'] = card['cost']
                     else:
                         if not self.is_foil(card):
-                            card['cost_buy_foil'] = 'NULL'
+                            card['cost_buy_foil'] = None
                             cards[card_id] = card
                         else:
                             card['cost_buy_foil'] = card['cost']
-                            card['cost'] = 'NULL'
+                            card['cost'] = None
                             card['name'] = card['name'].replace(' - foil', '')
                             cards[card_id] = card
 
