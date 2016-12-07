@@ -220,9 +220,14 @@ class Scraper:
 
     def empty_db(self):
         """ Calls for truncate of all re-fillable tables. """
-        self.truncate_table('cards')
-        self.truncate_table('costs')
+
         self.truncate_table('editions')
+
+        # table cards must be deleted AFTER table editions (FK)
+        self.truncate_table('cards')
+
+        # table costs must be deleted AFTER table cards (FK)
+        self.truncate_table('costs')
 
     def truncate_table(self, table):
         """ Truncates specified table. """
