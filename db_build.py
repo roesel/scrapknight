@@ -10,12 +10,21 @@ from config_db import config
 import logging
 import pprint
 
-HELP = """
-No help so far, sorry!
-"""
+HELP = '''
+Builds the database according to functions specified in build(). It should be able to (IN THEORY) run either
+    a) with enough privileges to create database and then drop and create everything from scratch, or
+    b) on a database called `scrapknight` already created and with sufficient privileges to drop tables/views and create after.
+Only the first is implemented as of now.
+
+The idea is that Builder is the only object you need to call and it calls Scraper/Connector itself down the line. But this might change.
+
+If this wasn't enough ingormation, please feel free to #helpyourself.
+'''
+
 
 def setup():
     """
+    Sets up arg parsing and logging options. Bubbles down to other generated objects.
     """
 
     # Parse command line parameters
@@ -42,6 +51,7 @@ def setup():
     logging.basicConfig(
         format='%(levelname)s:%(message)s',
         level=logging_level)
+
 
 def build():
     """
