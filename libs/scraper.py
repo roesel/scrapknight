@@ -154,22 +154,24 @@ class Scraper:
                     card['cost'] = match[3]
 
                     # Foil vs non-foil X existing non-existing
-                    if card_id in cards:
-                        if not self.is_foil(card):
-                            foil_cost = cards[card_id]['cost_buy_foil']
-                            card['cost_buy_foil'] = foil_cost
-                            cards[card_id] = card
+                    # Ignoring played cards
+                    if not self.is_played(card):
+                        if card_id in cards:
+                            if not self.is_foil(card):
+                                foil_cost = cards[card_id]['cost_buy_foil']
+                                card['cost_buy_foil'] = foil_cost
+                                cards[card_id] = card
+                            else:
+                                cards[card_id]['cost_buy_foil'] = card['cost']
                         else:
-                            cards[card_id]['cost_buy_foil'] = card['cost']
-                    else:
-                        if not self.is_foil(card):
-                            card['cost_buy_foil'] = None
-                            cards[card_id] = card
-                        else:
-                            card['cost_buy_foil'] = card['cost']
-                            card['cost'] = None
-                            card['name'] = card['name'].replace(' - foil', '')
-                            cards[card_id] = card
+                            if not self.is_foil(card):
+                                card['cost_buy_foil'] = None
+                                cards[card_id] = card
+                            else:
+                                card['cost_buy_foil'] = card['cost']
+                                card['cost'] = None
+                                card['name'] = card['name'].replace(' - foil', '')
+                                cards[card_id] = card
 
             else:
                 log.info('(!) A scrape of a page was useless. Not a big deal but possibly not correct.')
@@ -190,13 +192,10 @@ class Scraper:
         """
         cards_out = {}
         for card_id, card in cards.items():
-            if (self.is_played(card)):
-                pass
+            if card_id not in cards_out:
+                cards_out[card_id] = card
             else:
-                if card_id not in cards_out:
-                    cards_out[card_id] = card
-                else:
-                    log.info('(!) A duplicate entry was attempted, something might be wrong.')
+                log.info('(!) A duplicate entry was attempted, something might be wrong.')
 
         return cards_out
 
