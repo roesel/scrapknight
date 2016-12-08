@@ -1,4 +1,5 @@
 ## TODO
+ * opravit, že Scraper v KLI nenajde žádné karty, protože není vícestránková
  * opravit problémy s foreign keys a views
  * přesunout a rozházet věci z tools.py do libs/
  * +- čudlíky vertikálně kompaktní
