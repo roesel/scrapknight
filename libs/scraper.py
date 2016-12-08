@@ -6,7 +6,6 @@ import numpy as np
 import urllib.request
 import time
 import hashlib
-from datetime import datetime
 
 import mysql.connector
 from mysql.connector import Error, errorcode
@@ -43,8 +42,6 @@ class Scraper:
         # Build edition list
         scraped_editions = self.get_edition_list()
         self.insert_editions(scraped_editions)
-
-        self.update_build_time()
 
         # Scrape all editions in incoming list
         done = []
@@ -119,7 +116,7 @@ class Scraper:
                 else:
                     raise
         if duplicates:
-            log.info("(~) There were {} duplicates in edition list. Probs OK. ".format(duplicates))
+            log.info("(~) There were {} duplicates in edition list. Probably OK. ".format(duplicates))
 
     def scrape_edition(self, edition, sleep=0.1):
         """
@@ -290,14 +287,12 @@ class Scraper:
         result_list = [ed[0] for ed in result]
         editions = ','.join(result_list)
 
-        created = self.get_build_time()
-
-        out = ["Database built on {}.".format(created),
+        out = ["Scraped info:",
                "{} cards, {} editions out of {} known.".format(
-            number_of_cards, number_of_editions, known_editions),
-            "Loaded editions: {}.".format(editions),
-            "{} normal costs, {} unique.".format(number_of_normal_costs, number_of_unique_costs),
-        ]
+                   number_of_cards, number_of_editions, known_editions),
+               "Scraped editions: {}.".format(editions),
+               "{} normal costs, {} unique.".format(number_of_normal_costs, number_of_unique_costs),
+               ]
 
         return out
 
@@ -308,14 +303,6 @@ class Scraper:
     def is_played(self, card):
         """ Returns if card dictionary item is or isn't played. """
         return (str.find(card['name'], '- lightly played') != -1)
-
-    def update_build_time(self):
-        """ Inserts current time into the DB as build time into `info`.`created`. """
-        dtime = time.strftime('%Y-%m-%d %H:%M:%S')
-        query = """
-            INSERT INTO info (`key`, `created`) VALUES (1, "{}") ON DUPLICATE KEY UPDATE `created` = "{}";
-            """.format(dtime, dtime)
-        self.db.insert(query)
 
     def get_build_time(self):
         """ Returns current build time from DB. """

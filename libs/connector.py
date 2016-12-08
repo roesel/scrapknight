@@ -176,3 +176,33 @@ class Connector:
         self.db.truncate_table('sdk_editions')
         self.db.truncate_table('sdk_cards')
         self.db.insert("SET FOREIGN_KEY_CHECKS=1")
+
+    def get_db_info(self):
+        """
+        Fetches and returns database statistics in the form of a list of strings.
+        """
+        print('--- Finished. Statistics: ---')
+        query = """SELECT COUNT(*) FROM `sdk_cards`;"""
+        result = self.db.query(query)
+        number_of_cards = result[0][0]
+
+        query = """SELECT COUNT(*) FROM `sdk_editions`;"""
+        result = self.db.query(query)
+        known_editions = result[0][0]
+
+        query = """SELECT COUNT(DISTINCT `set`) FROM `sdk_cards`;"""
+        result = self.db.query(query)
+        number_of_editions = result[0][0]
+
+        query = """SELECT DISTINCT `set` from `sdk_cards`;"""
+        result = self.db.query(query)
+        result_list = [ed[0] for ed in result]
+        editions = ','.join(result_list)
+
+        out = ["Loaded info:",
+               "{} cards, {} editions out of {} known.".format(
+                   number_of_cards, number_of_editions, known_editions),
+               "Loaded editions: {}.".format(editions),
+               ]
+
+        return out
