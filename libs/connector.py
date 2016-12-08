@@ -7,19 +7,42 @@ import time
 
 from libs.database import Database
 
+import logging
+import pprint
+
+log = logging.getLogger()
+
 
 class Connector:
     """
     Object dedicated to communicating with the Mtg API via the python MtgSDK.
     """
-    debug = True
+    # self.db = Database()
 
-    def __init__(self, db_config):
+    def __init__(self, db):
         """
+        Takes either a Database() object or config sufficient for creating one.
         """
-        self.db = Database(db_config)
+        if isinstance(db, Database):
+            self.db = db
+        else:
+            self.db = Database(db)
 
-    def load_editions(self):
+    def rebuild(self):
+        self.empty_db()
+        editions = self.get_edition_list()
+        self.insert_editions(editions)
+
+        list_of_editions = ['KLD', 'SOI', 'BFZ']
+        for e in list_of_editions:
+            log.info("Sleeping for 5 seconds...")
+            time.sleep(5)
+            log.info("[{}] Loading edition from API...".format(e))
+            cards = self.load_edition(e)
+            self.insert_cards(cards)
+        log.info('Done.')
+
+    def get_edition_list(self):
         """
         Loads all editions from the API.
         For a SET, mtg api has the following properties:
@@ -44,13 +67,13 @@ class Connector:
         for s in all_sets:
             editions.append([s.code, s.name, s.gatherer_code, s.magic_cards_info_code, s.release_date,
                              s.border, s.type, s.block])
-        self.insert_editions(editions)
+        return editions
 
     def insert_editions(self, editions):
         """
-        Truncates `sdk_editions` table, then inserts pairs of (edition_id, edition_name into DB).
+        Truncates `sdk_editions` table, then inserts (edition_id, edition_name, ...) into DB.
+        Assumes that table `sdk_editions` is empty.
         """
-        self.db.truncate_table('sdk_editions')
 
         for edition in editions:
             query = """
@@ -62,9 +85,9 @@ class Connector:
 
             self.db.insert(query, edition)
 
-    def load_cards(self, edition):
+    def load_edition(self, edition):
         """
-        Loads all editions from the API.
+        Loads all cards from a specific edition from the API.
         For a CARD, mtg api has the following properties:
 
             # name
@@ -109,22 +132,21 @@ class Connector:
         all_cards = Card.where(set=edition).all()
         number_of_cards = len(all_cards)
 
-        if self.debug:
-            print("Found {} cards in API. Starting to fetch.".format(number_of_cards))
+        log.info("[{}] Found {} cards in API. Starting to fetch.".format(edition, number_of_cards))
 
         cards = []
         for c in all_cards:
             cards.append([c.name, c.multiverse_id, c.layout,
                           c.mana_cost, c.type, c.rarity, c.set, c.id])
 
-        if self.debug:
-            print("Inserting {} cards into DB.".format(len(cards)))
+        log.info("[{}] Inserting {} cards into DB.".format(edition, len(cards)))
 
-        self.insert_cards(cards)
+        return cards
 
     def insert_cards(self, cards):
         """
-        Inserts new values into sdk_cards.
+        Inserts new values into `sdk_cards`.
+        Assumes `sdk_cards` is empty.
         """
         for card in cards:
             query = """
@@ -136,11 +158,10 @@ class Connector:
 
             self.db.insert(query, card)
 
-    def load_list_of_editions(self, list_of_editions):
-        self.db.truncate_table('sdk_cards')
+    def empty_db(self):
+        """ Calls for truncate of all tables used by Connector. """
 
-        for e in list_of_editions:
-            print("Sleeping for 5 seconds...")
-            time.sleep(5)
-            print("Loading edition {} from API...".format(e))
-            self.load_cards(e)
+        self.db.insert("SET FOREIGN_KEY_CHECKS=0")
+        self.db.truncate_table('sdk_editions')
+        self.db.truncate_table('sdk_cards')
+        self.db.insert("SET FOREIGN_KEY_CHECKS=1")
