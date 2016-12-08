@@ -80,8 +80,12 @@ def build():
     bu.load_sql('install/rel_editions.sql')
 
     log.info("Filling up database:")
+
     log.info("  - Scraping CR")
     bu.scrape()
+
+    log.info("  - Loading from API")
+    bu.connect()
 
 
 if __name__ == "__main__":

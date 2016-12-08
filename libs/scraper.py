@@ -35,7 +35,7 @@ class Scraper:
         else:
             self.db = Database(db)
 
-    def rebuild_db(self):
+    def rebuild(self):
         """ Truncates all tables, then rebuilds them. """
         self.empty_db()
         editions = self.get_edition_list()
@@ -83,8 +83,8 @@ class Scraper:
 
     def insert_editions(self, editions):
         """
-        Inserts pairs of (edition_id, edition_name into DB). Assumes that
-        table `editions` is empty.
+        Inserts pairs of (edition_id, edition_name into DB).
+        Assumes that table `editions` is empty.
         """
         duplicates = 0
         for edition in editions:
@@ -224,7 +224,9 @@ class Scraper:
         self.db.insert("SET FOREIGN_KEY_CHECKS=1")
 
     def get_db_info(self):
-        """ Fetches and returns database statistics in the form of a list of strings. """
+        """
+        Fetches and returns database statistics in the form of a list of strings.
+        """
         print('--- Finished. Statistics: ---')
         query = """SELECT COUNT(*) FROM `cards`;"""
         result = self.db.query(query)
