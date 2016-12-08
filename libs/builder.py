@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -
 
-from mtgsdk import Set
-from mtgsdk import Card
 import time
 
 from libs.database import Database
