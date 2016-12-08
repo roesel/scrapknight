@@ -1,4 +1,6 @@
 ## TODO
+ * rozhodnout se jak naplňovat databázi
+ * zkopírovat "update_time" do Connectoru
  * opravit, že Scraper v KLI nenajde žádné karty, protože není vícestránková
  * opravit problémy s foreign keys a views
  * přesunout a rozházet věci z tools.py do libs/
