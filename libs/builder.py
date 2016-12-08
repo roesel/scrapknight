@@ -29,6 +29,16 @@ class Builder:
         self.sc = Scraper(self.db)
         self.co = Connector(self.db)
 
+    def build(self, editions):
+        self.sc.build(editions)
+        self.co.build(editions)
+
+    def scrape(self, editions):
+        self.sc.build(editions)
+
+    def connect(self, editions):
+        self.co.build(editions)
+
     def load_sql(self, filename):
         with open(filename, "rt", encoding='utf-8') as in_file:
             contents = in_file.read()
@@ -41,9 +51,3 @@ class Builder:
                 if statement is not "":
                     log.debug("executing SQL statement:\n+++{}+++".format(statement))
                     self.db.insert(statement)
-
-    def scrape(self):
-        self.sc.build()
-
-    def connect(self):
-        self.co.build()

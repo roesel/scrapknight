@@ -35,21 +35,28 @@ class Scraper:
         else:
             self.db = Database(db)
 
-    def build(self):
+    def build(self, editions):
         """
         Builds the database to its 'default' state.
         Assumes empty but existing tables.
         """
-        editions = self.get_edition_list()
-        self.insert_editions(editions)
+        # Build edition list
+        scraped_editions = self.get_edition_list()
+        self.insert_editions(scraped_editions)
+
         self.update_build_time()
-        for edition, edition_name in editions[2:6]:
-            log.info("[{}] Starting to scrape edition {}.".format(edition, edition_name))
-            cards = self.scrape_edition(edition, sleep=0.5)
-            cards = self.format_cards(cards)
-            log.info('[{}] {} cards left after cleaning. Inserting into database.'.format(
-                edition, str(len(cards))))
-            self.insert_cards(cards)
+
+        # Scrape all editions in incoming list
+        done = []
+        for edition, edition_name in scraped_editions:
+            if ((edition in editions) and (edition not in done)):
+                log.info("[{}] Starting to scrape edition {}.".format(edition, edition_name))
+                cards = self.scrape_edition(edition, sleep=0.5)
+                cards = self.format_cards(cards)
+                log.info('[{}] {} cards left after cleaning. Inserting into database.'.format(
+                    edition, str(len(cards))))
+                self.insert_cards(cards)
+                done.append(edition)
         log.info('Done.')
 
     def rebuild(self):
@@ -200,6 +207,8 @@ class Scraper:
         """
         Inserts dictionary of cards into database, split into `cards` and `costs`.
         """
+        duplicates = 0
+        duplicates_costs = 0
         for card_id, card in cards.items():
             # Insert into list of cards
             name_md5 = hashlib.md5(card['name'].lower().encode('utf-8')).hexdigest()
@@ -209,9 +218,16 @@ class Scraper:
                 VALUES
                 (%s, %s, %s, %s, %s)
                 """
-
-            self.db.insert(query, (card_id, card['name'], card[
-                           'edition'], card['manacost'], name_md5,))
+            try:
+                self.db.insert(query, (card_id, card['name'], card[
+                    'edition'], card['manacost'], name_md5,))
+            except Error as err:
+                if err.errno == errorcode.ER_DUP_ENTRY:
+                    log.debug(
+                        "Card {} is already in the database, skipping...".format(card['name']))
+                    duplicates += 1
+                else:
+                    raise
 
             # Insert into costs
             query = """
@@ -221,7 +237,19 @@ class Scraper:
                 (%s, %s, %s)
                 """
 
-            self.db.insert(query, (card_id, card['cost'], card['cost_buy_foil'],))
+            try:
+                self.db.insert(query, (card_id, card['cost'], card['cost_buy_foil'],))
+            except Error as err:
+                if err.errno == errorcode.ER_DUP_ENTRY:
+                    log.debug(
+                        "Costs of card {} are already in the database, skipping...".format(card['name']))
+                    duplicates_costs += 1
+                else:
+                    raise
+        if duplicates:
+            log.info("(~) There were {} duplicates in edition list. Probs OK. ".format(duplicates))
+        if duplicates_costs:
+            log.info("(~) There were {} duplicates in edition list. Probs OK. ".format(duplicates_costs))
 
     def empty_db(self):
         """ Calls for truncate of all tables used by Scraper. """

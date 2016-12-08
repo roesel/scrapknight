@@ -81,11 +81,8 @@ def build():
 
     log.info("Filling up database:")
 
-    log.info("  - Scraping CR")
-    bu.scrape()
-
-    log.info("  - Loading from API")
-    bu.connect()
+    editions = ['KLD', 'EMN', 'SOI', 'OGW', 'BFZ']
+    bu.build(editions)
 
 
 if __name__ == "__main__":

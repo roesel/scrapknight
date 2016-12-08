@@ -28,18 +28,19 @@ class Connector:
         else:
             self.db = Database(db)
 
-    def build(self):
+    def build(self, editions):
         """
         Builds the database to its 'default' state.
         Assumes empty but existing tables.
         """
-        editions = self.get_edition_list()
-        self.insert_editions(editions)
+        # Build edition list
+        loaded_editions = self.get_edition_list()
+        self.insert_editions(loaded_editions)
 
-        list_of_editions = ['KLD', 'SOI', 'BFZ']
-        for e in list_of_editions:
-            log.info("Sleeping for 5 seconds...")
-            time.sleep(5)
+        # Load all editions from edition list
+        for e in editions:
+            log.info("Sleeping for 3 seconds...")
+            time.sleep(3)
             log.info("[{}] Loading edition from API...".format(e))
             cards = self.load_edition(e)
             self.insert_cards(cards)
