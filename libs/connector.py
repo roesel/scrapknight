@@ -28,8 +28,11 @@ class Connector:
         else:
             self.db = Database(db)
 
-    def rebuild(self):
-        self.empty_db()
+    def build(self):
+        """
+        Builds the database to its 'default' state.
+        Assumes empty but existing tables.
+        """
         editions = self.get_edition_list()
         self.insert_editions(editions)
 
@@ -41,6 +44,13 @@ class Connector:
             cards = self.load_edition(e)
             self.insert_cards(cards)
         log.info('Done.')
+
+    def rebuild(self):
+        """
+        Empties all necessary tables, then builds.
+        """
+        self.empty_db()
+        self.build()
 
     def get_edition_list(self):
         """

@@ -45,7 +45,7 @@ class Builder:
                     self.db.insert(statement)
 
     def scrape(self):
-        self.sc.rebuild()
+        self.sc.build()
 
     def connect(self):
-        self.co.rebuild()
+        self.co.build()

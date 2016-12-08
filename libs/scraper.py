@@ -35,9 +35,11 @@ class Scraper:
         else:
             self.db = Database(db)
 
-    def rebuild(self):
-        """ Truncates all tables, then rebuilds them. """
-        self.empty_db()
+    def build(self):
+        """
+        Builds the database to its 'default' state.
+        Assumes empty but existing tables.
+        """
         editions = self.get_edition_list()
         self.insert_editions(editions)
         self.update_build_time()
@@ -49,6 +51,13 @@ class Scraper:
                 edition, str(len(cards))))
             self.insert_cards(cards)
         log.info('Done.')
+
+    def rebuild(self):
+        """
+        Empties all necessary tables, then builds.
+        """
+        self.empty_db()
+        self.build()
 
     def get_edition_size(self, edition):
         """
