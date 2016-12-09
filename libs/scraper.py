@@ -190,9 +190,17 @@ class Scraper:
         Filters scraped cards. Currently only filters played cards, but could filter more in the future.
         Not sure how it handles used foils?
         """
+        corrections = {
+            "Jaces´s Scrutiny": "Jace´s Scrutiny",
+        }
         cards_out = {}
         for card_id, card in cards.items():
             if card_id not in cards_out:
+                old_name = card['name']
+                if old_name in corrections:
+                    new_name = corrections[old_name]
+                    card['name'] = new_name
+                    log.info("(~) Corrected card >{}< to >{}<.".format(old_name, new_name))
                 cards_out[card_id] = card
             else:
                 log.info('(!) A duplicate entry was attempted, something might be wrong.')
