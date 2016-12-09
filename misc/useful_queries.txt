@@ -36,3 +36,26 @@ SELECT editions.id, editions.name
 FROM editions
     JOIN sdk_editions
         ON editions.id = sdk_editions.id;
+
+/* Select all mismatching cards in SOI */
+SELECT * FROM (
+	(SELECT *
+	FROM (
+		SELECT * FROM sdk_cards WHERE NOT (`layout`="double-faced" and mana_cost is null and `type` !="Land") AND (`set`="SOI")
+	) as t1
+	RIGHT JOIN (
+		SELECT REPLACE(name,'´', '\'') as name_replaced FROM cards WHERE edition_id="SOI" AND id not like "tokens%" AND name not like "Token - %"
+	) as t2
+	ON t1.name = t2.name_replaced) 
+
+UNION ALL
+
+	(SELECT *
+	FROM (
+		SELECT * FROM sdk_cards WHERE NOT (`layout`="double-faced" and mana_cost is null and `type` !="Land") AND (`set`="SOI")
+	) as t1
+	LEFT JOIN (
+		SELECT REPLACE(name,'´', '\'') as name_replaced FROM cards WHERE edition_id="SOI" AND id not like "tokens%" AND name not like "Token - %"
+	) as t2
+	ON t1.name = t2.name_replaced)
+) as mismatch WHERE `name` is null or `name_replaced` is null
