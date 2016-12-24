@@ -22,9 +22,9 @@ class Database:
             else:
                 raise
 
-    def insert(self, query, *args):
+    def insert(self, query, *args, **kwargs):
         try:
-            self.cursor.execute(query, *args)
+            self.cursor.execute(query, *args, **kwargs)
             self.cnx.commit()
 
         except Error as err:
@@ -35,6 +35,20 @@ class Database:
                 raise
             # In any case, roll back (?)
             self.cnx.rollback()
+
+    def multiinsert(self, query):
+        for result in self.cursor.execute(query, multi=True):
+            if result.with_rows:
+                print("Rows produced by statement '{}':".format(result.statement))
+                print(result.fetchall())
+            else:
+                preview_length = 35
+                if len(result.statement) > preview_length:
+                    query_preview = ' '.join(result.statement.split())[0:preview_length] + "... ;"
+                else:
+                    query_preview = result.statement + ";"
+                print("Number of rows affected by statement '{}': {}".format(
+                    query_preview, result.rowcount))
 
     def query(self, query, *args, **kwargs):
         self.cursor.execute(query, *args, **kwargs)
