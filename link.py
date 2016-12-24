@@ -63,7 +63,20 @@ def link():
     log = logging.getLogger()
 
     l = Linker(config)
-    print(l.total("api", "KLD"))
+    
+    edition = "BFZ"
+    
+    print("API total(): {}".format(l.total("api", edition)))
+    print("API standard(): {}".format(l.standard("api", edition)))
+    
+    print("CR total(): {}".format(l.total("cr", edition)))
+    print("CR standard(): {}".format(l.standard("cr", edition)))
+    
+    print("Direct matches: {}".format(l.direct_matches(edition)))
+    
+    print("We are missing {} cards.".format(l.total("api", edition) - l.direct_matches(edition)))
+    print("Landsort offers {} cards.".format(l.landsort(edition)))
+    
 
 
 if __name__ == "__main__":

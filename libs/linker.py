@@ -51,3 +51,67 @@ class Linker:
             result = self.db.query(query)
             count = result[0][0]
         return count
+
+    def standard(self, source, edition):
+        count = -1
+        if source == "api":
+            pass
+            # Double faced (ale jen první z nich), ...
+            # log.info("standard() for API not implemented.")
+        elif source == "cr":
+            query = """SELECT COUNT(*) FROM `cards` WHERE `edition_id` = "{}" AND id not like "tokens%" AND name not like "Token - %" AND name not like "Emblem - %";""".format(edition)
+            result = self.db.query(query)
+            count = result[0][0]
+        return count
+
+    def direct_matches(self, edition):
+        query = """ SET @edition = "{}";
+                    SELECT COUNT(*) FROM (
+                        SELECT REPLACE(name,'´', '\\\'') as name_replaced from cards where edition_id = @edition
+                        ) as cr
+                    JOIN (
+                        SELECT * from sdk_cards where `set` = @edition
+                        ) as api
+                    ON cr.name_replaced = api.name;
+                """.format(edition)
+        results = self.db.cursor.execute(query, multi=True)
+        self.db.cnx.commit()
+        for cur in results:
+            if cur.with_rows:
+                count = cur.fetchall()[0][0]
+
+        return count
+
+    def landsort(self, edition):
+        query = """
+                SET @edition = "{}";
+                SELECT COUNT(*) FROM (
+                	(SELECT *
+                	FROM (
+                		SELECT * FROM sdk_cards WHERE NOT (`layout`="double-faced" and mana_cost is null and `type` !="Land") AND (`set`=@edition)
+                	) as t1
+                	RIGHT JOIN (
+                		SELECT REPLACE(name,'´', '\\\'') as name_replaced FROM cards WHERE edition_id=@edition AND id not like "tokens%" AND name not like "Token - %" AND name not like "Emblem - %"
+                	) as t2
+                	ON t1.name = t2.name_replaced)
+
+                UNION ALL
+
+                	(SELECT *
+                	FROM (
+                		SELECT * FROM sdk_cards WHERE NOT (`layout`="double-faced" and mana_cost is null and `type` !="Land") AND (`set`=@edition)
+                	) as t1
+                	LEFT JOIN (
+                		SELECT REPLACE(name,'´', '\\\'') as name_replaced FROM cards WHERE edition_id=@edition AND id not like "tokens%" AND name not like "Token - %" AND name not like "Emblem - %"
+                	) as t2
+                	ON t1.name = t2.name_replaced)
+                ) as mismatch WHERE (`name` is  null or `name_replaced` is  null);
+                """.format(edition)
+
+        results = self.db.cursor.execute(query, multi=True)
+        self.db.cnx.commit()
+        for cur in results:
+            if cur.with_rows:
+                count = cur.fetchall()[0][0]
+
+        return count / 2

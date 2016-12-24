@@ -4,6 +4,7 @@
 import mysql.connector
 from mysql.connector import Error, errorcode
 
+
 class Database:
     debug = False
 
@@ -35,8 +36,8 @@ class Database:
             # In any case, roll back (?)
             self.cnx.rollback()
 
-    def query(self, query, *args):
-        self.cursor.execute(query, *args)
+    def query(self, query, *args, **kwargs):
+        self.cursor.execute(query, *args, **kwargs)
 
         return self.cursor.fetchall()
 
