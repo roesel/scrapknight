@@ -56,8 +56,10 @@ class Linker:
         count = -1
         if source == "api":
             pass
-            # Double faced (ale jen první z nich), ...
-            # log.info("standard() for API not implemented.")
+            # Korekce na druhé strany double-faced karet (SOI, ...)
+            query = """SELECT COUNT(*) FROM sdk_cards WHERE NOT (`layout`="double-faced" and mana_cost is null and `type` !="Land") AND (`set`="{}");""".format(edition)
+            result = self.db.query(query)
+            count = result[0][0]
         elif source == "cr":
             query = """SELECT COUNT(*) FROM `cards` WHERE `edition_id` = "{}" AND id not like "tokens%" AND name not like "Token - %" AND name not like "Emblem - %";""".format(edition)
             result = self.db.query(query)

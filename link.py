@@ -64,7 +64,7 @@ def link():
 
     l = Linker(config)
     
-    edition = "BFZ"
+    edition = "SOI"
     
     print("API total(): {}".format(l.total("api", edition)))
     print("API standard(): {}".format(l.standard("api", edition)))
@@ -74,7 +74,7 @@ def link():
     
     print("Direct matches: {}".format(l.direct_matches(edition)))
     
-    print("We are missing {} cards.".format(l.total("api", edition) - l.direct_matches(edition)))
+    print("We are missing {} cards.".format(l.standard("api", edition) - l.direct_matches(edition)))
     print("Landsort offers {} cards.".format(l.landsort(edition)))
     
 
