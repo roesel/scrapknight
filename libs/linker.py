@@ -117,3 +117,60 @@ class Linker:
                 count = cur.fetchall()[0][0]
 
         return count / 2
+
+    def insert_landsort(self, edition):
+        query = """ SET @edition = "{}";
+                    INSERT INTO rel_cards
+                    SELECT `id_cr`, `mid` as `id_sdk`
+                    FROM (
+                    select @r := @r+1 as my_order , z.* from(
+
+                    SELECT *
+                       FROM (
+                               SELECT * FROM sdk_cards WHERE NOT (`layout`="double-faced" and mana_cost is null and `type` !="Land") AND (`set`=@edition)
+                       ) as t1
+                       LEFT JOIN (
+                               SELECT REPLACE(name,'´', '\\\'') as name_replaced FROM cards WHERE edition_id=@edition AND id not like "tokens%" AND name not like "Token - %"
+                       ) as t2
+                       ON t1.name = t2.name_replaced
+                       WHERE `name_replaced` is null
+                       ORDER BY `name`, `mid`
+
+                    )z, (select @r:=0)y
+                    ) as not_in_cr
+
+                    JOIN
+
+                    (
+                    select @s := @s+1 as my_order , z.* from(
+
+                    SELECT *
+                       FROM (
+                               SELECT `name` FROM sdk_cards WHERE NOT (`layout`="double-faced" and mana_cost is null and `type` !="Land") AND (`set`=@edition)
+                       ) as t1
+                       RIGHT JOIN (
+                               SELECT REPLACE(name,'´', '\\\'') as name_cr, id as id_cr FROM cards WHERE edition_id=@edition AND id not like "tokens%" AND name not like "Token - %"
+                       ) as t2
+                       ON t1.name = t2.name_cr
+                       WHERE `name` is null
+                       ORDER BY `name_cr`
+
+                    )z, (select @s:=0)y
+                    ) as not_in_api
+                           ON not_in_cr.my_order = not_in_api.my_order;
+        """.format(edition)
+        print(query)
+        results = self.db.multiinsert(query)
+
+    def insert_direct_match(self, edition):
+        query = """ SET @edition = "{}";
+                    INSERT INTO rel_cards
+                    SELECT `id_cr`, `mid` as `id_sdk` FROM (
+                       SELECT REPLACE(name,'´', '\\\'') as name_replaced, `id` as `id_cr` from cards where edition_id = @edition
+                       ) as cr
+                    JOIN (
+                       SELECT * from sdk_cards where `set` = @edition
+                       ) as api
+                    ON cr.name_replaced = api.name;
+        """.format(edition)
+        results = self.db.multiinsert(query)

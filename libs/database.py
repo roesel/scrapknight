@@ -50,6 +50,15 @@ class Database:
                 print("Number of rows affected by statement '{}': {}".format(
                     query_preview, result.rowcount))
 
+    def multiinsert_simple(self, query):
+        for result in self.cursor.execute(query, multi=True):
+            if result.with_rows:
+                print("Rows produced by statement '{}':".format(result.statement))
+                print(result.fetchall())
+            else:
+                print("Number of rows affected by statement '{}': {}".format(
+                    result.statement, result.rowcount))
+
     def query(self, query, *args, **kwargs):
         self.cursor.execute(query, *args, **kwargs)
 

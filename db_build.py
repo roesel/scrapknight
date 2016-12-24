@@ -79,6 +79,9 @@ def build():
     log.info("  - Linking editions")
     bu.load_sql('install/rel_editions.sql')
 
+    log.info("  - Linking cards (!)")
+    bu.load_sql('install/rel_cards.sql')
+
     log.info("Filling up database:")
 
     editions = ['KLD', 'EMN', 'SOI', 'OGW', 'BFZ']
