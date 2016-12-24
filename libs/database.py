@@ -36,8 +36,8 @@ class Database:
             # In any case, roll back (?)
             self.cnx.rollback()
 
-    def multiinsert(self, query):
-        for result in self.cursor.execute(query, multi=True):
+    def multiinsert(self, query, *args, **kwargs):
+        for result in self.cursor.execute(query, *args, **kwargs, multi=True):
             if result.with_rows:
                 print("Rows produced by statement '{}':".format(result.statement))
                 print(result.fetchall())
@@ -49,9 +49,10 @@ class Database:
                     query_preview = result.statement + ";"
                 print("Number of rows affected by statement '{}': {}".format(
                     query_preview, result.rowcount))
+        self.cnx.commit()
 
-    def multiinsert_simple(self, query):
-        for result in self.cursor.execute(query, multi=True):
+    def multiinsert_simple(self, query, *args, **kwargs):
+        for result in self.cursor.execute(query, *args, **kwargs, multi=True):
             if result.with_rows:
                 print("Rows produced by statement '{}':".format(result.statement))
                 print(result.fetchall())

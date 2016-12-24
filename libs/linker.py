@@ -119,7 +119,7 @@ class Linker:
         return count / 2
 
     def insert_landsort(self, edition):
-        query = """ SET @edition = "{}";
+        query = """ SET @edition = %s;
                     INSERT INTO rel_cards
                     SELECT `id_cr`, `mid` as `id_sdk`
                     FROM (
@@ -158,12 +158,12 @@ class Linker:
                     )z, (select @s:=0)y
                     ) as not_in_api
                            ON not_in_cr.my_order = not_in_api.my_order;
-        """.format(edition)
+        """
         print(query)
-        results = self.db.multiinsert(query)
+        results = self.db.multiinsert(query, (edition,))
 
     def insert_direct_match(self, edition):
-        query = """ SET @edition = "{}";
+        query = """ SET @edition = %s;
                     INSERT INTO rel_cards
                     SELECT `id_cr`, `mid` as `id_sdk` FROM (
                        SELECT REPLACE(name,'´', '\\\'') as name_replaced, `id` as `id_cr` from cards where edition_id = @edition
@@ -172,5 +172,5 @@ class Linker:
                        SELECT * from sdk_cards where `set` = @edition
                        ) as api
                     ON cr.name_replaced = api.name;
-        """.format(edition)
-        results = self.db.multiinsert(query)
+        """
+        results = self.db.multiinsert(query, (edition,))
