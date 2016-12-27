@@ -43,11 +43,13 @@ Add this repository to your favourite git client. Let's assume you put it into `
     flask\Scripts\pip install numpy
     flask\Scripts\pip install mysql-connector
     flask\Scripts\pip install mtgsdk
+    flask\Scripts\pip install oauth2client
+    flask\Scripts\pip install pyopenssl
     ```
  * You can also copy and paste this one-liner:
 
     ```
-    flask/bin/pip install flask flask-login flask-openid flask-mail flask-sqlalchemy sqlalchemy-migrate flask-whooshalchemy flask-wtf flask-babel guess_language flipflop coverage numpy mysql-connector mtgsdk
+    flask/bin/pip install flask flask-login flask-openid flask-mail flask-sqlalchemy sqlalchemy-migrate flask-whooshalchemy flask-wtf flask-babel guess_language flipflop coverage numpy mysql-connector mtgsdk oauth2client pyopenssl
     ```
 6. Install MySQL version >= 5.6.
  * For example from here: [http://dev.mysql.com/downloads/mysql/](http://dev.mysql.com/downloads/mysql/)

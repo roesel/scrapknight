@@ -21,10 +21,17 @@
       <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
+
+    <meta name="google-signin-client_id" content="442163098457-s25477neik7u550umg0fv2kkn5h9n4rm.apps.googleusercontent.com">
+
   </head>
   <body style="margin: 20px;background:#f9f9f9;">
     <div class="page-header">
       <img src="{{ url_for('static',filename='img/logo.png') }}" style="width:200px;" alt="ScrapKnight logo">
+      <div class="g-signin2 pull-right" data-onsuccess="onSignIn"></div>
+
+      <a href="#" onclick="signOut();">Sign out</a>
+
     </div>
     <div class="row">
         {% block content %}{% endblock %}
@@ -34,6 +41,9 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="{{ url_for('static',filename='js/bootstrap.min.js') }}"></script>
+
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+
     <script src="{{ url_for('static',filename='js/app.js') }}?v={{ range(1, 1000000000) | random }}"></script>
   </body>
 </html>

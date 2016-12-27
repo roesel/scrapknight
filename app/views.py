@@ -1,4 +1,4 @@
-from flask import render_template, flash, redirect
+from flask import render_template, flash, redirect, request, json
 from app import app
 from .forms import InputForm
 
@@ -6,6 +6,7 @@ from config_db import config
 from tools import *
 from libs.builder import Builder
 
+from oauth2client import client, crypt
 
 @app.route('/')
 @app.route('/index')
@@ -14,6 +15,33 @@ def index():
     return render_template('index.html',
                            title='Home',
                            user=user)
+
+
+@app.route('/tokensignin', methods=['POST'])
+def tokensignin():
+    # (Receive token by HTTPS POST)
+    token = request.form['idtoken']
+
+    try:
+        idinfo = client.verify_id_token(token, '442163098457-s25477neik7u550umg0fv2kkn5h9n4rm.apps.googleusercontent.com')
+
+        # Or, if multiple clients access the backend server:
+        #idinfo = client.verify_id_token(token, None)
+        #if idinfo['aud'] not in [CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]:
+        #    raise crypt.AppIdentityError("Unrecognized client.")
+
+        if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
+            raise crypt.AppIdentityError("Wrong issuer.")
+
+        # If auth request is from a G Suite domain:
+        #if idinfo['hd'] != GSUITE_DOMAIN_NAME:
+        #    raise crypt.AppIdentityError("Wrong hosted domain.")
+    except crypt.AppIdentityError:
+        raise crypt.AppIdentityError("Invalid token.")
+
+    userid = idinfo['sub']
+
+    return flask.jsonify(**idinfo)
 
 
 @app.route('/input', methods=['GET', 'POST'])
