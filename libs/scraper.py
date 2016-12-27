@@ -155,7 +155,7 @@ class Scraper:
 
                     # Foil vs non-foil X existing non-existing
                     # Ignoring played cards
-                    if not self.is_played(card):
+                    if (not self.is_played(card) and not self.is_nonenglish(card)):
                         if card_id in cards:
                             if not self.is_foil(card):
                                 foil_cost = cards[card_id]['cost_buy_foil']
@@ -310,6 +310,10 @@ class Scraper:
     def is_played(self, card):
         """ Returns if card dictionary item is or isn't played. """
         return (str.find(card['name'], '- lightly played') != -1)
+
+    def is_nonenglish(self, card):
+        """ Returns if card dictionary item is or isn't non-english. """
+        return (str.find(card['name'], '- non-english') != -1)
 
     def get_build_time(self):
         """ Returns current build time from DB. """
