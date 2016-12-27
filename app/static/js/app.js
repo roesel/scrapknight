@@ -150,6 +150,30 @@ function exportCardList() {
     $("#export_card_list").text(exportText);
 }
 
+$("#saveExportedCardList").click(function(e){
+    e.preventDefault();
+    saveExportedCardList();
+});
+
+function saveExportedCardList() {
+
+    exportText = $("#export_card_list").text();
+    
+    var googleUser = gapi.auth2.getAuthInstance().currentUser.get();
+    var id_token = googleUser.getAuthResponse().id_token;
+
+    $.ajax({
+        type: "POST",
+        url: 'https://localhost:5010/savecards',
+        data: {
+            'id_token': id_token,
+            'card_list': exportText,
+        },
+        // success: success,
+        // dataType: dataType
+    });
+}
+
 $("a#downloadExportedCardList").click(function(){
     var text = $("#export_card_list").text();
     this.href = "data:text/plain;charset=UTF-8,"  + encodeURIComponent(text);

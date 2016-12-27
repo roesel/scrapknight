@@ -96,16 +96,19 @@ CREATE VIEW card_details(
 
 CREATE TABLE `scrapknight`.`users` (
   `id` INT NOT NULL,
-  `googleid` VARCHAR(45) NULL,
+  `google_id` VARCHAR(45) NULL,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `googleid_UNIQUE` (`googleid` ASC)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='List of app users.';
 
 CREATE TABLE `scrapknight`.`users_cards` (
   `user_id` INT NOT NULL,
-  `card_id` INT NOT NULL,
+  `card_id` VARCHAR(45) NOT NULL,
   `count` INT NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='List of cards belonging to users';
+
+ALTER TABLE `scrapknight`.`users_cards`
+ADD UNIQUE INDEX `card_user_unique` (`user_id` ASC, `card_id` ASC);
 
 CREATE TABLE `scrapknight`.`users_decks` (
   `id` INT NOT NULL,
@@ -115,5 +118,5 @@ CREATE TABLE `scrapknight`.`users_decks` (
 
 CREATE TABLE `scrapknight`.`users_decks_cards` (
   `deck_id` INT NOT NULL,
-  `card_id` INT NOT NULL
+  `card_id` VARCHAR(45) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT = 'Cards belonging to decks.';

@@ -3,25 +3,12 @@ from app import app
 from .forms import InputForm
 
 from config_db import config
-from tools import *
+from tools import process, users_cards_save
 from libs.builder import Builder
 
 from oauth2client import client, crypt
 
-@app.route('/')
-@app.route('/index')
-def index():
-    user = {'nickname': 'Miguel'}  # fake user
-    return render_template('index.html',
-                           title='Home',
-                           user=user)
-
-
-@app.route('/tokensignin', methods=['POST'])
-def tokensignin():
-    # (Receive token by HTTPS POST)
-    token = request.form['idtoken']
-
+def valitade_google_token(token):
     try:
         idinfo = client.verify_id_token(token, '442163098457-s25477neik7u550umg0fv2kkn5h9n4rm.apps.googleusercontent.com')
 
@@ -39,10 +26,38 @@ def tokensignin():
     except crypt.AppIdentityError:
         raise crypt.AppIdentityError("Invalid token.")
 
-    userid = idinfo['sub']
+    return idinfo
+
+@app.route('/')
+@app.route('/index')
+def index():
+    user = {'nickname': 'Miguel'}  # fake user
+    return render_template('index.html',
+                           title='Home',
+                           user=user)
+
+
+@app.route('/tokensignin', methods=['POST'])
+def tokensignin():
+    # (Receive token by HTTPS POST)
+    token = request.form['id_token']
+    idinfo = valitade_google_token(token)
 
     return flask.jsonify(**idinfo)
 
+@app.route('/savecards', methods=['POST'])
+def savecards():
+    # (Receive token by HTTPS POST)
+    token = request.form['id_token']
+    idinfo = valitade_google_token(token)
+    userid = idinfo['sub']
+
+    card_list = request.form['card_list']
+    bu = Builder(config)
+
+    print(card_list)
+
+    users_cards_save(userid, card_list)
 
 @app.route('/input', methods=['GET', 'POST'])
 def input():

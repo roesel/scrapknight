@@ -42,7 +42,8 @@
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="{{ url_for('static',filename='js/bootstrap.min.js') }}"></script>
 
-    <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <!-- <script src="https://apis.google.com/js/platform.js" async defer></script> -->
+    <script src="https://apis.google.com/js/platform.js"></script>
 
     <script src="{{ url_for('static',filename='js/app.js') }}?v={{ range(1, 1000000000) | random }}"></script>
   </body>
