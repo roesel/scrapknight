@@ -3,7 +3,8 @@ from app import app
 from .forms import InputForm
 
 from config_db import config
-from tools import process, users_cards_save
+
+from tools import process, users_cards_save, print_user_library
 from libs.builder import Builder
 
 from oauth2client import client, crypt
@@ -58,6 +59,32 @@ def savecards():
     print(card_list)
 
     users_cards_save(userid, card_list)
+
+@app.route('/library', methods=['POST'])
+def library():
+    # (Receive token by HTTPS POST)
+    token = request.form['id_token']
+    idinfo = valitade_google_token(token)
+    userid = idinfo['sub']
+
+    print("AHOJ")
+
+    # form = InputForm()
+    bu = Builder(config)
+
+    headers, results, footer, success, log = print_user_library(userid)
+
+    return render_template(
+        'library.html',
+        title='Output',
+        form="",
+        results_header=headers,
+        results=results,
+        results_footer=footer,
+        results_success=success,
+        fill="",
+        log=log,
+        db_info=bu.get_db_info())
 
 @app.route('/input', methods=['GET', 'POST'])
 def input():

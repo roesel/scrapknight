@@ -21,7 +21,21 @@ def process(user_input):
 
     Card.db = Database(config)
 
-    mydeck = Deck(user_input)
+    mydeck = Deck(user_input=user_input)
+
+    return mydeck.print_price_table()
+
+def print_user_library(user_id):
+
+    log = []
+
+    Card.db = Database(config)
+    User.db = Database(config)
+
+    user = User(google_id=user_id)
+
+    mydeck = user.get_library()
+    print(mydeck)
 
     return mydeck.print_price_table()
 
@@ -32,7 +46,7 @@ def users_cards_save(user_id, user_input):
     Card.db = Database(config)
     User.db = Database(config)
 
-    mydeck = Deck(user_input)
+    mydeck = Deck(user_input=user_input)
 
     user = User(google_id=user_id)
 
@@ -130,15 +144,27 @@ class User(object):
         for card in deck.cards:
             if card.found:
                 query = """
-                INSERT INTO `users_cards`
-                (`user_id`, `card_id`, `count`)
-                VALUES
-                (%s, %s, 1)
-                ON DUPLICATE KEY UPDATE count=count+1
-                """
+                    INSERT INTO `users_cards`
+                    (`user_id`, `card_id`, `count`)
+                    VALUES
+                    (%s, %s, 1)
+                    ON DUPLICATE KEY UPDATE count=count+1
+                    """
 
                 self.db.insert(
                     query, (self.user_id, card.id,))
+
+    def get_library(self):
+
+        query = """
+            SELECT `card_id`, `count`
+            FROM `users_cards`
+            WHERE `user_id` = %s
+            """
+
+        library = self.db.query(query, (self.user_id,))
+
+        return Deck(id_list=library)
 
 class Deck(object):
 
@@ -154,121 +180,150 @@ class Deck(object):
     def found_all_costs(self):
         return all([card.cost_found for card in self.cards])
 
-    def __init__(self, user_input):
+    def __init__(self, user_input=None, id_list=None):
         """
         """
         self.cards = []
 
-        for i, row in enumerate(user_input.splitlines()):
+        if user_input is not None:
+            for i, row in enumerate(user_input.splitlines()):
 
-            # Delete newline from string
-            row = row.replace(r"\n", "")
+                # Delete newline from string
+                row = row.replace(r"\n", "")
 
-            # Get rid of multiple adjoining whitespace.
-            row = re.sub(r"\s+", " ", row)
+                # Get rid of multiple adjoining whitespace.
+                row = re.sub(r"\s+", " ", row)
 
-            # Strip leading and trainling whitespace.
-            row = row.strip()
+                # Strip leading and trainling whitespace.
+                row = row.strip()
 
-            # Check that the row is not a comment
-            if len(row) > 0 and not row[0] == '#':
+                # Check that the row is not a comment
+                if len(row) > 0 and not row[0] == '#':
 
-                # If the first character is not a digit, lets assume the
-                # number of cards is just ommited and should be equal to 1.
-                if not row[0].isdigit():
-                    row = '1 x ' + row
+                    # If the first character is not a digit, lets assume the
+                    # number of cards is just ommited and should be equal to 1.
+                    if not row[0].isdigit():
+                        row = '1 x ' + row
 
-                # Regex explained
-                # (1) ... one or more digits
-                # maybe a whitespace
-                # maybe "x"
-                # whitespace
-                # (2) ... anything but "[", "]" at least once plus anything but "[", "]", or whitespace exactly once
-                # maybe a whitespace
-                # (3) ... maybe "[" plus maybe anything plus maybe "]"
-                #
-                # Therefore a string
-                # 4 x Inspiring Vantage [KLD]
-                # will be split into
-                #   count = '4'
-                #   name = 'Inspiring Vantage'
-                #   edition = '[KLD]'
-                #
-                match = re.match(
-                    r"(\d+)\s?x?\s([^\[\]]+[^\[\]\s])\s?(\[?.*\]?)", row)
+                    # Regex explained
+                    # (1) ... one or more digits
+                    # maybe a whitespace
+                    # maybe "x"
+                    # whitespace
+                    # (2) ... anything but "[", "]" at least once plus anything but "[", "]", or whitespace exactly once
+                    # maybe a whitespace
+                    # (3) ... maybe "[" plus maybe anything plus maybe "]"
+                    #
+                    # Therefore a string
+                    # 4 x Inspiring Vantage [KLD]
+                    # will be split into
+                    #   count = '4'
+                    #   name = 'Inspiring Vantage'
+                    #   edition = '[KLD]'
+                    #
+                    match = re.match(
+                        r"(\d+)\s?x?\s([^\[\]]+[^\[\]\s])\s?(\[?.*\]?)", row)
 
-                if match:
-                    count = int(match.group(1))
-                    name = match.group(2)
-                    edition = match.group(3).replace("[", "").replace("]", "")
-
-                else:
-                    log.append("Error while processing input row {}: {}".format(i, row))
-                    continue
-                    raise ValueError(
-                        "Error while processing input row {}: {}".format(i, row))
-
-                search_hash = Card.hash_name(name)
-
-                # There may a problem with a wrong appostrophe character in the
-                # input. Loop over possible variants, break on first successfull
-                # search.
-                name_variants = [name, name.replace("'", "´")]
-
-                card = None
-
-                for name_var in name_variants:
-
-                    # Search for the card.
-                    result = Card.search(name_var, edition)
-
-                    if result:
-                        # If the result is a single row, there is no problem,
-                        # instantiate a Card.
-                        if len(result) == 1:
-                            card = Card(**result[0], count=count)
-
-                        # If there was more matches (should be only possible if
-                        # a card with the same name exist in multiple editios),
-                        # instantiate a Multicard. That is basically a list of
-                        # Card instances with some special methods.
-                        else:
-                            card = Multicard(
-                                [Card(**c, count=0, search_hash=search_hash) for c in result])
-                            card.multicard_info = "multiple_cards"
-
-                        # Either way, the card was found, so we can break the
-                        # search loop.
-                        card.found = True
-                        break
-
-                # If the card was not found yet, search for similar names using
-                # fulltext search.
-                if not card:
-
-                    # Prevent db query errors when card name contained "'".
-                    # This is somewhat dirty solution...
-                    # name = name.replace("'", "´")
-
-                    similar = Card.search_similar(name, limit=None)
-
-                    if similar:
-                        card = Multicard(
-                            [Card(**c, count=0, search_hash=search_hash) for c in similar])
-                        card.found = True
-                        card.name = name
-                        card.multicard_info = "similar_search"
+                    if match:
+                        count = int(match.group(1))
+                        name = match.group(2)
+                        edition = match.group(3).replace("[", "").replace("]", "")
 
                     else:
-                        # If the result is empty, we instantiate an empty Card.
-                        card = Card()
-                        card.found = False
+                        log.append("Error while processing input row {}: {}".format(i, row))
+                        continue
+                        raise ValueError(
+                            "Error while processing input row {}: {}".format(i, row))
+
+                    search_hash = Card.hash_name(name)
+
+                    # There may a problem with a wrong appostrophe character in the
+                    # input. Loop over possible variants, break on first successfull
+                    # search.
+                    name_variants = [name, name.replace("'", "´")]
+
+                    card = None
+
+                    for name_var in name_variants:
+
+                        # Search for the card.
+                        result = Card.search(name_var, edition)
+
+                        if result:
+                            # If the result is a single row, there is no problem,
+                            # instantiate a Card.
+                            if len(result) == 1:
+                                card = Card(**result[0], count=count)
+
+                            # If there was more matches (should be only possible if
+                            # a card with the same name exist in multiple editios),
+                            # instantiate a Multicard. That is basically a list of
+                            # Card instances with some special methods.
+                            else:
+                                card = Multicard(
+                                    [Card(**c, count=0, search_hash=search_hash) for c in result])
+                                card.multicard_info = "multiple_cards"
+
+                            # Either way, the card was found, so we can break the
+                            # search loop.
+                            card.found = True
+                            break
+
+                    # If the card was not found yet, search for similar names using
+                    # fulltext search.
+                    if not card:
+
+                        # Prevent db query errors when card name contained "'".
+                        # This is somewhat dirty solution...
+                        # name = name.replace("'", "´")
+
+                        similar = Card.search_similar(name, limit=None)
+
+                        if similar:
+                            card = Multicard(
+                                [Card(**c, count=0, search_hash=search_hash) for c in similar])
+                            card.found = True
+                            card.name = name
+                            card.multicard_info = "similar_search"
+
+                        else:
+                            # If the result is empty, we instantiate an empty Card.
+                            card = Card()
+                            card.found = False
+
+                    # Store some requested properties.
+                    # card.count = count
+                    card.name_req = name
+                    card.edition_req = edition
+                    card.search_hash = search_hash
+
+                    # Append the card to the deck list.
+                    self.cards.append(card)
+
+        elif card_list is not None:
+            for i, c in enumerate(card_list):
+
+                card_id = c['card_id']
+                count = int(c['count'])
+
+                # Search for the card.
+                result = Card.search_by_id(card_id)
+
+                if result:
+                    # If the result is a single row, there is no problem,
+                    # instantiate a Card.
+                    if len(result) == 1:
+                        card = Card(**result[0], count=count)
+
+                    else:
+                        raise
+
+                    card.found = True
 
                 # Store some requested properties.
-                # card.count = count
-                card.name_req = name
-                card.edition_req = edition
-                card.search_hash = search_hash
+                card.name_req = card.name
+                card.edition_req = card.edition
+                card.search_hash = card.md5
 
                 # Append the card to the deck list.
                 self.cards.append(card)
@@ -282,9 +337,16 @@ class Deck(object):
         footer = []
 
         header_texts = ["Card title", "Edition", "Count", "PPU [CZK]", "Price [CZK]"]
+        header_data_field = ["title", "edition", "count", "price", "multiprice"]
+        header_data_sortable = [True, True, True, True, True]
         header_widths = [6, 2, 2, 4, 4]
-        header = [{'text': text, 'width': width}
-                  for text, width in zip(header_texts, header_widths)]
+        header = [{
+            'text': text,
+            'width': width,
+            'data_field': data_field,
+            'data_sortable': data_sortable}
+                  for text, width, data_field, data_sortable
+                  in zip(header_texts, header_widths, header_data_field, header_data_sortable)]
 
         for card in self.cards:
 
@@ -391,6 +453,24 @@ class Card(object):
     @staticmethod
     def hash_name(name):
         return hashlib.md5(name.lower().encode('utf-8')).hexdigest()
+
+    @classmethod
+    def search_by_id(cls, card_id):
+        """
+        """
+        query = """
+            SELECT `id`, `name`, `edition_id`, `edition_name`, `manacost`, `md5`, `buy`
+            FROM card_details
+            WHERE `id` = %s
+            """
+
+        result = cls.db.query(query, (card_id,))
+
+        if result:
+            keys = ['id', 'name', 'edition_id', 'edition_name', 'manacost', 'md5', 'buy']
+            return [dict(zip(keys, values)) for values in result]
+        else:
+            return False
 
     @classmethod
     def search(cls, name_req, edition_req=None):

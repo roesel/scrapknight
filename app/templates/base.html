@@ -14,6 +14,9 @@
 
     <!-- Bootstrap -->
     <link href="{{ url_for('static',filename='css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static',filename='css/font-awesome.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static',filename='css/bootstrap-social.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static',filename='css/app.css') }}" rel="stylesheet">
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -23,16 +26,77 @@
     <![endif]-->
 
     <meta name="google-signin-client_id" content="442163098457-s25477neik7u550umg0fv2kkn5h9n4rm.apps.googleusercontent.com">
+    <meta name="google-signin-scope" content="profile email">
 
   </head>
-  <body style="margin: 20px;background:#f9f9f9;">
+  <body style="margin: 20px; background:#f9f9f9;">
     <div class="page-header">
-      <img src="{{ url_for('static',filename='img/logo.png') }}" style="width:200px;" alt="ScrapKnight logo">
-      <div class="g-signin2 pull-right" data-onsuccess="onSignIn"></div>
+      <nav class="navbar navbar-default">
+        <div class="container-fluid">
+          <!-- Brand and toggle get grouped for better mobile display -->
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <!-- <a class="navbar-brand" href="#">Brand</a> -->
+            <a class="navbar-brand" href="#" style="padding: 5px 15px">
+              <img src="{{ url_for('static',filename='img/logo.png') }}" style="width:200px;" alt="ScrapKnight logo">
+            </a>
+          </div>
 
-      <a href="#" onclick="signOut();">Sign out</a>
+          <!-- Collect the nav links, forms, and other content for toggling -->
+          <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+              <li class="active"><a href="input">Input <span class="sr-only">(current)</span></a></li>
+              <li><a href="library">Library</a></li>
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
+                <ul class="dropdown-menu">
+                  <li><a href="#">Action</a></li>
+                  <li><a href="#">Another action</a></li>
+                  <li><a href="#">Something else here</a></li>
+                  <li role="separator" class="divider"></li>
+                  <li><a href="#">Separated link</a></li>
+                  <li role="separator" class="divider"></li>
+                  <li><a href="#">One more separated link</a></li>
+                </ul>
+              </li>
+            </ul>
+            <form class="navbar-form navbar-left">
+              <div class="form-group">
+                <input type="text" class="form-control" placeholder="Search">
+              </div>
+              <button type="submit" class="btn btn-default">Submit</button>
+            </form>
+            <ul class="nav navbar-nav navbar-right">
+              <li><a href="#">Link</a></li>
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
+                <ul class="dropdown-menu">
+                  <li><a href="#">Action</a></li>
+                  <li><a href="#">Another action</a></li>
+                  <li><a href="#">Something else here</a></li>
+                  <li role="separator" class="divider"></li>
+                  <li><a href="#">Separated link</a></li>
+                </ul>
+              </li>
+              <!-- <li>
+                <button class="btn btn-block btn-social btn-google navbar-btn" id="google_signin_button">
+                  <span class="fa fa-google"></span><span id="google_signin_button_text">Sign in with Google</span>
+                </button>
+              </li> -->
+              <li style="padding: 7px 10px"><span class="g-signin2" data-onsuccess="onSignIn"></span></li>
+              <li><a href="#" onclick="signOut();">Sign out</a></li>
+            </ul>
+          </div><!-- /.navbar-collapse -->
+        </div><!-- /.container-fluid -->
+      </nav>
 
     </div>
+
     <div class="row">
         {% block content %}{% endblock %}
     </div>
@@ -42,8 +106,15 @@
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="{{ url_for('static',filename='js/bootstrap.min.js') }}"></script>
 
+
+
     <!-- <script src="https://apis.google.com/js/platform.js" async defer></script> -->
     <script src="https://apis.google.com/js/platform.js"></script>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.0/bootstrap-table.min.css">
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.0/bootstrap-table.min.js"></script>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.0/locale/bootstrap-table-zh-CN.min.js"></script>
 
     <script src="{{ url_for('static',filename='js/app.js') }}?v={{ range(1, 1000000000) | random }}"></script>
   </body>
