@@ -88,8 +88,18 @@
                   <span class="fa fa-google"></span><span id="google_signin_button_text">Sign in with Google</span>
                 </button>
               </li> -->
-              <li style="padding: 7px 10px"><span class="g-signin2" data-onsuccess="onSignIn"></span></li>
-              <li><a href="#" onclick="signOut();">Sign out</a></li>
+              {%- if current_user.is_authenticated -%}
+              <li><img src="{{current_user.avatar}}?sz=40" width="40" height="40" alt="{{current_user.name}}" style="margin: 5px 0px;"></li>
+              <li><a href="#">{{current_user.name}}</a></li>
+              <li style="padding: 7px 0px"><span><a href="{{url_for('logout')}}" class="btn btn-danger btn-block mavbar-btn" role="button">Logout</a></span></li>
+              {%- else -%}
+              <li><span>
+                <a href="{{url_for('login')}}" class="btn btn-block btn-social btn-google navbar-btn" role="button">
+                  <span class="fa fa-google"></span><span>Sign in with Google</span>
+              </a></span></li>
+              {%- endif -%}
+              <!-- <li style="padding: 7px 10px"><span class="g-signin2" data-onsuccess="onSignIn"></span></li>
+              <li><a href="#" onclick="signOut();">Sign out</a></li> -->
             </ul>
           </div><!-- /.navbar-collapse -->
         </div><!-- /.container-fluid -->
