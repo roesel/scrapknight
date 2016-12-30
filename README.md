@@ -59,27 +59,26 @@ Add this repository to your favourite git client. Let's assume you put it into `
 ### Moving configuration files
 If you have done everything correctly (and a little more), you have everything you need to run the app, just in the wrong place. Let's fix that.
 
-1. Copy all config files from the `install/` folder into the root of the repository.
-2. Change the copies according to your liking. You don't have to, but you might want to.
- * Changing `SECRET_KEY` in `config.py` is probably a good idea.
+1. Copy all `install/config.py` file into the `app` folder.
+2. Edit the configuration according to your liking. You don't have to, but you might want to.
+ * Changing `SECRET_KEY` is probably a good idea.
  * Changing the database login information might be required for the site to work.
- * Changing the IP address/port in `run.py` might be necessary.
-3. Import the database structure form `init_db.sql`
-4. If you're on Linux, you might need to properly chmod the `run.py` and `fill_db.py` file with the following
+ * Changing the IP address/port in `RunConfig` might be necessary.
+3. If you're on Linux, you might need to properly chmod the `run.py` and `build.py` file with the following
  * `chmod a+x run.py`
- * `chmod a+x fill_db.py`
+ * `chmod a+x build.py`
 
 
 ### Filling the database
 To gather the data and fill the database, run:
 
     cd C:\Repa\scrapknight
-    flask\Scripts\python fill_db.py
+    flask\Scripts\python build.py
 
 or on Linux:
 
     cd ~/repa/scrapknight
-    ./fill_db.py
+    ./build.py
 
 
 ### Running the server
