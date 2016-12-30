@@ -59,7 +59,7 @@ Add this repository to your favourite git client. Let's assume you put it into `
 ### Moving configuration files
 If you have done everything correctly (and a little more), you have everything you need to run the app, just in the wrong place. Let's fix that.
 
-1. Copy all `install/config.py` file into the `app` folder.
+1. Copy the `install/config.py` file into the `app` folder.
 2. Edit the configuration according to your liking. You don't have to, but you might want to.
  * Changing `SECRET_KEY` is probably a good idea.
  * Changing the database login information might be required for the site to work.
