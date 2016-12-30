@@ -98,7 +98,7 @@ CREATE TABLE `scrapknight`.`users` (
   `id` INT NOT NULL,
   `google_id` VARCHAR(45) NULL,
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `googleid_UNIQUE` (`googleid` ASC)
+  UNIQUE INDEX `google_id_UNIQUE` (`google_id` ASC)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='List of app users.';
 
 CREATE TABLE `scrapknight`.`users_cards` (

@@ -1,8 +1,6 @@
 # Custom
 flask/
-/config.py
-/config_db.py
-/run.py
+app/config.py
 
 Thumbs.db
 

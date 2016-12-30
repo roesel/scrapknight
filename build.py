@@ -5,7 +5,7 @@ import sys
 import getopt
 
 from libs.builder import Builder
-from config_db import config
+from app.config import DatabaseConfig
 
 import logging
 import pprint
@@ -67,7 +67,9 @@ def build():
 
     log = logging.getLogger()
 
-    bu = Builder(config)
+    DatabaseConfig['raise_on_warnings'] = False
+
+    bu = Builder(DatabaseConfig)
 
     log.info("Loading SQL files:")
     log.info("  - Deleting database")

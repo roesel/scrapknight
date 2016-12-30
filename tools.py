@@ -11,7 +11,7 @@ import mysql.connector
 from mysql.connector import Error, errorcode
 
 from libs.database import Database
-from config_db import config
+from app.config import DatabaseConfig
 
 log = []
 
@@ -19,7 +19,7 @@ def process(user_input):
 
     log = []
 
-    Card.db = Database(config)
+    Card.db = Database(DatabaseConfig)
 
     mydeck = Deck(user_input=user_input)
 
@@ -29,8 +29,8 @@ def print_user_library(user_id):
 
     log = []
 
-    Card.db = Database(config)
-    User.db = Database(config)
+    Card.db = Database(DatabaseConfig)
+    User.db = Database(DatabaseConfig)
 
     user = User(google_id=user_id)
 
@@ -43,8 +43,8 @@ def users_cards_save(user_id, user_input):
 
     log = []
 
-    Card.db = Database(config)
-    User.db = Database(config)
+    Card.db = Database(DatabaseConfig)
+    User.db = Database(DatabaseConfig)
 
     mydeck = Deck(user_input=user_input)
 

@@ -35,3 +35,11 @@ DatabaseConfig = {
     'database': 'scrapknight',
     'raise_on_warnings': True,
 }
+
+RunConfig = {
+    'debug': True,
+    'host': '127.0.0.1',
+    'port': 5010,
+    'ssl_context': ('app/ssl.crt', 'app/ssl.key'),
+    # 'ssl_context': 'adhoc',
+}
