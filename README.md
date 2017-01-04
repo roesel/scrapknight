@@ -68,6 +68,14 @@ If you have done everything correctly (and a little more), you have everything y
  * `chmod a+x run.py`
  * `chmod a+x build.py`
 
+### Temporary setup
+Start python console in repository root and run
+
+    from app import db
+    db.create_all()
+    from werkzeug.serving import make_ssl_devcert
+    make_ssl_devcert('app/ssl', host='localhost')
+
 
 ### Filling the database
 To gather the data and fill the database, run:
