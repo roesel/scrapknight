@@ -94,29 +94,33 @@ CREATE VIEW card_details(
     LEFT JOIN `editions` ON `cards`.`edition_id` = `editions`.`id`
 );
 
-CREATE TABLE `scrapknight`.`users` (
-  `id` INT NOT NULL,
-  `google_id` VARCHAR(45) NULL,
+CREATE TABLE `users` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `email` varchar(100) NOT NULL,
+  `name` varchar(100) DEFAULT NULL,
+  `avatar` varchar(200) DEFAULT NULL,
+  `tokens` text,
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `google_id_UNIQUE` (`google_id` ASC)
+  UNIQUE KEY `email_UNIQUE` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='List of app users.';
 
-CREATE TABLE `scrapknight`.`users_cards` (
+CREATE TABLE `users_cards` (
   `user_id` INT NOT NULL,
   `card_id` VARCHAR(45) NOT NULL,
   `count` INT NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='List of cards belonging to users';
 
-ALTER TABLE `scrapknight`.`users_cards`
+ALTER TABLE `users_cards`
 ADD UNIQUE INDEX `card_user_unique` (`user_id` ASC, `card_id` ASC);
 
-CREATE TABLE `scrapknight`.`users_decks` (
+CREATE TABLE `users_decks` (
   `id` INT NOT NULL,
   `user_id` INT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT = 'Decks belonging to users.';
 
-CREATE TABLE `scrapknight`.`users_decks_cards` (
+CREATE TABLE `users_decks_cards` (
   `deck_id` INT NOT NULL,
   `card_id` VARCHAR(45) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT = 'Cards belonging to decks.';
