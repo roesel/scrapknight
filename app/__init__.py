@@ -172,7 +172,7 @@ def savecards():
 
     users_cards_save(current_user, card_list)
 
-    return str(request.form)
+    return "success"
 
 @app.route('/library')
 def library():

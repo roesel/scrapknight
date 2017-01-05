@@ -165,8 +165,15 @@ function saveExportedCardList() {
         data: {
             'card_list': exportText,
         },
-        // success: success,
-        // dataType: dataType
+        success: function(result) {
+            if (result == "success"){
+                $("#saveExportedCardList").html('Saved to Library <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>')
+                $("#saveExportedCardList").attr('disabled', true)
+                // $("#saveExportedCardList").addClass('btn-success')
+            } else {
+                alert("Cards have not been saved, something is wrong.")
+            }
+        },
     });
 }
 
