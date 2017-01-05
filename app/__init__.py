@@ -4,8 +4,8 @@ import datetime
 
 from flask import Flask, url_for, redirect, \
     render_template, session, request
-from flask.ext.sqlalchemy import SQLAlchemy
-from flask.ext.login import LoginManager, login_required, login_user, \
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, login_required, login_user, \
     logout_user, current_user, UserMixin
 from requests_oauthlib import OAuth2Session
 from requests.exceptions import HTTPError
