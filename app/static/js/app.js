@@ -158,15 +158,11 @@ $("#saveExportedCardList").click(function(e){
 function saveExportedCardList() {
 
     exportText = $("#export_card_list").text();
-    
-    var googleUser = gapi.auth2.getAuthInstance().currentUser.get();
-    var id_token = googleUser.getAuthResponse().id_token;
 
     $.ajax({
         type: "POST",
         url: 'https://localhost:5010/savecards',
         data: {
-            'id_token': id_token,
             'card_list': exportText,
         },
         // success: success,

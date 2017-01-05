@@ -25,30 +25,23 @@ def process(user_input):
 
     return mydeck.print_price_table()
 
-def print_user_library(user_id):
+def print_user_library(user):
 
     log = []
 
     Card.db = Database(DatabaseConfig)
-    User.db = Database(DatabaseConfig)
-
-    user = User(google_id=user_id)
 
     mydeck = user.get_library()
-    print(mydeck)
 
     return mydeck.print_price_table()
 
-def users_cards_save(user_id, user_input):
+def users_cards_save(user, user_input):
 
     log = []
 
     Card.db = Database(DatabaseConfig)
-    User.db = Database(DatabaseConfig)
 
     mydeck = Deck(user_input=user_input)
-
-    user = User(google_id=user_id)
 
     user.save_cards(mydeck)
 
@@ -92,80 +85,6 @@ def levenshtein(source, target):
 
     return previous_row[-1]
 
-
-class User(object):
-    def __init__(self, user_id=None, google_id=None):
-
-        self.user_id = self.identify(user_id, google_id)
-
-    def identify(self, user_id, google_id):
-
-        if user_id is not None:
-            return user_id
-
-        elif google_id is not None:
-            query = """
-                SELECT `id` FROM `users`
-                WHERE `google_id` = %s
-                """
-
-            result = self.db.query(query, (google_id,))
-
-            if result:
-                return result[0][0]
-            else:
-                return self.register(google_id)
-        else:
-            raise RuntimeError("At least one of user_id and google_id must be specified")
-
-    def register(self, google_id):
-
-        newid = random.randint(1, 2147483647)
-
-        query = """
-            INSERT INTO `users`
-            (`id`, `google_id`)
-            VALUES
-            (%s, %s)
-            """
-        try:
-            self.db.insert(query, (newid, google_id,))
-        except Error as err:
-            if err.errno == errorcode.ER_DUP_ENTRY:
-                log.debug("User id: {} ,google_id: {} is already in the database".format(newid, google_id))
-                # This needs to be handled properly
-            else:
-                raise
-
-        return newid
-
-    def save_cards(self, deck):
-
-        for card in deck.cards:
-            if card.found:
-                query = """
-                    INSERT INTO `users_cards`
-                    (`user_id`, `card_id`, `count`)
-                    VALUES
-                    (%s, %s, 1)
-                    ON DUPLICATE KEY UPDATE count=count+1
-                    """
-
-                self.db.insert(
-                    query, (self.user_id, card.id,))
-
-    def get_library(self):
-
-        query = """
-            SELECT `card_id`, `count`
-            FROM `users_cards`
-            WHERE `user_id` = %s
-            """
-
-        library = self.db.query(query, (self.user_id,))
-
-        return Deck(id_list=library)
-
 class Deck(object):
 
     @property
@@ -180,7 +99,7 @@ class Deck(object):
     def found_all_costs(self):
         return all([card.cost_found for card in self.cards])
 
-    def __init__(self, user_input=None, id_list=None):
+    def __init__(self, user_input=None, card_list=None):
         """
         """
         self.cards = []
@@ -303,7 +222,7 @@ class Deck(object):
         elif card_list is not None:
             for i, c in enumerate(card_list):
 
-                card_id = c['card_id']
+                card_id = c['id']
                 count = int(c['count'])
 
                 # Search for the card.
@@ -320,9 +239,12 @@ class Deck(object):
 
                     card.found = True
 
+                else:
+                    raise
+
                 # Store some requested properties.
                 card.name_req = card.name
-                card.edition_req = card.edition
+                card.edition_req = card.edition_name
                 card.search_hash = card.md5
 
                 # Append the card to the deck list.

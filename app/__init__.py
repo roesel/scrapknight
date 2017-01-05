@@ -29,8 +29,10 @@ login_manager = LoginManager(app)
 login_manager.login_view = "login"
 login_manager.session_protection = "strong"
 
-""" DB Models """
+from libs.database import Database
+from tools import Deck
 
+""" DB Models """
 
 class User(db.Model, UserMixin):
     __tablename__ = "users"
@@ -41,6 +43,36 @@ class User(db.Model, UserMixin):
     tokens = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow())
 
+    def save_cards(self, deck):
+
+        for card in deck.cards:
+            if card.found:
+                query = """
+                    INSERT INTO `users_cards`
+                    (`user_id`, `card_id`, `count`)
+                    VALUES
+                    (%s, %s, 1)
+                    ON DUPLICATE KEY UPDATE count=count+1
+                    """
+
+                self.db.insert(
+                    query, (self.id, card.id,))
+
+    def get_library(self):
+
+        query = """
+            SELECT `card_id`, `count`
+            FROM `users_cards`
+            WHERE `user_id` = %s
+            """
+
+        cards = self.db.query(query, (self.id,))
+        library = [{'id': c[0], 'count': c[1]} for c in cards]
+
+        return Deck(card_list=library)
+
+
+User.db = Database(DatabaseConfig)
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -134,31 +166,21 @@ def logout():
 
 @app.route('/savecards', methods=['POST'])
 def savecards():
-    # (Receive token by HTTPS POST)
-    token = request.form['id_token']
-    idinfo = valitade_google_token(token)
-    userid = idinfo['sub']
+    print("ROUTING /savecards")
 
     card_list = request.form['card_list']
-    bu = Builder(DatabaseConfig)
 
-    print(card_list)
+    users_cards_save(current_user, card_list)
 
-    users_cards_save(userid, card_list)
+    return str(request.form)
 
-@app.route('/library', methods=['POST'])
+@app.route('/library')
 def library():
-    # (Receive token by HTTPS POST)
-    token = request.form['id_token']
-    idinfo = valitade_google_token(token)
-    userid = idinfo['sub']
-
-    print("AHOJ")
 
     # form = InputForm()
     bu = Builder(DatabaseConfig)
 
-    headers, results, footer, success, log = print_user_library(userid)
+    headers, results, footer, success, log = print_user_library(current_user)
 
     return render_template(
         'library.html',
