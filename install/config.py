@@ -9,25 +9,6 @@ import os
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
-class FlaskConfig:
-    """Flask config"""
-
-    APP_NAME = "ScrapKnight"
-    WTF_CSRF_ENABLED = True
-    SECRET_KEY = os.environ.get("SECRET_KEY") or "kdovyhraldraftsiuznepamatujuasimiro"
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, "test.db")
-
-class GoogleAuthConfig:
-    """Google Project Credentials"""
-    CLIENT_ID = ('688061596571-3c13n0uho6qe34hjqj2apincmqk86ddj'
-                 '.apps.googleusercontent.com')
-    CLIENT_SECRET = 'JXf7Ic_jfCam1S7lBJalDyPZ'
-    REDIRECT_URI = 'https://localhost:5010/gCallback'
-    AUTH_URI = 'https://accounts.google.com/o/oauth2/auth'
-    TOKEN_URI = 'https://accounts.google.com/o/oauth2/token'
-    USER_INFO = 'https://www.googleapis.com/userinfo/v2/me'
-    SCOPE = ['profile', 'email']
-
 DatabaseConfig = {
     'user': 'root',
     'password': '',
@@ -43,3 +24,23 @@ RunConfig = {
     'ssl_context': ('app/ssl.crt', 'app/ssl.key'),
     # 'ssl_context': 'adhoc',
 }
+
+class FlaskConfig:
+    """Flask config"""
+
+    APP_NAME = "ScrapKnight"
+    WTF_CSRF_ENABLED = True
+    SECRET_KEY = os.environ.get("SECRET_KEY") or "kdovyhraldraftsiuznepamatujuasimiro"
+    SQLALCHEMY_DATABASE_URI = 'mysql+mysqlconnector://{user}:{password}@{host}/{database}'.format(**DatabaseConfig)
+    #SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, "test.db")
+
+class GoogleAuthConfig:
+    """Google Project Credentials"""
+    CLIENT_ID = ('688061596571-3c13n0uho6qe34hjqj2apincmqk86ddj'
+                 '.apps.googleusercontent.com')
+    CLIENT_SECRET = 'JXf7Ic_jfCam1S7lBJalDyPZ'
+    REDIRECT_URI = 'https://localhost:5010/gCallback'
+    AUTH_URI = 'https://accounts.google.com/o/oauth2/auth'
+    TOKEN_URI = 'https://accounts.google.com/o/oauth2/token'
+    USER_INFO = 'https://www.googleapis.com/userinfo/v2/me'
+    SCOPE = ['profile', 'email']
