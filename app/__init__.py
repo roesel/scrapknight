@@ -114,6 +114,8 @@ def login():
     auth_url, state = google.authorization_url(
         GoogleAuthConfig.AUTH_URI, access_type='offline')
     session['oauth_state'] = state
+
+    # Since we login only with google, we can skip the "login" page.
     # return render_template('login.html', auth_url=auth_url)
     return redirect(auth_url)
 
