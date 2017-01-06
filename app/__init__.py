@@ -96,7 +96,6 @@ def get_google_auth(state=None, token=None):
 
 
 @app.route('/')
-@login_required
 def index():
     # return render_template('appindex.html')
     form = InputForm()
@@ -165,6 +164,7 @@ def logout():
 
 
 @app.route('/savecards', methods=['POST'])
+@login_required
 def savecards():
     print("ROUTING /savecards")
 
@@ -175,9 +175,9 @@ def savecards():
     return "success"
 
 @app.route('/library')
+@login_required
 def library():
 
-    # form = InputForm()
     bu = Builder(DatabaseConfig)
 
     headers, results, footer, success, log = print_user_library(current_user)
