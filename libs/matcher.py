@@ -7,6 +7,10 @@ import requests
 from io import BytesIO
 import numpy as np
 
+import logging
+logging.getLogger("requests").setLevel(logging.WARNING)
+log = logging.getLogger()
+
 
 class Matcher:
     """
@@ -17,8 +21,11 @@ class Matcher:
         """
         Runs matching on received lists.
         """
+        self.list_cr = list_cr
+        self.list_mid = list_mid
 
-        self.match(list_cr, list_mid)
+    def get_matches(self):
+        return self.match(self.list_cr, self.list_mid)
 
     def matrix(self, list_cr, list_mid):
         """
@@ -32,7 +39,6 @@ class Matcher:
             for j in range(len(imgs_api)):
                 mat[i][j] = self.dist(imgs_cr[i], imgs_api[j])
 
-        # print(mat)
         return mat
 
     def match(self, list_cr, list_mid):
@@ -42,13 +48,11 @@ class Matcher:
         mat = self.matrix(list_cr, list_mid)
 
         minima = np.argmin(mat, axis=1)
-        # print(minima)
 
         out = {}
         for i in range(len(minima)):
             out[list_cr[i]] = list_mid[minima[i]]
 
-        print(out)
         return out
 
     def dist(self, image_1, image_2):
@@ -56,17 +60,15 @@ class Matcher:
         Calculates distance of two images.
         """
         hash_1 = imagehash.average_hash(image_1)
-        # print(hash_1)
 
         hash_2 = imagehash.average_hash(image_2)
-        # print(hash_2)
 
-        #print(hash == hash_2)
         return hash_1 - hash_2
 
     def load_img(self, url):
         """
         Downloads the image on provided url and returns it as an Image object.
+        (logging module for requests has to be turned to warning only)
         """
         response = requests.get(url)
         img = Image.open(BytesIO(response.content))
@@ -83,7 +85,3 @@ class Matcher:
         Generates api_url from mid.
         """
         return 'https://image.deckbrew.com/mtg/multiverseid/' + str(mid) + '.jpg'
-
-
-m = Matcher(['SOI_L10', 'SOI_L13', 'SOI_L04', 'SOI_L07', 'SOI_L01'],
-            [410052, 410055, 410058, 410061, 410064])

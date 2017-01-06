@@ -5,7 +5,7 @@ import sys
 import getopt
 
 from libs.linker import Linker
-from config_db import config
+from app.config import DatabaseConfig
 
 import logging
 import pprint
@@ -62,25 +62,30 @@ def link():
 
     log = logging.getLogger()
 
-    l = Linker(config)
-    
-    edition = "SOI"
-    
+    l = Linker(DatabaseConfig)
+
+    edition = "BFZ"
+
     print("API total(): {}".format(l.total("api", edition)))
     print("API standard(): {}".format(l.standard("api", edition)))
-    
+
     print("CR total(): {}".format(l.total("cr", edition)))
     print("CR standard(): {}".format(l.standard("cr", edition)))
-    
+
     print("Direct matches: {}".format(l.direct_matches(edition)))
-    
+
     print("We are missing {} cards.".format(l.standard("api", edition) - l.direct_matches(edition)))
-    print("Landsort offers {} cards.".format(l.landsort(edition)))
+
+    #print("Landsort offers {} cards.".format(l.landsort(edition)))
+
+    print("Inserting direct matches...")
     l.insert_direct_match(edition)
+
     if (l.standard("api", edition) - l.direct_matches(edition) == l.landsort(edition)):
-        print("Inserting landsort.")
-        l.insert_landsort(edition)
-    
+        print("Trying image match.")
+        l.image_match(edition)
+
+        # l.insert_landsort(edition)
 
 
 if __name__ == "__main__":

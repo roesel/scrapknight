@@ -5,6 +5,7 @@ import time
 from datetime import datetime
 
 from libs.database import Database
+from libs.matcher import Matcher
 
 import logging
 import pprint
@@ -83,6 +84,97 @@ class Linker:
                 count = cur.fetchall()[0][0]
 
         return count
+
+    def image_match(self, edition):
+        """
+        Tries to match cards not covered by direct_matches() using differences in images.
+
+        IMPROVE Could be optimized to make a new matcher for every kind of land in order
+        to only do 3x3 matrices for 'Plains' instead of 15x15 for all lands.
+        """
+        cr_ids = self.mismatch_cr(edition)
+        api_ids = self.mismatch_api(edition)
+
+        if len(cr_ids) == len(api_ids):
+            m = Matcher(cr_ids, api_ids)
+            matches = m.get_matches()
+            log.info("Image matching thinks it has been successful!")
+
+            self.insert_image_match(matches)
+        else:
+            log.info("Image match would get uneven arrays -> not matching.")
+
+    def insert_image_match(self, matches):
+        """
+        Replaces new values into `rel_cards`.
+        """
+        log.info("Inserting...")
+        for cr_id, mid in matches.items():
+            query = """
+                REPLACE INTO `rel_cards`
+                    (`id_cr`, `id_sdk`)
+                VALUES
+                    (%s, %s);
+                """
+
+            self.db.insert(query, [cr_id, mid])
+        log.info("Done.")
+
+    def mismatch_cr(self, edition):
+        """
+        Returns a list of cards from CR that are not covered by direct_matches().
+        """
+        query_cr = """
+                SET @edition = "{}";
+
+            	SELECT id_cr
+            	FROM (
+            		SELECT * FROM sdk_cards WHERE NOT (`layout`="double-faced" and mana_cost is null and `type` !="Land") AND (`set`=@edition)
+            	) as t1
+            	RIGHT JOIN (
+            		SELECT REPLACE(name,'´', '\\\'') as name_replaced, id as id_cr FROM cards WHERE edition_id=@edition AND id not like "tokens%" AND name not like "Token - %" AND name not like "Emblem - %"
+            	) as t2
+            	ON t1.name = t2.name_replaced
+            	WHERE `name` is null;
+                """.format(edition)
+
+        results = self.db.cursor.execute(query_cr, multi=True)
+        self.db.cnx.commit()
+        out = []
+        for cur in results:
+            if cur.with_rows:
+                rows = cur.fetchall()
+                for row in rows:
+                    out.append(row[0])
+        return out
+
+    def mismatch_api(self, edition):
+        """
+        Returns a list of cards from API that are not covered by direct_matches().
+        """
+        query_cr = """
+                SET @edition = "{}";
+
+                SELECT mid
+            	FROM (
+            		SELECT * FROM sdk_cards WHERE NOT (`layout`="double-faced" and mana_cost is null and `type` !="Land") AND (`set`=@edition)
+            	) as t1
+            	LEFT JOIN (
+            		SELECT REPLACE(name,'´', '\\\'') as name_replaced FROM cards WHERE edition_id=@edition AND id not like "tokens%" AND name not like "Token - %" AND name not like "Emblem - %"
+            	) as t2
+            	ON t1.name = t2.name_replaced
+            	WHERE `name_replaced` is null;
+                """.format(edition)
+
+        results = self.db.cursor.execute(query_cr, multi=True)
+        self.db.cnx.commit()
+        out = []
+        for cur in results:
+            if cur.with_rows:
+                rows = cur.fetchall()
+                for row in rows:
+                    out.append(row[0])
+        return out
 
     def landsort(self, edition):
         query = """
