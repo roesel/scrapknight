@@ -187,7 +187,27 @@ def library():
 
     return render_template(
         'library.html',
-        title='Output',
+        title='Library',
+        form="",
+        results_header=headers,
+        results=results,
+        results_footer=footer,
+        results_success=success,
+        fill="",
+        log=log,
+        db_info=bu.get_db_info())
+
+@app.route('/deck/<int:deck_id>')
+@login_required
+def deck(deck_id):
+
+    bu = Builder(DatabaseConfig)
+
+    headers, results, footer, success, log = print_user_library(current_user)
+
+    return render_template(
+        'deck.html',
+        title='Deck',
         form="",
         results_header=headers,
         results=results,
