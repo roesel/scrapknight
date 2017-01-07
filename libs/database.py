@@ -25,7 +25,9 @@ class Database:
     def insert(self, query, *args, **kwargs):
         try:
             self.cursor.execute(query, *args, **kwargs)
+            insert_id = self.cursor.lastrowid
             self.cnx.commit()
+            return insert_id
 
         except Error as err:
             if err.errno == errorcode.ER_BAD_DB_ERROR:

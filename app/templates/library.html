@@ -22,7 +22,11 @@
     <div class="row">
         <div class="col-md-12" style="padding-left:315px;">
             <!-- Output price table -->
-            {{ price_table('Library', table_data=library_table) }}
+            {{ price_table(
+                'Library',
+                table_data=library_table,
+                table_id="out_table",
+                buttons_to_render=['exportCardList', 'saveLibrary',],) }}
             <!-- Export card list -->
             {% include 'page_parts/export_card_list.html' %}
         </div>

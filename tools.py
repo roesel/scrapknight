@@ -55,6 +55,26 @@ def users_cards_save(user, user_input):
 
     user.save_cards(mydeck)
 
+def save_user_library(user, user_input):
+
+    log = []
+
+    Card.db = Database(DatabaseConfig)
+
+    mydeck = Deck(user_input=user_input)
+
+    return user.save_library(mydeck)
+
+def modify_user_deck(user, deck_id, user_input):
+
+    log = []
+
+    Card.db = Database(DatabaseConfig)
+
+    mydeck = Deck(user_input=user_input)
+
+    return user.save_deck(deck_id, mydeck)
+
 def levenshtein(source, target):
     """
     Source: https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#Python

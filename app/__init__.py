@@ -12,7 +12,8 @@ from requests.exceptions import HTTPError
 
 from .forms import InputForm
 
-from tools import process, users_cards_save, print_user_library, print_user_deck
+from tools import process, users_cards_save, print_user_library, print_user_deck, \
+    modify_user_deck, save_user_library
 from libs.builder import Builder
 
 """App Configuration"""
@@ -43,6 +44,19 @@ class User(db.Model, UserMixin):
     tokens = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow())
 
+    def save_library(self, deck):
+
+        query = """
+            DELETE FROM `users_cards`
+            WHERE
+            `user_id` = %s
+            """
+
+        self.db.insert(
+            query, (self.id,))
+
+        return self.save_cards(deck)
+
     def save_cards(self, deck):
 
         for card in deck.cards:
@@ -51,12 +65,62 @@ class User(db.Model, UserMixin):
                     INSERT INTO `users_cards`
                     (`user_id`, `card_id`, `count`)
                     VALUES
-                    (%s, %s, 1)
+                    (%s, %s, %s)
+                    ON DUPLICATE KEY UPDATE count=count+%s
+                    """
+
+                self.db.insert(
+                    query, (self.id, card.id, card.count, card.count))
+
+        return True
+
+    def save_deck(self, deck_id, deck):
+
+        query = """
+            SELECT *
+            FROM `users_decks`
+            WHERE `id` = %s AND `user_id` = %s
+            """
+
+        result = self.db.query(query, (deck_id, self.id,))
+
+        if not result:
+            # Create the deck first
+            query = """
+                INSERT INTO `users_decks`
+                (`user_id`)
+                VALUES
+                (%s)
+                """
+            print(query)
+
+            deck_id = self.db.insert(
+                query, (self.id,))
+
+        query = """
+            DELETE FROM `users_decks_cards`
+            WHERE
+            `deck_id` = %s AND `user_id` = %s
+            """
+
+        self.db.insert(
+            query, (deck_id, self.id,))
+
+        for card in deck.cards:
+            print(card.found)
+            if card.found:
+                query = """
+                    INSERT INTO `users_decks_cards`
+                    (`deck_id`, `user_id`, `card_id`, `count`)
+                    VALUES
+                    (%s, %s, %s, 1)
                     ON DUPLICATE KEY UPDATE count=count+1
                     """
 
                 self.db.insert(
-                    query, (self.id, card.id,))
+                    query, (deck_id, self.id, card.id,))
+
+        return deck_id
 
     def get_library(self):
 
@@ -190,6 +254,31 @@ def savecards():
 
     return "success"
 
+@app.route('/savelibrary', methods=['POST'])
+@login_required
+def savelibrary():
+
+    card_list = request.form['card_list']
+
+    status = save_user_library(current_user, card_list)
+    if status:
+        return "success"
+    else:
+        return "failure"
+
+@app.route('/modifydeck', methods=['POST'])
+@login_required
+def modifydeck():
+
+    card_list = request.form['card_list']
+    deck_id = request.form['deck_id']
+
+    status = modify_user_deck(current_user, deck_id, card_list)
+    if status:
+        return "success"
+    else:
+        return "failure"
+
 @app.route('/library')
 @login_required
 def library():
@@ -216,7 +305,7 @@ def deck(deck_id):
     deck_table, log_1 = print_user_deck(current_user, deck_id)
     library_table, log_2 = print_user_library(current_user)
 
-    log = [log_1, log_2]
+    log = log_1 + log_2
 
     return render_template(
         'deck.html',

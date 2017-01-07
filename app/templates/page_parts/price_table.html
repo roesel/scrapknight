@@ -12,7 +12,7 @@
 </thead>
 {%- endmacro %}
 
-{% macro render_table_body(body, columns, display_columns) -%}
+{% macro render_table_body(body, columns, display_columns, show_add_to_deck_button, count_as_input) -%}
 <tbody>
 {% for row in body %}
     {% if row['found'] == True %}
@@ -42,16 +42,25 @@
                 onmouseover="document.images.card_pic.src='http://cernyrytir.cz/images/kusovkymagic/{{row['row'][0]['id']}}.jpg'">
                 <td><span name="cardname" data-field="{{ loop.index }}{{ row['card_id'] }}">{{row['row'][0]['name']}}</span></td>
         {% else %}
-            <tr class="{{row['search_hash']}}"
+            <tr class="{{row['search_hash']}}" data-field="{{row['card_id']}}"
                 onmouseover="document.images.card_pic.src='http://cernyrytir.cz/images/kusovkymagic/{{row['row'][0]['id']}}.jpg'">
-                <td><span name="cardname" data-field="{{ loop.index }}{{ row['card_id'] }}">{{row['row'][0]['name']}}</span></td>
+                <td><span name="cardname" data-field="{{ loop.index }}{{ row['card_id'] }}">{{row['row'][0]['name']}}</span>
+                    {% if show_add_to_deck_button %}
+                        <input type="button"
+                            name="addToDeck"
+                            value="Add to deck"
+                            data-field="{{row['card_id']}}"
+                            class="btn btn-default btn-xs pull-right"
+                            style="margin-right: 10pt;">
+                    {% endif%}
+                </td>
         {% endif %}
                 <td title="{{row['row'][1]['name']}}">
                     <span name="edition" data-field="{{ loop.index }}{{ row['card_id'] }}">{{ row['row'][1]['id'] }}</span>
                 </td>
             {% if not row['multicard'] == 'head' %}
                 {% if columns[2] in display_columns %}
-                <td>
+                <td name="{{ columns[2] }}">
                     {% if count_as_input == True %}
                     <div class="input-group">
                         <span class="input-group-btn">
@@ -125,8 +134,8 @@
                     {{ row['row'][1]['id'] }}
                 {% endif %}
             </td>
-        {% for colname, cell in zip(columns[2:], row['row'][2:]) %}
-            {% if colname in display_columns %}
+        {% for cell in row['row'][2:] %}
+            {% if columns[loop.index0 + 2] in display_columns %}
                 <td>{{ cell }}</td>
             {% endif %}
         {% endfor %}
@@ -154,10 +163,12 @@
 {%- endmacro %}
 
 {% macro price_table(
-    name, table_data,
+    name, table_data, table_id="price_table",
     display_columns=None,
     display_footer=True,
-    count_as_input=True)
+    count_as_input=True,
+    show_add_to_deck_button=False,
+    buttons_to_render=None)
 -%}
 
 {% if display_columns == None %}
@@ -167,13 +178,13 @@
 <div class="panel panel-default">
   <div class="panel-heading"><strong>{{ name }}</strong></div>
   <div class="panel-body">
-    <table id="out_table" class="table table-striped table-condensed table-hover" data-toggle="table">
+    <table id="{{ table_id }}" class="table table-striped table-condensed table-hover" data-toggle="table">
 
       {% if table_data['header'] %}
         {{ render_table_header(table_data['header'], table_data['columns'], display_columns) }}
       {% endif %}
 
-      {{ render_table_body(table_data['body'], table_data['columns'], display_columns) }}
+      {{ render_table_body(table_data['body'], table_data['columns'], display_columns, show_add_to_deck_button, count_as_input) }}
 
       {% if display_footer and table_data['footer'] %}
         {{ render_table_footer(table_data['footer'], table_data['columns'], display_columns, table_data['success']) }}
@@ -184,7 +195,30 @@
     </div>
   </div>
   <div class="panel-footer">
-      <input type="button" name="exportCardList" value="Export card list" class="btn btn-primary">
+      {% if buttons_to_render %}
+      <div class="btn-group">
+          {% if 'exportCardList' in buttons_to_render %}
+          <button type="button" class="btn btn-default" name="exportCardList">
+              <span class="glyphicon glyphicon-export" aria-hidden="true"></span> Export
+          </button>
+          {% endif %}
+          {% if 'saveLibrary' in buttons_to_render %}
+          <button type="button" class="btn btn-default" name="saveLibrary" disabled>
+              <span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span> Save
+          </button>
+          {% endif %}
+          {% if 'saveDeck' in buttons_to_render %}
+          <button type="button" class="btn btn-default" name="saveDeck" disabled>
+              <span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span> Save
+          </button>
+          {% endif %}
+          {% if 'deleteDeck' in buttons_to_render %}
+          <button type="button" class="btn btn-default" name="deleteDeck">
+              <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Delete
+          </button>
+          {% endif %}
+      </div>
+      {% endif %}
   </div>
 </div>
 {%- endmacro %}

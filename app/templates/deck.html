@@ -22,13 +22,20 @@
             {{ price_table(
                 'Library',
                 table_data=library_table,
+                table_id="library_table",
                 display_columns=['name', 'edition', 'count', 'price'],
                 display_footer=False,
-                count_as_input=False,) }}
+                count_as_input=False,
+                show_add_to_deck_button=True,) }}
         </div>
         <div class="col-md-6">
             <!-- Deck price table -->
-            {{ price_table('Deck', table_data=deck_table) }}
+            {{ price_table(
+                'Deck',
+                table_data=deck_table,
+                table_id="out_table",
+                count_as_input=True,
+                buttons_to_render=['exportCardList', 'saveDeck', 'deleteDeck',],) }}
             <!-- Export card list -->
             {% include 'page_parts/export_card_list.html' %}
         </div>

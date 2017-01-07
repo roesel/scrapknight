@@ -109,19 +109,22 @@ CREATE TABLE `users_cards` (
   `user_id` INT NOT NULL,
   `card_id` VARCHAR(45) NOT NULL,
   `count` INT NOT NULL
+  PRIMARY KEY (`user_id`, `card_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='List of cards belonging to users';
 
 ALTER TABLE `users_cards`
 ADD UNIQUE INDEX `card_user_unique` (`user_id` ASC, `card_id` ASC);
 
 CREATE TABLE `users_decks` (
-  `id` INT NOT NULL,
+  `id` INT NOT NULL AUTO_INCREMENT,
   `user_id` INT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`, `user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT = 'Decks belonging to users.';
 
 CREATE TABLE `users_decks_cards` (
   `deck_id` INT NOT NULL,
+  `user_id` INT NOT NULL
   `card_id` VARCHAR(45) NOT NULL,
-  `count` INT NOT NULL
+  `count` INT NOT NULL,
+  PRIMARY KEY (`id`, `user_id`, `card_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT = 'Cards belonging to decks.';

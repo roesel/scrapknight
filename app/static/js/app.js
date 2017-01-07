@@ -1,29 +1,39 @@
 //plugin bootstrap minus and plus
 //http://jsfiddle.net/laelitenetwork/puJ6G/
-$('.btn-number').click(function(e){
+$('#out_table').on('click', 'button.btn-number', function(e){
     e.preventDefault();
 
     fieldName = $(this).attr('data-field');
     type      = $(this).attr('data-type');
-    var input = $("input[data-field='"+fieldName+"']");
+    var input = $("input[name='count'][data-field='"+fieldName+"']");
     var currentVal = parseInt(input.val());
     if (!isNaN(currentVal)) {
         if(type == 'minus') {
+
+            var plusbtn = $("button.btn-number[data-type='plus'][data-field='"+fieldName+"']");
+            plusbtn.prop('disabled', false);
 
             if(currentVal > input.attr('min')) {
                 input.val(currentVal - 1).change();
             }
             if(parseInt(input.val()) == input.attr('min')) {
-                $(this).attr('disabled', true);
+                $(this).prop('disabled', true);
+            } else {
+                $(this).prop('disabled', false);
             }
 
         } else if(type == 'plus') {
+
+            var minusbtn = $("button.btn-number[data-type='minus'][data-field='"+fieldName+"']");
+            minusbtn.prop('disabled', false);
 
             if(currentVal < input.attr('max')) {
                 input.val(currentVal + 1).change();
             }
             if(parseInt(input.val()) == input.attr('max')) {
-                $(this).attr('disabled', true);
+                $(this).prop('disabled', true);
+            } else {
+                $(this).prop('disabled', false);
             }
 
         }
@@ -116,13 +126,18 @@ $(".input-number").keydown(function (e) {
 
 $("#out_table").change(function(){
     exportCardList();
+    $("button[name='saveDeck']").prop('disabled', false);
+    $("button[name='saveDeck']").html('<span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span> Save')
+    $("button[name='saveLibrary']").prop('disabled', false);
+    $("button[name='saveLibrary']").html('<span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span> Save')
+
 })
 
 $( document ).ready(function() {
     exportCardList();
 });
 
-$("input[name='exportCardList']").click(function(e){
+$("button[name='exportCardList']").click(function(e){
     e.preventDefault();
     exportCardList();
 });
@@ -130,15 +145,15 @@ $("input[name='exportCardList']").click(function(e){
 function exportCardList() {
     exportText = "";
 
-    $("span[name='cardname']").each(function(i, obj) {
+    $("#out_table tbody tr").each(function(i, obj) {
 
-        md5 = $(this).attr('data-field');
-        edition = $("span[name='edition'][data-field='"+md5+"']").text();
-        count = $("input[name='count'][data-field='"+md5+"']").val();
+        cardname = $(this).find("span[name='cardname']").text().trim();
+        edition = $(this).find("span[name='edition']").text().trim();
+        count = $(this).find("input[name='count']").val();
 
         if (count > 0) {
             exportText += count + " x ";
-            exportText += $(this).text();
+            exportText += cardname;
             exportText += " [" + edition + "]";
             exportText += "\n";
         }
@@ -155,8 +170,113 @@ $("#saveExportedCardList").click(function(e){
     saveExportedCardList();
 });
 
+$("button[name='saveDeck']").click(function(e){
+    e.preventDefault();
+    saveDeck();
+});
+
+$("button[name='saveLibrary']").click(function(e){
+    e.preventDefault();
+    saveLibrary();
+});
+
+$("input[name='addToDeck']").click(function(e){
+    e.preventDefault();
+    var card_id = $(this).attr('data-field');
+    var card_row_in_deck = $("#out_table tbody").children("tr[data-field='"+card_id+"']");
+    if (card_row_in_deck.length) {
+        var td_count = card_row_in_deck.find("input[name='count']");
+        var count = parseInt(td_count.attr('value'));
+        td_count.attr('value', count + 1);
+    } else {
+        var row = $(this).closest('tr');
+        var clone = row.clone();
+        clone.find("input[name='addToDeck']").remove();
+        clone.find("td[name='count']").html('\
+        <div class="input-group">\
+            <span class="input-group-btn">\
+                <button type="button"\
+                    class="btn btn-default btn-number btn-sm"\
+                    data-type="minus"\
+                    data-field="'+card_id+'">\
+                    <span class="glyphicon glyphicon-minus"></span>\
+                </button>\
+            </span>\
+            <input type="text"\
+                name="count"\
+                data-field="'+card_id+'"\
+                class="form-control input-number input-sm"\
+                value="1"\
+                min="0"\
+                max="1000">\
+            <span class="input-group-btn">\
+                <button type="button"\
+                    class="btn btn-default btn-number btn-sm"\
+                    data-type="plus"\
+                    data-field="'+card_id+'">\
+                    <span class="glyphicon glyphicon-plus"></span>\
+                </button>\
+            </span>\
+        </div>');
+        // clone.find('.input-number').each(function(){
+        //    $(this).data('oldValue', $(this).val());
+        // });
+        clone.append("<td></td>");
+        $("#out_table tbody").append(clone);
+
+    }
+});
+
+function saveLibrary() {
+
+    exportCardList();
+    exportText = $("#export_card_list").text();
+
+    var url = window.location.pathname;
+    $.ajax({
+        type: "POST",
+        url: 'https://localhost:5010/savelibrary',
+        data: {
+            'card_list': exportText,
+        },
+        success: function(result) {
+            if (result == "success"){
+                $("button[name='saveLibrary']").html('<span class="glyphicon glyphicon-floppy-saved" aria-hidden="true"></span> Saved')
+                $("button[name='saveLibrary']").prop('disabled', true)
+            } else {
+                alert("Cards have not been saved, something is wrong.")
+            }
+        },
+    });
+}
+
+function saveDeck() {
+
+    exportCardList();
+    exportText = $("#export_card_list").text();
+
+    var url = window.location.pathname;
+    $.ajax({
+        type: "POST",
+        url: 'https://localhost:5010/modifydeck',
+        data: {
+            'card_list': exportText,
+            'deck_id': url.split('/').pop(),
+        },
+        success: function(result) {
+            if (result == "success"){
+                $("button[name='saveDeck']").html('<span class="glyphicon glyphicon-floppy-saved" aria-hidden="true"></span> Saved')
+                $("button[name='saveDeck']").prop('disabled', true)
+            } else {
+                alert("Cards have not been saved, something is wrong.")
+            }
+        },
+    });
+}
+
 function saveExportedCardList() {
 
+    exportCardList();
     exportText = $("#export_card_list").text();
 
     $.ajax({
@@ -168,8 +288,7 @@ function saveExportedCardList() {
         success: function(result) {
             if (result == "success"){
                 $("#saveExportedCardList").html('Saved to Library <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>')
-                $("#saveExportedCardList").attr('disabled', true)
-                // $("#saveExportedCardList").addClass('btn-success')
+                $("#saveExportedCardList").prop('disabled', true)
             } else {
                 alert("Cards have not been saved, something is wrong.")
             }
