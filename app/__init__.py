@@ -113,12 +113,12 @@ class User(db.Model, UserMixin):
                     INSERT INTO `users_decks_cards`
                     (`deck_id`, `user_id`, `card_id`, `count`)
                     VALUES
-                    (%s, %s, %s, 1)
-                    ON DUPLICATE KEY UPDATE count=count+1
+                    (%s, %s, %s, %s)
+                    ON DUPLICATE KEY UPDATE count=count+%s
                     """
 
                 self.db.insert(
-                    query, (deck_id, self.id, card.id,))
+                    query, (deck_id, self.id, card.id, card.count, card.count,))
 
         return deck_id
 
@@ -141,14 +141,34 @@ class User(db.Model, UserMixin):
             SELECT `c`.`card_id`, `c`.`count`
             FROM `users_decks` AS `d`
             INNER JOIN `users_decks_cards` AS `c`
-            ON `d`.`id` = `c`.`deck_id`
+            ON `d`.`id` = `c`.`deck_id` AND `d`.`user_id` = `c`.`user_id`
             WHERE `d`.`user_id` = %s AND `d`.`id` = %s
             """
 
         cards = self.db.query(query, (self.id, deck_id,))
-        deck = [{'id': c[0], 'count': c[1]} for c in cards]
+        cards = [{'id': c[0], 'count': c[1]} for c in cards]
 
-        return Deck(card_list=deck)
+        return Deck(card_list=cards)
+
+    def get_deck_list(self):
+
+        query = """
+            SELECT `d`.id, `d`.`name`, `d`.`info`, SUM(`c`.`count`)
+            FROM `users_decks` AS `d`
+            LEFT JOIN `users_decks_cards` AS `c`
+            ON `d`.`id` = `c`.`deck_id` AND `d`.`user_id` = `c`.`user_id`
+            WHERE `d`.`user_id` = %s
+            ORDER BY `d`.id ASC
+            """
+
+        decks = self.db.query(query, (self.id,))
+        decks = [{
+            'id': d[0],
+            'name': d[1],
+            'info': d[2],
+            'card_count': d[3]} for d in decks]
+
+        return decks
 
 User.db = Database(DatabaseConfig)
 
@@ -285,12 +305,31 @@ def library():
 
     bu = Builder(DatabaseConfig)
 
+    decks = current_user.get_deck_list()
+
+    for deck in decks:
+        if not deck['name']:
+            deck['name'] = "Deck {}".format(deck['id'])
+        if not deck['card_count']:
+            deck['card_count'] = 0
+
+    if decks:
+        new_id = decks[-1]['id'] + 1
+    else:
+        new_id = 1
+    newdeck = [{
+        'id': new_id,
+        'name': 'New Deck',
+        'card_count': '',
+        'info': ''}]
+
     library_table, log = print_user_library(current_user)
 
     return render_template(
         'library.html',
         title='Library',
         form="",
+        table_of_decks_data=decks + newdeck,
         library_table=library_table,
         fill="",
         log=log,

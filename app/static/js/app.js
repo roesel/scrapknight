@@ -125,13 +125,17 @@ $(".input-number").keydown(function (e) {
 
 
 $("#out_table").change(function(){
+
     exportCardList();
+    enableSaveButons();
+});
+
+function enableSaveButons() {
     $("button[name='saveDeck']").prop('disabled', false);
     $("button[name='saveDeck']").html('<span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span> Save')
     $("button[name='saveLibrary']").prop('disabled', false);
     $("button[name='saveLibrary']").html('<span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span> Save')
-
-})
+}
 
 $( document ).ready(function() {
     exportCardList();
@@ -182,6 +186,9 @@ $("button[name='saveLibrary']").click(function(e){
 
 $("input[name='addToDeck']").click(function(e){
     e.preventDefault();
+
+    enableSaveButons();
+
     var card_id = $(this).attr('data-field');
     var card_row_in_deck = $("#out_table tbody").children("tr[data-field='"+card_id+"']");
     if (card_row_in_deck.length) {

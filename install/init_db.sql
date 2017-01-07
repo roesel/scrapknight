@@ -118,6 +118,8 @@ ADD UNIQUE INDEX `card_user_unique` (`user_id` ASC, `card_id` ASC);
 CREATE TABLE `users_decks` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `user_id` INT NULL,
+  `name` VARCHAR(45)  DEFAULT NULL,
+  `info` TEXT,
   PRIMARY KEY (`id`, `user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT = 'Decks belonging to users.';
 

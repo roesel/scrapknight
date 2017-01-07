@@ -2,11 +2,12 @@
 {% extends "base.html" %}
 
 {% from 'page_parts/price_table.html' import price_table %}
+{% from 'page_parts/table_of_decks.html' import table_of_decks %}
 
 {% block content %}
 <div class="col-md-3">
     <!-- Table of deck details with links -->
-    {% include 'page_parts/table_of_decks.html' %}
+    {{ table_of_decks(table_of_decks_data) }}
 </div>
 
 {% if library_table %}
