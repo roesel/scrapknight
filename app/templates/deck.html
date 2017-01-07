@@ -19,11 +19,16 @@
             <!-- Search for a card -->
             {% include 'page_parts/card_search.html' %}
             <!-- Library price table -->
-            {{ price_table('Library', library_table) }}
+            {{ price_table(
+                'Library',
+                table_data=library_table,
+                display_columns=['name', 'edition', 'count', 'price'],
+                display_footer=False,
+                count_as_input=False,) }}
         </div>
         <div class="col-md-6">
             <!-- Deck price table -->
-            {{ price_table('Deck', deck_table) }}
+            {{ price_table('Deck', table_data=deck_table) }}
             <!-- Export card list -->
             {% include 'page_parts/export_card_list.html' %}
         </div>

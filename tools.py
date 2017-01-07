@@ -320,6 +320,7 @@ class Deck(object):
             'header': header,
             'body': table,
             'footer': footer,
+            'columns': ['name', 'edition', 'count', 'price', 'multiprice'],
             'success': success}
 
         return table_data, np.unique(log)

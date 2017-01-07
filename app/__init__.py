@@ -196,16 +196,13 @@ def library():
 
     bu = Builder(DatabaseConfig)
 
-    headers, results, footer, success, log = print_user_library(current_user)
+    library_table, log = print_user_library(current_user)
 
     return render_template(
         'library.html',
         title='Library',
         form="",
-        results_header=headers,
-        results=results,
-        results_footer=footer,
-        results_success=success,
+        library_table=library_table,
         fill="",
         log=log,
         db_info=bu.get_db_info())
