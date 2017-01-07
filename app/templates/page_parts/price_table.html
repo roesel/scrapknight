@@ -1,0 +1,135 @@
+<div class="panel panel-default">
+  <div class="panel-heading"><strong>Output</strong></div>
+  <div class="panel-body">
+    <table id="out_table" class="table table-striped table-condensed table-hover" data-toggle="table">
+      {% if results_header %}
+          <thead>
+          <tr>
+          {% for heading in results_header %}
+              <th class="col-md-{{ heading['width'] }}"
+                  data-field="{{ heading['data_field'] }}"
+                  data-sortable="{{ heading['data_sortable'] }}"> {{ heading['text'] }} </th>
+          {% endfor %}
+          </tr>
+          </thead>
+      {% endif %}
+      <tbody>
+      {% for row in results %}
+          {% if row['found'] == True %}
+              {% if row['multicard'] %}
+                  {% if row['multicard_info'] == 'similar_search' %}
+                      {% set row_class="warning" %}
+                  {% elif row['multicard_info'] == 'multiple_cards' %}
+                      {% set row_class="info" %}
+                  {% endif %}
+              {% endif %}
+              {% if row['multicard'] == 'head' %}
+                  <tr class="{{ row_class }}"
+                      data-toggle="collapse" data-target=".{{row['search_hash']}}"
+                      onmouseover="document.images.card_pic.src='{{ url_for('static',filename='img/card_back.jpg') }}'">
+                      <td>
+                          <strong>{{row['row'][0]['name']}}</strong> &#8212; <em>Click to expand list</em> {# &#8212; is emdash #}
+                          <input type="button"
+                              name="acceptMulticardSelection"
+                              value="Accept selection"
+                              data-field="{{row['search_hash']}}"
+                              class="btn btn-default btn-xs"
+                              style="margin-left: 10pt;">
+                      </td>
+              {% elif row['multicard'] == 'item' %}
+                  <tr class="{{row['search_hash']}} {{ row_class }} collapse out"
+                      onmouseover="document.images.card_pic.src='http://cernyrytir.cz/images/kusovkymagic/{{row['row'][0]['id']}}.jpg'">
+                      <td><span name="cardname" data-field="{{ loop.index }}{{ row['card_id'] }}">{{row['row'][0]['name']}}</span></td>
+              {% else %}
+                  <tr class="{{row['search_hash']}}"
+                      onmouseover="document.images.card_pic.src='http://cernyrytir.cz/images/kusovkymagic/{{row['row'][0]['id']}}.jpg'">
+                      <td><span name="cardname" data-field="{{ loop.index }}{{ row['card_id'] }}">{{row['row'][0]['name']}}</span></td>
+              {% endif %}
+                      <td title="{{row['row'][1]['name']}}">
+                          <span name="edition" data-field="{{ loop.index }}{{ row['card_id'] }}">{{ row['row'][1]['id'] }}</span>
+                      </td>
+                  {% if not row['multicard'] == 'head' %}
+                      <td>
+                          <div class="input-group">
+                              <span class="input-group-btn">
+                                  <button type="button"
+                                      class="btn btn-default btn-number btn-sm"
+                                      {% if row['row'][2]|int == 0 %}
+                                      disabled="disabled"
+                                      {% endif %}
+                                      data-type="minus"
+                                      data-field="{{ loop.index }}{{ row['card_id'] }}">
+                                      <span class="glyphicon glyphicon-minus"></span>
+                                  </button>
+                              </span>
+                              <input type="text"
+                                  name="count"
+                                  data-field="{{ loop.index }}{{ row['card_id'] }}"
+                                  class="form-control input-number input-sm"
+                                  value="{{ row['row'][2] }}"
+                                  min="0"
+                                  max="1000">
+                              <span class="input-group-btn">
+                                  <button type="button"
+                                      class="btn btn-default btn-number btn-sm"
+                                      data-type="plus"
+                                      data-field="{{ loop.index }}{{ row['card_id'] }}">
+                                      <span class="glyphicon glyphicon-plus"></span>
+                                  </button>
+                              </span>
+                          </div>
+                      </td>
+                      <td><span name="price" data-field="{{ loop.index }}{{ row['card_id'] }}">{{ row['row'][3] }}</span></td>
+                      <td><span name="multiprice" data-field="{{ loop.index }}{{ row['card_id'] }}">{{ row['row'][4] }}</span></td>
+                  {% else %}
+                      <td>{{ row['row'][2] }}</td>
+                      <td>{{ row['row'][3] }}</td>
+                      <td>{{ row['row'][4] }}</td>
+                  {% endif %}
+          {% else %}
+              <tr class="danger"
+                  onmouseover="document.images.card_pic.src='{{ url_for('static',filename='img/card_back.jpg') }}'">
+                  <td title="{{ row['not_found_reason']['card_name']}}" >
+                      {% if row['not_found_reason']['card_name'] %}
+                          <strong>{{row['row'][0]['name']}}</strong>
+                      {% else %}
+                          {{row['row'][0]['name']}}
+                      {% endif %}
+                  </td>
+                  <td title="{{ row['not_found_reason']['edition']}}" >
+                      {% if row['not_found_reason']['edition'] %}
+                          <strong>{{ row['row'][1]['id'] }}</strong>
+                      {% else %}
+                          {{ row['row'][1]['id'] }}
+                      {% endif %}
+                  </td>
+              {% for cell in row['row'][2:] %}
+                  <td>{{ cell }}</td>
+              {% endfor %}
+          {% endif %}
+              </tr>
+      {% endfor %}
+      </tbody>
+      {% if results_footer %}
+          <tfoot>
+          {% for row in results_footer %}
+              {% if results_success %}
+                  <tr class="success">
+              {% else %}
+                  <tr class="danger">
+              {% endif %}
+                      <th colspan="4">{{  row[0] }} <span style="font-weight: normal;"><em>{{  row[1] }}</em></span></th>
+                      <th><span name="totalprice">{{ row[2] }}</span></th>
+              </tr>
+          {% endfor %}
+          </tr>
+          </tfoot>
+      {% endif %}
+    </table>
+    <div>
+    </div>
+  </div>
+  <div class="panel-footer">
+      <input type="button" name="exportCardList" value="Export card list" class="btn btn-primary">
+  </div>
+</div>

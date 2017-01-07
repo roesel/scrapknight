@@ -3,258 +3,28 @@
 
 {% block content %}
 <div class="col-md-3">
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <strong>Decks</strong>
-      </div>
-      <div class="panel-body">
-        <table id="decks_table" class="table table-striped table-condensed table-hover" data-toggle="table">
-          <thead>
-            <tr>
-              <th> Deck name </th>
-              <th> Color </th>
-              <th> # of cards </th>
-              <th> cost </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>All cards</td>
-              <td></td>
-              <td>1101</td>
-              <td>2546</td>
-            </tr>
-            <tr>
-              <td><a href="/deck/1">Deck 1</a></td>
-              <td></td>
-              <td>60</td>
-              <td>254</td>
-            </tr>
-            <tr>
-              <td><a href="/deck/2">Deck 2</a></td>
-              <td></td>
-              <td>40</td>
-              <td>554</td>
-            </tr>
-            <tr>
-              <td><a href="/deck/3">Deck 3</a></td>
-              <td></td>
-              <td>60</td>
-              <td>112</td>
-            </tr>
-            <tr>
-              <td><a href="/deck/4">Deck 4</a></td>
-              <td></td>
-              <td>80</td>
-              <td>75</td>
-            </tr>
-          </tbody>
-          <tfoot>
-            <tr>
-              <th></th>
-              <th></th>
-              <th></th>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
-    </div>
+    <!-- Table of deck details with links -->
+    {% include 'page_parts/table_of_decks.html' %}
 </div>
 
 {% if results %}
 <div class="col-md-9">
     <div style="width: 270px; position:fixed;">
-      <div class="panel panel-default">
-        <div class="panel-heading">
-          <strong>Card preview</strong>
-        </div>
-        <div class="panel-body">
-            <img src="{{ url_for('static',filename='img/card_back.jpg') }}"
-                id="card_pic"
-                class="center-block"
-                style="max-height: 310px; max-width: 223px; text-align: center; vertical-align: middle;"
-                alt=""/>
-        </div>
-      </div>
-      {% if db_info %}
-      <div class="panel panel-default">
-        <div class="panel-heading">
-          <strong>DB info</strong>
-        </div>
-        <div class="panel-body">
-            <p style="font-size:0.8em;">
-                {% for line in db_info %}
-                    {{line}}<br/>
-                {% endfor %}
-            </p>
-        </div>
-      </div>
-      {% endif %}
-    </div>
-  <div class="row">
-  <div class="col-md-12" style="padding-left:315px;">
-  <div class="panel panel-default">
-    <div class="panel-heading"><strong>Output</strong></div>
-    <div class="panel-body">
-      <table id="out_table" class="table table-striped table-condensed table-hover" data-toggle="table">
-        {% if results_header %}
-            <thead>
-            <tr>
-            {% for heading in results_header %}
-                <th class="col-md-{{ heading['width'] }}"
-                    data-field="{{ heading['data_field'] }}"
-                    data-sortable="{{ heading['data_sortable'] }}"> {{ heading['text'] }} </th>
-            {% endfor %}
-            </tr>
-            </thead>
+        <!-- Card preview -->
+        {% include 'page_parts/card_preview.html' %}
+        <!-- Db info -->
+        {% if db_info %}
+            {% include 'page_parts/db_info.html' %}
         {% endif %}
-        <tbody>
-        {% for row in results %}
-            {% if row['found'] == True %}
-                {% if row['multicard'] %}
-                    {% if row['multicard_info'] == 'similar_search' %}
-                        {% set row_class="warning" %}
-                    {% elif row['multicard_info'] == 'multiple_cards' %}
-                        {% set row_class="info" %}
-                    {% endif %}
-                {% endif %}
-                {% if row['multicard'] == 'head' %}
-                    <tr class="{{ row_class }}"
-                        data-toggle="collapse" data-target=".{{row['search_hash']}}"
-                        onmouseover="document.images.card_pic.src='{{ url_for('static',filename='img/card_back.jpg') }}'">
-                        <td>
-                            <strong>{{row['row'][0]['name']}}</strong> &#8212; <em>Click to expand list</em> {# &#8212; is emdash #}
-                            <input type="button"
-                                name="acceptMulticardSelection"
-                                value="Accept selection"
-                                data-field="{{row['search_hash']}}"
-                                class="btn btn-default btn-xs"
-                                style="margin-left: 10pt;">
-                        </td>
-                {% elif row['multicard'] == 'item' %}
-                    <tr class="{{row['search_hash']}} {{ row_class }} collapse out"
-                        onmouseover="document.images.card_pic.src='http://cernyrytir.cz/images/kusovkymagic/{{row['row'][0]['id']}}.jpg'">
-                        <td><span name="cardname" data-field="{{ loop.index }}{{ row['card_id'] }}">{{row['row'][0]['name']}}</span></td>
-                {% else %}
-                    <tr class="{{row['search_hash']}}"
-                        onmouseover="document.images.card_pic.src='http://cernyrytir.cz/images/kusovkymagic/{{row['row'][0]['id']}}.jpg'">
-                        <td><span name="cardname" data-field="{{ loop.index }}{{ row['card_id'] }}">{{row['row'][0]['name']}}</span></td>
-                {% endif %}
-                        <td title="{{row['row'][1]['name']}}">
-                            <span name="edition" data-field="{{ loop.index }}{{ row['card_id'] }}">{{ row['row'][1]['id'] }}</span>
-                        </td>
-                    {% if not row['multicard'] == 'head' %}
-                        <td>
-                            <div class="input-group">
-                                <span class="input-group-btn">
-                                    <button type="button"
-                                        class="btn btn-default btn-number btn-sm"
-                                        {% if row['row'][2]|int == 0 %}
-                                        disabled="disabled"
-                                        {% endif %}
-                                        data-type="minus"
-                                        data-field="{{ loop.index }}{{ row['card_id'] }}">
-                                        <span class="glyphicon glyphicon-minus"></span>
-                                    </button>
-                                </span>
-                                <input type="text"
-                                    name="count"
-                                    data-field="{{ loop.index }}{{ row['card_id'] }}"
-                                    class="form-control input-number input-sm"
-                                    value="{{ row['row'][2] }}"
-                                    min="0"
-                                    max="1000">
-                                <span class="input-group-btn">
-                                    <button type="button"
-                                        class="btn btn-default btn-number btn-sm"
-                                        data-type="plus"
-                                        data-field="{{ loop.index }}{{ row['card_id'] }}">
-                                        <span class="glyphicon glyphicon-plus"></span>
-                                    </button>
-                                </span>
-                            </div>
-                        </td>
-                        <td><span name="price" data-field="{{ loop.index }}{{ row['card_id'] }}">{{ row['row'][3] }}</span></td>
-                        <td><span name="multiprice" data-field="{{ loop.index }}{{ row['card_id'] }}">{{ row['row'][4] }}</span></td>
-                    {% else %}
-                        <td>{{ row['row'][2] }}</td>
-                        <td>{{ row['row'][3] }}</td>
-                        <td>{{ row['row'][4] }}</td>
-                    {% endif %}
-            {% else %}
-                <tr class="danger"
-                    onmouseover="document.images.card_pic.src='{{ url_for('static',filename='img/card_back.jpg') }}'">
-                    <td title="{{ row['not_found_reason']['card_name']}}" >
-                        {% if row['not_found_reason']['card_name'] %}
-                            <strong>{{row['row'][0]['name']}}</strong>
-                        {% else %}
-                            {{row['row'][0]['name']}}
-                        {% endif %}
-                    </td>
-                    <td title="{{ row['not_found_reason']['edition']}}" >
-                        {% if row['not_found_reason']['edition'] %}
-                            <strong>{{ row['row'][1]['id'] }}</strong>
-                        {% else %}
-                            {{ row['row'][1]['id'] }}
-                        {% endif %}
-                    </td>
-                {% for cell in row['row'][2:] %}
-                    <td>{{ cell }}</td>
-                {% endfor %}
-            {% endif %}
-                </tr>
-        {% endfor %}
-        </tbody>
-        {% if results_footer %}
-            <tfoot>
-            {% for row in results_footer %}
-                {% if results_success %}
-                    <tr class="success">
-                {% else %}
-                    <tr class="danger">
-                {% endif %}
-                        <th colspan="4">{{  row[0] }} <span style="font-weight: normal;"><em>{{  row[1] }}</em></span></th>
-                        <th><span name="totalprice">{{ row[2] }}</span></th>
-                </tr>
-            {% endfor %}
-            </tr>
-            </tfoot>
-        {% endif %}
-      </table>
-      <div>
-      </div>
     </div>
-    <div class="panel-footer">
-        <input type="button" name="exportCardList" value="Export card list" class="btn btn-primary">
+    <div class="row">
+        <div class="col-md-12" style="padding-left:315px;">
+            <!-- Output price table -->
+            {% include 'page_parts/price_table.html' %}
+            <!-- Export card list -->
+            {% include 'page_parts/export_card_list.html' %}
+        </div>
     </div>
-  </div>
-  <div class="panel panel-default" id="export_card_list_panel" hidden>
-    <div class="panel-heading clearfix">
-    <h5 class="pull-left"><strong>Exported Card List</strong></h5>
-      <div class="btn-group pull-right">
-        <a id="useExportedCardListAsInput"
-            class="btn btn-default"
-        >Use as input</a>
-        <a id="shareExportedCardList"
-            class="btn btn-default"
-        >Share</a>
-        <a id="saveExportedCardList"
-            class="btn btn-default"
-        >Save to Library</a>
-        <a id="downloadExportedCardList"
-            class="btn btn-default"
-            href="" download="card_list.txt"
-        >Download</a>
-      </div>
-    </div>
-    <div class="panel-body">
-      <span id="export_card_list" style="white-space: pre-wrap; font-family: monospace;"></span>
-    </div>
-  <div>
-</div>
-</div>
-</div>
-</div>
 </div>
 {% else %}
 <div class="col-md-9">
@@ -266,24 +36,8 @@
 
 {% if log %}
 <div class="col-md-9">
-  <div class="panel panel-default">
-    <div class="panel-heading"><strong>Log</strong></div>
-    <div class="panel-body">
-      <table class="table table-striped table-condensed table-hover">
-        <tbody>
-        {% for row in log %}
-          <tr>
-            <td>
-              {{ row }}
-            </td>
-          </tr>
-        {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </div>
+    <!-- Log -->
+    {% include 'page_parts/log.html' %}
 </div>
 {% endif %}
-
-
 {% endblock %}

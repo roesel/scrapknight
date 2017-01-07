@@ -1,0 +1,13 @@
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <strong>DB info</strong>
+    </div>
+    <div class="panel-body">
+        <p style="font-size:0.8em;">
+            {% for line in db_info %}
+                {{line}}<br/>
+            {% endfor %}
+        </p>
+    </div>
+</div>
