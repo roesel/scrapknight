@@ -162,6 +162,11 @@ class User(db.Model, UserMixin):
             """
 
         decks = self.db.query(query, (self.id,))
+
+        # If user has no decks yet, the query returns [(None, None, ..., None,)]
+        if len(decks) == 1 and not any(decks[0]):
+            decks = []
+
         decks = [{
             'id': d[0],
             'name': d[1],
