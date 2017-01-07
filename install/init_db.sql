@@ -122,5 +122,6 @@ CREATE TABLE `users_decks` (
 
 CREATE TABLE `users_decks_cards` (
   `deck_id` INT NOT NULL,
-  `card_id` VARCHAR(45) NOT NULL
+  `card_id` VARCHAR(45) NOT NULL,
+  `count` INT NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT = 'Cards belonging to decks.';

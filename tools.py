@@ -25,6 +25,16 @@ def process(user_input):
 
     return mydeck.print_price_table()
 
+def print_user_deck(user, deck_id):
+
+    log = []
+
+    Card.db = Database(DatabaseConfig)
+
+    mydeck = user.get_deck(deck_id)
+
+    return mydeck.print_price_table()
+
 def print_user_library(user):
 
     log = []
@@ -306,7 +316,13 @@ class Deck(object):
 
         footer.append([footer_text, footer_text_2, str(price)])
 
-        return header, table, footer, success, np.unique(log)
+        table_data = {
+            'header': header,
+            'body': table,
+            'footer': footer,
+            'success': success}
+
+        return table_data, np.unique(log)
 
 
 class Multicard(object):

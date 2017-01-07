@@ -12,7 +12,7 @@ from requests.exceptions import HTTPError
 
 from .forms import InputForm
 
-from tools import process, users_cards_save, print_user_library
+from tools import process, users_cards_save, print_user_library, print_user_deck
 from libs.builder import Builder
 
 """App Configuration"""
@@ -71,6 +71,20 @@ class User(db.Model, UserMixin):
 
         return Deck(card_list=library)
 
+    def get_deck(self, deck_id):
+
+        query = """
+            SELECT `c`.`card_id`, `c`.`count`
+            FROM `users_decks` AS `d`
+            INNER JOIN `users_decks_cards` AS `c`
+            ON `d`.`id` = `c`.`deck_id`
+            WHERE `d`.`user_id` = %s AND `d`.`id` = %s
+            """
+
+        cards = self.db.query(query, (self.id, deck_id,))
+        deck = [{'id': c[0], 'count': c[1]} for c in cards]
+
+        return Deck(card_list=deck)
 
 User.db = Database(DatabaseConfig)
 
@@ -169,7 +183,6 @@ def logout():
 @app.route('/savecards', methods=['POST'])
 @login_required
 def savecards():
-    print("ROUTING /savecards")
 
     card_list = request.form['card_list']
 
@@ -203,16 +216,17 @@ def deck(deck_id):
 
     bu = Builder(DatabaseConfig)
 
-    headers, results, footer, success, log = print_user_library(current_user)
+    deck_table, log_1 = print_user_deck(current_user, deck_id)
+    library_table, log_2 = print_user_library(current_user)
+
+    log = [log_1, log_2]
 
     return render_template(
         'deck.html',
         title='Deck',
         form="",
-        results_header=headers,
-        results=results,
-        results_footer=footer,
-        results_success=success,
+        deck_table=deck_table,
+        library_table=library_table,
         fill="",
         log=log,
         db_info=bu.get_db_info())
@@ -226,16 +240,13 @@ def input():
         #flash( 'Input containted: %s' % (form.text.data) )
         # return redirect('/')
 
-        headers, results, footer, success, log = process(form.text.data)
+        output_table, log = process(form.text.data)
 
         return render_template(
             'input.html',
             title='Output',
             form=form,
-            results_header=headers,
-            results=results,
-            results_footer=footer,
-            results_success=success,
+            output_table=output_table,
             fill=form.text.data,
             log=log,
             db_info=bu.get_db_info())

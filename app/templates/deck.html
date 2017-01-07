@@ -1,8 +1,10 @@
 <!-- extend from base layout -->
 {% extends "base.html" %}
 
+{% from 'page_parts/price_table.html' import price_table %}
+
 {% block content %}
-{% if results %}
+{% if library_table and deck_table %}
 <div style="width: 270px; position:fixed;">
     <!-- Card preview -->
     {% include 'page_parts/card_preview.html' %}
@@ -17,11 +19,11 @@
             <!-- Search for a card -->
             {% include 'page_parts/card_search.html' %}
             <!-- Library price table -->
-            {% include 'page_parts/price_table.html' %}
+            {{ price_table('Library', library_table) }}
         </div>
         <div class="col-md-6">
             <!-- Deck price table -->
-            {% include 'page_parts/price_table.html' %}
+            {{ price_table('Deck', deck_table) }}
             <!-- Export card list -->
             {% include 'page_parts/export_card_list.html' %}
         </div>
