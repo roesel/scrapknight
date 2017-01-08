@@ -44,7 +44,7 @@ $('#out_table').on('click', 'button.btn-number', function(e){
 $('.input-number').focusin(function(){
    $(this).data('oldValue', $(this).val());
 });
-$('.input-number').change(function() {
+$('#out_table').on('change', '.input-number', function() {
 
     minValue =  parseInt($(this).attr('min'));
     maxValue =  parseInt($(this).attr('max'));
@@ -64,8 +64,8 @@ $('.input-number').change(function() {
         $(this).val($(this).data('oldValue'));
     }
 
-    var price = $("span[name='price'][data-field='"+df+"']");
-    var multiprice = $("span[name='multiprice'][data-field='"+df+"']");
+    var price = $("#out_table").find("span[name='price'][data-field='"+df+"']");
+    var multiprice = $("#out_table").find("span[name='multiprice'][data-field='"+df+"']");
 
     valueCurrent = parseInt($(this).val());
     priceCurrent = parseInt(price.text());
@@ -86,7 +86,7 @@ $('.input-number').change(function() {
     }
 
     if (multipriceDiff != 0 && !isNaN(multipriceDiff)){
-        var totalprice = $("span[name='totalprice']");
+        var totalprice = $("#out_table").find("span[name='totalprice']");
 
         totalPriceValue = parseInt(totalprice.text());
         totalprice.text(totalPriceValue + multipriceDiff);
@@ -97,14 +97,14 @@ function recalculateTotalPrice() {
 
     totalPriceValue = 0;
 
-    $(".span[name='multiprice']").each(function(i, obj) {
+    $("#out_table").find(".span[name='multiprice']").each(function(i, obj) {
         multipriceValue = parseInt(obj.text());
         if (multipriceValue > 0) {
             totalPriceValue = totalPriceValue + multipriceValue
         }
     });
 
-    $(".span[name='totalprice']").text(totalPriceValue)
+    $("#out_table").find(".span[name='totalprice']").text(totalPriceValue)
 }
 
 $(".input-number").keydown(function (e) {
