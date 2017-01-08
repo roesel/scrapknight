@@ -97,8 +97,8 @@ class Linker:
 
         if len(cr_ids) == len(api_ids):
             m = Matcher(cr_ids, api_ids)
-            matches = m.get_matches()
-            log.info("Image matching thinks it has been successful!")
+            matches, status = m.get_matches()
+            log.info(status)
 
             self.insert_image_match(matches)
         else:

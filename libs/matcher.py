@@ -16,6 +16,9 @@ class Matcher:
     """
     Tries to match cards by image. #greatidea #notwaistingtimeatall
     """
+    # self.list_cr
+    # self.list_mid
+    status = ""
 
     def __init__(self, list_cr, list_mid):
         """
@@ -25,7 +28,7 @@ class Matcher:
         self.list_mid = list_mid
 
     def get_matches(self):
-        return self.match(self.list_cr, self.list_mid)
+        return self.match(self.list_cr, self.list_mid), self.status
 
     def matrix(self, list_cr, list_mid):
         """
@@ -47,22 +50,60 @@ class Matcher:
         """
         mat = self.matrix(list_cr, list_mid)
 
-        minima_locations = np.argmin(mat, axis=1)
-        minima = []
-        for i in range(len(minima_locations)):
-            minima.append(mat[minima_locations[i]][i])
-        max_difference = np.max(minima)
-
-        if max_difference < 4:
-            log.info("Maximum difference in images was {}.".format(max_difference))
-        else:
-            log.info("WARNING! Maximum difference {} >= 4. Trouble?".format(max_difference))
+        minima_locations = self.get_minima(mat)
 
         out = {}
         for i in range(len(minima_locations)):
             out[list_cr[i]] = list_mid[minima_locations[i]]
 
         return out
+
+    def get_minima(self, mat):
+        minima = []
+        minima_locations = []
+
+        dim = len(mat[0])
+        occurences = [0] * dim
+        unambiguous = True
+        for i in range(dim):
+            minimum_location = np.argmin(mat.T[i])
+            minimum = mat.T[i][minimum_location]
+            all_minima = np.where(mat.T[i] == minimum)
+            if len(all_minima[0]) != 1:
+                unambiguous = False
+                occurences[i] = all_minima[0]
+
+            minima.append(minimum)
+            minima_locations.append(minimum_location)
+
+        if unambiguous:
+            self.status = "All matches are unambiguous (unique)."
+        else:
+            self.status = "Some matches are ambiguous."
+            for i in range(len(occurences)):
+                for candidate in occurences[i]:
+                    # TODO Not sure which index is which - might be switched CR/API
+                    log.info(
+                        "Ambiguous candidate: {} -> {}".format(self.list_cr[i], self.list_mid[candidate]))
+
+        max_difference = np.max(minima)
+        if max_difference < 5:
+            log.info("Maximum difference in images was {}.".format(max_difference))
+        else:
+            log.info("WARNING! Maximum difference {} >= 5. Trouble?".format(max_difference))
+
+        # debug
+        log.debug("Matrix:")
+        for row in mat:
+            log.debug(row)
+        log.debug("Minima_locations:")
+        log.debug(minima_locations)
+        log.debug("Minima:")
+        log.debug(minima)
+        log.debug("Occurences:")
+        log.debug(occurences)
+
+        return minima_locations
 
     def dist(self, image_1, image_2):
         """
