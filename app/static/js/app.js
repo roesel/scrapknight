@@ -124,7 +124,7 @@ $(".input-number").keydown(function (e) {
     });
 
 
-$("#out_table").change(function(){
+$("#out_table").on('change',function(){
 
     exportCardList();
     enableSaveButons();
@@ -139,6 +139,17 @@ function enableSaveButons() {
 
 $( document ).ready(function() {
     exportCardList();
+});
+
+$("#search_card_button").click(function(e){
+    e.preventDefault();
+    searchCard();
+});
+$('#search_card_input').keyup(function(e){
+    if(e.keyCode == 13)
+    {
+        searchCard();
+    }
 });
 
 $("button[name='exportCardList']").click(function(e){
@@ -184,7 +195,7 @@ $("button[name='saveLibrary']").click(function(e){
     saveLibrary();
 });
 
-$("input[name='addToDeck']").click(function(e){
+$(document).on('click', "input[name='addToDeck']", function(e){
     e.preventDefault();
 
     enableSaveButons();
@@ -234,12 +245,32 @@ $("input[name='addToDeck']").click(function(e){
     }
 });
 
+function searchCard() {
+
+    searchString = $("#search_card_input").val();
+
+    $.ajax({
+        type: "POST",
+        url: 'https://localhost:5010/searchcard',
+        data: {
+            'search_string': searchString,
+        },
+        success: function(result) {
+            if (result){
+                $("#search_table").prop('hidden', false);
+                $("#search_table").html(result);
+            } else {
+                alert("Something is wrong.");
+            }
+        },
+    });
+}
+
 function saveLibrary() {
 
     exportCardList();
     exportText = $("#export_card_list").text();
 
-    var url = window.location.pathname;
     $.ajax({
         type: "POST",
         url: 'https://localhost:5010/savelibrary',

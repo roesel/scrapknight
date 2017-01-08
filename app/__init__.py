@@ -167,6 +167,7 @@ class User(db.Model, UserMixin):
         if len(decks) == 1 and not any(decks[0]):
             decks = []
 
+
         decks = [{
             'id': d[0],
             'name': d[1],
@@ -252,7 +253,6 @@ def callback():
                 user = User()
                 user.email = email
             user.name = user_data['name']
-            print(token)
             user.tokens = json.dumps(token)
             user.avatar = user_data['picture']
             db.session.add(user)
@@ -268,6 +268,16 @@ def logout():
     logout_user()
     return redirect(url_for('index'))
 
+
+@app.route('/searchcard', methods=['POST'])
+def searchcard():
+    search_string = request.form['search_string']
+
+    output_table, log = process(search_string)
+
+    return render_template(
+        'page_parts/card_search_table.html',
+        search_table=output_table)
 
 @app.route('/savecards', methods=['POST'])
 @login_required

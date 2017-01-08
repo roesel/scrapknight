@@ -1,0 +1,10 @@
+{% from 'page_parts/price_table.html' import price_table %}
+
+{{ price_table(
+    'Library',
+    table_data=search_table,
+    display_columns=['name', 'edition', 'price'],
+    display_footer=False,
+    count_as_input=False,
+    show_add_to_deck_button=True,
+    only_table_contents=True,) }}
