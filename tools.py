@@ -288,21 +288,27 @@ class Deck(object):
         table = []
         footer = []
 
-        header_texts = ["Card title", "Edition", "Count", "PPU [CZK]", "Price [CZK]"]
-        header_data_field = ["title", "edition", "count", "price", "multiprice"]
-        header_data_sortable = [True, True, True, True, True]
-        header_widths = [6, 2, 2, 4, 4]
-        header = [{
+        columns = ['name', 'edition', 'count', 'count_input', 'price', 'multiprice']
+        header_texts = ["Card title", "Edition", "Count", "Count", "PPU [CZK]", "Price [CZK]"]
+        header_data_field = ["title", "edition", "count", "count", "price", "multiprice"]
+        header_data_sortable = [True, True, True, True, True, True]
+        header_widths = [6, 2, 2, 2, 4, 4]
+
+        header = [(col, {
             'text': text,
             'width': width,
             'data_field': data_field,
-            'data_sortable': data_sortable}
-                  for text, width, data_field, data_sortable
-                  in zip(header_texts, header_widths, header_data_field, header_data_sortable)]
+            'data_sortable': data_sortable},)
+                  for col, text, width, data_field, data_sortable
+                  in zip(columns, header_texts, header_widths, header_data_field, header_data_sortable)]
+
+        header = dict(header)
 
         for card in self.cards:
 
-            table.append(card.details_table_row())
+            details = card.details_table_row()
+
+            table.append(details)
 
             if type(card) is Card:
                 if card.cost:
@@ -312,6 +318,7 @@ class Deck(object):
                 for c in card:
                     det = c.details_table_row()
                     det['multicard'] = 'item'
+                    det['multicard_info'] = details['multicard_info']
                     table.append(det)
 
         success = self.found_all and not self.any_multicards and self.found_all_costs
@@ -399,12 +406,13 @@ class Multicard(object):
             'md5': self.md5,
             'search_hash': self.search_hash,
             'multicard_info': self.multicard_info,
-            'row': [
-                {'id': "", 'name': self.name},
-                {'id': "", 'name': ""},
-                "",  # str(self.count),
-                str_costs,
-                ""]}
+            'card_id': "",
+            'name': self.name,
+            'edition_id': "",
+            'edition_name': "",
+            'count': "",  # str(self.count),
+            'price': str_costs,
+            'multiprice': ""}
 
 
 class Card(object):
@@ -661,7 +669,6 @@ class Card(object):
             'md5': self.md5,
             'card_id': self.id,
             'search_hash': self.search_hash,
-            'row': []
         }
 
         if self.found:
@@ -675,21 +682,24 @@ class Card(object):
             else:
                 str_multiprice = ""
 
-            det['row'] = [
-                {'id': self.id.replace('_', '/'), 'name': self.name},
-                {'id': self.edition_id, 'name': self.edition_name},
-                str(self.count),
-                str_cost,
-                str_multiprice]
+            addet = {
+                'str_id': self.id.replace('_', '/'),
+                'name': self.name,
+                'edition_name': self.edition_name,
+                'edition_id': self.edition_id,
+                'count': str(self.count),
+                'price': str_cost,
+                'multiprice': str_multiprice}
 
         else:
-            det['not_found_reason'] = Card.not_found_reason(self.name_req, self.edition_req)
+            addet = {
+                'not_found_reason': Card.not_found_reason(self.name_req, self.edition_req),
+                'str_id': None,
+                'name': self.name_req,  # tady bacha na nejaky user injection
+                'edition_name': self.edition_req,
+                'edition_id': None,
+                'count': str(self.count),
+                'price': '',
+                'multiprice': ''}
 
-            det['row'] = [
-                {'id': 'NotFound', 'name': self.name_req},  # tady bacha na nejaky user injection
-                {'id': self.edition_req, 'name': self.edition_req},
-                str(self.count),
-                '',
-                '']
-
-        return det
+        return {**det, **addet}

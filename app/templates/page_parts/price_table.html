@@ -1,16 +1,41 @@
 {% macro render_table_header(header, columns, display_columns) -%}
+
+<colgroup>
+    # for col in ['name', 'edition', 'count', 'count_input', 'price', 'multiprice']
+    # if col in display_columns
+    #    set hidden_prop = ""
+    # else
+    #    set hidden_prop = "hidden"
+    # endif
+    <col class="{{ hidden_prop }}">
+    # endfor
+</colgroup>
 <thead>
     <tr>
-    {% for heading in header %}
-        {% if columns[loop.index0] in display_columns %}
-        <th class="col-md-{{ heading['width'] }}"
+    # for col in ['name', 'edition', 'count', 'count_input', 'price', 'multiprice']
+    # if col in display_columns
+    #    set hidden_prop = ""
+    # else
+    #    set hidden_prop = "hidden"
+    # endif
+
+    # set heading = header[col]
+
+        <th class="col-md-{{ heading['width'] }} {{ hidden_prop }}"
             data-field="{{ heading['data_field'] }}"
-            data-sortable="{{ heading['data_sortable'] }}"> {{ heading['text'] }} </th>
-        {% endif %}
-    {% endfor %}
+            data-sortable="{{ heading['data_sortable'] }}">
+
+            {{ heading['text'] }}
+
+        </th>
+
+    # endfor
     </tr>
 </thead>
 {%- endmacro %}
+
+## =============================================================================
+## =============================================================================
 
 {% macro add_to_deck_button(data_field) -%}
 <input type="button"
@@ -21,137 +46,273 @@
     style="margin-right: 10pt;">
 {%- endmacro %}
 
+## =============================================================================
+## =============================================================================
+
+{% macro render_found_row(row, row_number, display_columns, show_add_to_deck_button) -%}
+
+# if row['multicard']
+#    if row['multicard_info'] == 'similar_search'
+#        set row_class="warning"
+#    elif row['multicard_info'] == 'multiple_cards'
+#        set row_class="info"
+#    endif
+# endif
+
+## ============================ opening TR and NAME ============================
+
+# if row['multicard'] == 'head'
+<tr class="{{ row_class }}"
+    data-toggle="collapse" data-target=".{{row['search_hash']}}"
+    onmouseover="document.images.card_pic.src='{{ url_for('static',filename='img/card_back.jpg') }}'">
+    <td>
+        <strong>{{row['name']}}</strong> &#8212; <em>Click to expand list</em> {# &#8212; is emdash #}
+        <input type="button"
+            name="acceptMulticardSelection"
+            value="Accept selection"
+            data-field="{{row['search_hash']}}"
+            class="btn btn-default btn-xs"
+            style="margin-left: 10pt;">
+    </td>
+
+# elif row['multicard'] == 'item'
+<tr class="{{row['search_hash']}} {{ row_class }} collapse out"  data-field="{{row['card_id']}}"
+    onmouseover="document.images.card_pic.src='http://cernyrytir.cz/images/kusovkymagic/{{row['str_id']}}.jpg'">
+        <td><span name="cardname" data-field="{{ row_number }}{{ row['card_id'] }}">{{row['name']}}</span>
+        {% if show_add_to_deck_button %}
+            {{ add_to_deck_button(row['card_id']) }}
+        {% endif %}
+    </td>
+
+# else
+<tr class="{{row['search_hash']}}" data-field="{{row['card_id']}}"
+    onmouseover="document.images.card_pic.src='http://cernyrytir.cz/images/kusovkymagic/{{row['str_id']}}.jpg'">
+    <td><span name="cardname" data-field="{{ row_number }}{{ row['card_id'] }}">{{row['name']}}</span>
+        {% if show_add_to_deck_button %}
+            {{ add_to_deck_button(row['card_id']) }}
+        {% endif %}
+    </td>
+
+# endif
+
+## ================================== EDITION ==================================
+
+# if 'edition' in display_columns
+#    set hidden_prop = ""
+# else
+#    set hidden_prop = "hidden"
+# endif
+
+    <td title="{{row['edition_name']}}" class="{{ hidden_prop }}">
+        <span name="edition" data-field="{{ row_number }}{{ row['card_id'] }}">{{ row['edition_id'] }}</span>
+    </td>
+
+## =================================== COUNT ===================================
+
+# if 'count' in display_columns
+#    set hidden_prop = ""
+# else
+#    set hidden_prop = "hidden"
+# endif
+
+# if row['multicard'] == 'head'
+    <td name="number" class="{{ hidden_prop }}">
+        {{ row['count'] }}
+    </td>
+# else
+    <td name="number" class="{{ hidden_prop }}">
+        {{ row['count'] }}
+    </td>
+# endif
+
+## ============================= COUNT (as input) ==============================
+
+# if 'count_input' in display_columns
+#    set hidden_prop = ""
+# else
+#    set hidden_prop = "hidden"
+# endif
+# if row['multicard'] == 'head'
+    <td class="{{ hidden_prop }}">
+        {{ row['count'] }}
+    </td>
+# else
+    <td name="count" class="{{ hidden_prop }}">
+        <div class="input-group">
+            <span class="input-group-btn">
+                <button type="button"
+                    class="btn btn-default btn-number btn-sm"
+                    {% if row['count']|int == 0 %}
+                    disabled="disabled"
+                    {% endif %}
+                    data-type="minus"
+                    data-field="{{ row_number }}{{ row['card_id'] }}">
+                    <span class="glyphicon glyphicon-minus"></span>
+                </button>
+            </span>
+            <input type="text"
+                name="count"
+                data-field="{{ row_number }}{{ row['card_id'] }}"
+                class="form-control input-number input-sm"
+                value="{{ row['count'] }}"
+                min="0"
+                max="1000">
+            <span class="input-group-btn">
+                <button type="button"
+                    class="btn btn-default btn-number btn-sm"
+                    data-type="plus"
+                    data-field="{{ row_number }}{{ row['card_id'] }}">
+                    <span class="glyphicon glyphicon-plus"></span>
+                </button>
+            </span>
+        </div>
+    </td>
+# endif
+
+## =================================== PRICE ===================================
+
+# if 'price' in display_columns
+#    set hidden_prop = ""
+# else
+#    set hidden_prop = "hidden"
+# endif
+
+
+# if row['multicard'] == 'head'
+    <td class="{{ hidden_prop }}">
+        {{ row['price'] }}
+    </td>
+# else
+    <td class="{{ hidden_prop }}">
+        <span name="price"
+            data-field="{{ row_number }}{{ row['card_id'] }}">
+            {{ row['price'] }}
+        </span>
+    </td>
+# endif
+
+## ================================ MULTIPRICE =================================
+
+# if 'multiprice' in display_columns
+#    set hidden_prop = ""
+# else
+#    set hidden_prop = "hidden"
+# endif
+
+# if row['multicard'] == 'head'
+    <td class="{{ hidden_prop }}">
+        {{ row['multiprice'] }}
+    </td>
+# else
+    <td class="{{ hidden_prop }}">
+        <span name="multiprice"
+            data-field="{{ row_number }}{{ row['card_id'] }}">
+            {{ row['multiprice'] }}
+        </span>
+    </td>
+# endif
+
+</tr>
+{%- endmacro %}
+
+## =============================================================================
+## =============================================================================
+
+{% macro render_not_found_row(row) -%}
+<tr class="danger"
+    onmouseover="document.images.card_pic.src='{{ url_for('static',filename='img/card_back.jpg') }}'">
+    <td title="{{ row['not_found_reason']['card_name']}}" >
+        {% if row['not_found_reason']['card_name'] %}
+            <strong>{{row['name']}}</strong>
+        {% else %}
+            {{row['name']}}
+        {% endif %}
+    </td>
+
+## ================================== EDITION ==================================
+
+# if 'edition' in display_columns
+#    set hidden_prop = ""
+# else
+#    set hidden_prop = "hidden"
+# endif
+
+    <td title="{{ row['not_found_reason']['edition']}}" class="{{ hidden_prop }}">
+    {% if row['not_found_reason']['edition'] %}
+        <strong>{{ row['edition_id'] }}</strong>
+    {% else %}
+        {{ row['edition_id'] }}
+    {% endif %}
+    </td>
+
+## =================================== COUNT ===================================
+
+# if 'count' in display_columns
+#    set hidden_prop = ""
+# else
+#    set hidden_prop = "hidden"
+# endif
+
+    <td class="{{ hidden_prop }}">
+        {{ row['count'] }}
+    </td>
+
+## ============================= COUNT (as input) ==============================
+
+# if 'count_input' in display_columns
+#    set hidden_prop = ""
+# else
+#    set hidden_prop = "hidden"
+# endif
+
+    <td class="{{ hidden_prop }}">
+        {{ row['count'] }}
+    </td>
+
+## =================================== PRICE ===================================
+
+# if 'price' in display_columns
+#    set hidden_prop = ""
+# else
+#    set hidden_prop = "hidden"
+# endif
+
+    <td class="{{ hidden_prop }}">
+        {{ row['price'] }}
+    </td>
+
+## ================================ MULTIPRICE =================================
+
+# if 'multiprice' in display_columns
+#    set hidden_prop = ""
+# else
+#    set hidden_prop = "hidden"
+# endif
+
+    <td class="{{ hidden_prop }}">
+            {{ row['multiprice'] }}
+    </td>
+
+</tr>
+{%- endmacro %}
+
+## =============================================================================
+## =============================================================================
+
 {% macro render_table_body(body, columns, display_columns, show_add_to_deck_button, count_as_input) -%}
 <tbody>
-{% for row in body %}
-    {% if row['found'] == True %}
-        {% if row['multicard'] %}
-            {% if row['multicard_info'] == 'similar_search' %}
-                {% set row_class="warning" %}
-            {% elif row['multicard_info'] == 'multiple_cards' %}
-                {% set row_class="info" %}
-            {% endif %}
-        {% endif %}
-
-        {% if row['multicard'] == 'head' %}
-            <tr class="{{ row_class }}"
-                data-toggle="collapse" data-target=".{{row['search_hash']}}"
-                onmouseover="document.images.card_pic.src='{{ url_for('static',filename='img/card_back.jpg') }}'">
-                <td>
-                    <strong>{{row['row'][0]['name']}}</strong> &#8212; <em>Click to expand list</em> {# &#8212; is emdash #}
-                    <input type="button"
-                        name="acceptMulticardSelection"
-                        value="Accept selection"
-                        data-field="{{row['search_hash']}}"
-                        class="btn btn-default btn-xs"
-                        style="margin-left: 10pt;">
-                </td>
-        {% elif row['multicard'] == 'item' %}
-            <tr class="{{row['search_hash']}} {{ row_class }} collapse out"  data-field="{{row['card_id']}}"
-                onmouseover="document.images.card_pic.src='http://cernyrytir.cz/images/kusovkymagic/{{row['row'][0]['id']}}.jpg'">
-                <td><span name="cardname" data-field="{{ loop.index }}{{ row['card_id'] }}">{{row['row'][0]['name']}}</span>
-                    {% if show_add_to_deck_button %}
-                        {{ add_to_deck_button(row['card_id']) }}
-                    {% endif%}
-                </td>
-        {% else %}
-            <tr class="{{row['search_hash']}}" data-field="{{row['card_id']}}"
-                onmouseover="document.images.card_pic.src='http://cernyrytir.cz/images/kusovkymagic/{{row['row'][0]['id']}}.jpg'">
-                <td><span name="cardname" data-field="{{ loop.index }}{{ row['card_id'] }}">{{row['row'][0]['name']}}</span>
-                    {% if show_add_to_deck_button %}
-                        {{ add_to_deck_button(row['card_id']) }}
-                    {% endif%}
-                </td>
-        {% endif %}
-                <td title="{{row['row'][1]['name']}}">
-                    <span name="edition" data-field="{{ loop.index }}{{ row['card_id'] }}">{{ row['row'][1]['id'] }}</span>
-                </td>
-            {% if not row['multicard'] == 'head' %}
-                {% if columns[2] in display_columns %}
-                <td name="{{ columns[2] }}">
-                    {% if count_as_input == True %}
-                    <div class="input-group">
-                        <span class="input-group-btn">
-                            <button type="button"
-                                class="btn btn-default btn-number btn-sm"
-                                {% if row['row'][2]|int == 0 %}
-                                disabled="disabled"
-                                {% endif %}
-                                data-type="minus"
-                                data-field="{{ loop.index }}{{ row['card_id'] }}">
-                                <span class="glyphicon glyphicon-minus"></span>
-                            </button>
-                        </span>
-                        <input type="text"
-                            name="count"
-                            data-field="{{ loop.index }}{{ row['card_id'] }}"
-                            class="form-control input-number input-sm"
-                            value="{{ row['row'][2] }}"
-                            min="0"
-                            max="1000">
-                        <span class="input-group-btn">
-                            <button type="button"
-                                class="btn btn-default btn-number btn-sm"
-                                data-type="plus"
-                                data-field="{{ loop.index }}{{ row['card_id'] }}">
-                                <span class="glyphicon glyphicon-plus"></span>
-                            </button>
-                        </span>
-                    </div>
-                    {% else %}
-                      {{ row['row'][2] }}
-                    {% endif %}
-                </td>
-                {% endif %}
-
-                {% if columns[3] in display_columns %}
-                    <td><span name="{{ columns[3] }}" data-field="{{ loop.index }}{{ row['card_id'] }}">{{ row['row'][3] }}</span></td>
-                {% endif %}
-
-                {% if columns[4] in display_columns %}
-                    <td><span name="{{ columns[4] }}" data-field="{{ loop.index }}{{ row['card_id'] }}">{{ row['row'][4] }}</span></td>
-                {% endif %}
-
-            {% else %}
-                {% if columns[2] in display_columns %}
-                    <td>{{ row['row'][2] }}</td>
-                {% endif %}
-
-                {% if columns[3] in display_columns %}
-                    <td>{{ row['row'][3] }}</td>
-                {% endif %}
-
-                {% if columns[4] in display_columns %}
-                    <td>{{ row['row'][4] }}</td>
-                {% endif %}
-            {% endif %}
-    {% else %}
-        <tr class="danger"
-            onmouseover="document.images.card_pic.src='{{ url_for('static',filename='img/card_back.jpg') }}'">
-            <td title="{{ row['not_found_reason']['card_name']}}" >
-                {% if row['not_found_reason']['card_name'] %}
-                    <strong>{{row['row'][0]['name']}}</strong>
-                {% else %}
-                    {{row['row'][0]['name']}}
-                {% endif %}
-            </td>
-            <td title="{{ row['not_found_reason']['edition']}}" >
-                {% if row['not_found_reason']['edition'] %}
-                    <strong>{{ row['row'][1]['id'] }}</strong>
-                {% else %}
-                    {{ row['row'][1]['id'] }}
-                {% endif %}
-            </td>
-        {% for cell in row['row'][2:] %}
-            {% if columns[loop.index0 + 2] in display_columns %}
-                <td>{{ cell }}</td>
-            {% endif %}
-        {% endfor %}
-    {% endif %}
-        </tr>
-{% endfor %}
+# for row in body
+#    if row['found'] == True
+        {{ render_found_row(row, loop.index, display_columns, show_add_to_deck_button) }}
+#    else
+        {{ render_not_found_row(row) }}
+#    endif
+# endfor
 </tbody>
 {%- endmacro %}
+
+## =============================================================================
+## =============================================================================
 
 {% macro render_table_footer(footer, columns, display_columns, success) -%}
 <tfoot>
@@ -161,12 +322,20 @@
     {% else %}
         <tr class="danger">
     {% endif %}
-    {% set colspan=display_columns | count - 1 %}
-            <th colspan="{{ colspan }}">{{  row[0] }} <span style="font-weight: normal;"><em>{{  row[1] }}</em></span></th>
-            <th><span name="totalprice">{{ row[2] }}</span></th>
+    {% set colspan=columns | count - 1 %}
+            <th colspan="{{ colspan }}">
+                {{ row[0] }}
+                <span style="font-weight: normal;">
+                    <em>{{  row[1] }}</em>
+                </span>
+            </th>
+            <th>
+                <span name="totalprice">
+                    {{ row[2] }}
+                </span>
+            </th>
     </tr>
 {% endfor %}
-</tr>
 </tfoot>
 {%- endmacro %}
 
@@ -174,15 +343,14 @@
     name, table_data, table_id="price_table",
     display_columns=None,
     display_footer=True,
-    count_as_input=True,
     show_add_to_deck_button=False,
     buttons_to_render=None,
     only_table_contents=False)
 -%}
 
-{% if display_columns == None %}
-    {% set display_columns=table_data['columns'] %}
-{% endif %}
+# if display_columns == None
+#    set display_columns=table_data['columns']
+# endif
 
 {% if not only_table_contents %}
 <div class="panel panel-default">
@@ -190,11 +358,12 @@
   <div class="panel-body">
     <table id="{{ table_id }}" class="table table-striped table-condensed table-hover" data-toggle="table">
 {% endif %}
+
       {% if table_data['header'] %}
         {{ render_table_header(table_data['header'], table_data['columns'], display_columns) }}
       {% endif %}
 
-      {{ render_table_body(table_data['body'], table_data['columns'], display_columns, show_add_to_deck_button, count_as_input) }}
+      {{ render_table_body(table_data['body'], table_data['columns'], display_columns, show_add_to_deck_button) }}
 
       {% if display_footer and table_data['footer'] %}
         {{ render_table_footer(table_data['footer'], table_data['columns'], display_columns, table_data['success']) }}

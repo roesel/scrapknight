@@ -209,37 +209,12 @@ $(document).on('click', "input[name='addToDeck']", function(e){
     } else {
         var row = $(this).closest('tr');
         var clone = row.clone();
+        clone.removeClass("warning");
+        clone.removeClass("info");
         clone.find("input[name='addToDeck']").remove();
-        clone.find("td[name='count']").html('\
-        <div class="input-group">\
-            <span class="input-group-btn">\
-                <button type="button"\
-                    class="btn btn-default btn-number btn-sm"\
-                    data-type="minus"\
-                    data-field="'+card_id+'">\
-                    <span class="glyphicon glyphicon-minus"></span>\
-                </button>\
-            </span>\
-            <input type="text"\
-                name="count"\
-                data-field="'+card_id+'"\
-                class="form-control input-number input-sm"\
-                value="1"\
-                min="0"\
-                max="1000">\
-            <span class="input-group-btn">\
-                <button type="button"\
-                    class="btn btn-default btn-number btn-sm"\
-                    data-type="plus"\
-                    data-field="'+card_id+'">\
-                    <span class="glyphicon glyphicon-plus"></span>\
-                </button>\
-            </span>\
-        </div>');
-        // clone.find('.input-number').each(function(){
-        //    $(this).data('oldValue', $(this).val());
-        // });
-        clone.append("<td></td>");
+        clone.find("span[name='multiprice']").text(clone.find("span[name='price']").text());
+        clone.find("td.hidden").removeClass("hidden");
+        clone.find("td[name='number']").addClass("hidden");
         $("#out_table tbody").append(clone);
 
     }
