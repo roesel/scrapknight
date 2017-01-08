@@ -92,8 +92,8 @@ class Linker:
         IMPROVE Could be optimized to make a new matcher for every kind of land in order
         to only do 3x3 matrices for 'Plains' instead of 15x15 for all lands.
         """
-        cr_ids = self.mismatch_cr(edition)
-        api_ids = self.mismatch_api(edition)
+        cr_ids = self.extra_from_cr(edition)
+        api_ids = self.extra_from_api(edition)
 
         if len(cr_ids) == len(api_ids):
             m = Matcher(cr_ids, api_ids)
@@ -120,7 +120,7 @@ class Linker:
             self.db.insert(query, [cr_id, mid])
         log.info("Done.")
 
-    def mismatch_cr(self, edition):
+    def extra_from_cr(self, edition):
         """
         Returns a list of cards from CR that are not covered by direct_matches().
         """
@@ -148,7 +148,7 @@ class Linker:
                     out.append(row[0])
         return out
 
-    def mismatch_api(self, edition):
+    def extra_from_api(self, edition):
         """
         Returns a list of cards from API that are not covered by direct_matches().
         """
@@ -175,83 +175,6 @@ class Linker:
                 for row in rows:
                     out.append(row[0])
         return out
-
-    def landsort(self, edition):
-        query = """
-                SET @edition = "{}";
-                SELECT COUNT(*) FROM (
-                	(SELECT *
-                	FROM (
-                		SELECT * FROM sdk_cards WHERE NOT (`layout`="double-faced" and mana_cost is null and `type` !="Land") AND (`set`=@edition)
-                	) as t1
-                	RIGHT JOIN (
-                		SELECT REPLACE(name,'´', '\\\'') as name_replaced FROM cards WHERE edition_id=@edition AND id not like "tokens%" AND name not like "Token - %" AND name not like "Emblem - %"
-                	) as t2
-                	ON t1.name = t2.name_replaced)
-
-                UNION ALL
-
-                	(SELECT *
-                	FROM (
-                		SELECT * FROM sdk_cards WHERE NOT (`layout`="double-faced" and mana_cost is null and `type` !="Land") AND (`set`=@edition)
-                	) as t1
-                	LEFT JOIN (
-                		SELECT REPLACE(name,'´', '\\\'') as name_replaced FROM cards WHERE edition_id=@edition AND id not like "tokens%" AND name not like "Token - %" AND name not like "Emblem - %"
-                	) as t2
-                	ON t1.name = t2.name_replaced)
-                ) as mismatch WHERE (`name` is  null or `name_replaced` is  null);
-                """.format(edition)
-
-        results = self.db.cursor.execute(query, multi=True)
-        self.db.cnx.commit()
-        for cur in results:
-            if cur.with_rows:
-                count = cur.fetchall()[0][0]
-
-        return count / 2
-
-    def insert_landsort(self, edition):
-        query = """ SET @edition = %s;
-                    REPLACE INTO rel_cards
-                    SELECT `id_cr`, `mid` as `id_sdk`
-                    FROM (
-                    select @r := @r+1 as my_order , z.* from(
-
-                    SELECT *
-                       FROM (
-                               SELECT * FROM sdk_cards WHERE NOT (`layout`="double-faced" and mana_cost is null and `type` !="Land") AND (`set`=@edition)
-                       ) as t1
-                       LEFT JOIN (
-                               SELECT REPLACE(name,'´', '\\\'') as name_replaced FROM cards WHERE edition_id=@edition AND id not like "tokens%" AND name not like "Token - %"
-                       ) as t2
-                       ON t1.name = t2.name_replaced
-                       WHERE `name_replaced` is null
-                       ORDER BY `name`, `mid`
-
-                    )z, (select @r:=0)y
-                    ) as not_in_cr
-
-                    JOIN
-
-                    (
-                    select @s := @s+1 as my_order , z.* from(
-
-                    SELECT *
-                       FROM (
-                               SELECT `name` FROM sdk_cards WHERE NOT (`layout`="double-faced" and mana_cost is null and `type` !="Land") AND (`set`=@edition)
-                       ) as t1
-                       RIGHT JOIN (
-                               SELECT REPLACE(name,'´', '\\\'') as name_cr, id as id_cr FROM cards WHERE edition_id=@edition AND id not like "tokens%" AND name not like "Token - %"
-                       ) as t2
-                       ON t1.name = t2.name_cr
-                       WHERE `name` is null
-                       ORDER BY `name_cr`
-
-                    )z, (select @s:=0)y
-                    ) as not_in_api
-                           ON not_in_cr.my_order = not_in_api.my_order;
-        """
-        results = self.db.multiinsert(query, (edition,))
 
     def insert_direct_match(self, edition):
         query = """ SET @edition = %s;
