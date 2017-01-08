@@ -47,11 +47,20 @@ class Matcher:
         """
         mat = self.matrix(list_cr, list_mid)
 
-        minima = np.argmin(mat, axis=1)
+        minima_locations = np.argmin(mat, axis=1)
+        minima = []
+        for i in range(len(minima_locations)):
+            minima.append(mat[minima_locations[i]][i])
+        max_difference = np.max(minima)
+
+        if max_difference < 4:
+            log.info("Maximum difference in images was {}.".format(max_difference))
+        else:
+            log.info("WARNING! Maximum difference {} >= 4. Trouble?".format(max_difference))
 
         out = {}
-        for i in range(len(minima)):
-            out[list_cr[i]] = list_mid[minima[i]]
+        for i in range(len(minima_locations)):
+            out[list_cr[i]] = list_mid[minima_locations[i]]
 
         return out
 
