@@ -206,6 +206,7 @@ $(document).on('click', "input[name='addToDeck']", function(e){
         var td_count = card_row_in_deck.find("input[name='count']");
         var count = parseInt(td_count.attr('value'));
         td_count.attr('value', count + 1);
+        card_row_in_deck.flashTableRow();
     } else {
         var row = $(this).closest('tr');
         var clone = row.clone();
@@ -216,9 +217,19 @@ $(document).on('click', "input[name='addToDeck']", function(e){
         clone.find("td.hidden").removeClass("hidden");
         clone.find("td[name='number']").addClass("hidden");
         $("#out_table tbody").append(clone);
-
+        clone.flashTableRow();
     }
 });
+
+$.fn.flashTableRow = function() {
+    old_bgcolor = this.css('background-color');
+    old_bgcolor = 'white';
+    this.css('transition', 'background-color 0.4s');
+    this.css('background-color', '#fffde7');
+    setTimeout(function(e) {
+        e.css('background-color', old_bgcolor)
+    }, 400, this);
+};
 
 function searchCard() {
 
