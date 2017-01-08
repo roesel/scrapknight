@@ -64,28 +64,34 @@ def link():
 
     l = Linker(DatabaseConfig)
 
-    edition = "BFZ"
+    edition = "SOI"
 
-    print("API total(): {}".format(l.total("api", edition)))
-    print("API standard(): {}".format(l.standard("api", edition)))
+    api_original = l.total("api", edition)
+    api_standard = l.standard("api", edition)
+    cr_original = l.total("cr", edition)
+    cr_standard = l.standard("cr", edition)
 
-    print("CR total(): {}".format(l.total("cr", edition)))
-    print("CR standard(): {}".format(l.standard("cr", edition)))
+    log.info("API: {} -> {}.".format(api_original, api_standard))
+    log.info(" CR: {} -> {}.".format(cr_original, cr_standard))
+    if api_standard == cr_standard:
+        n_cards = api_standard
+        n_directly_matching = l.direct_matches(edition)
+        n_missing_cards = n_cards - n_directly_matching
+        log.info("API and CR # of cards matching, good.")
 
-    print("Direct matches: {}".format(l.direct_matches(edition)))
+        log.info("{} directly matching cards.".format(n_directly_matching))
+        log.info("Inserting direct matches...")
+        # check how many rows were inserted and confirm w/ direct_matches()
+        l.insert_direct_match(edition)
 
-    print("We are missing {} cards.".format(l.standard("api", edition) - l.direct_matches(edition)))
-
-    #print("Landsort offers {} cards.".format(l.landsort(edition)))
-
-    print("Inserting direct matches...")
-    l.insert_direct_match(edition)
-
-    if (l.standard("api", edition) - l.direct_matches(edition) == l.landsort(edition)):
-        print("Trying image match.")
-        l.image_match(edition)
-
-        # l.insert_landsort(edition)
+        if n_missing_cards > 0:
+            log.info("{} cards are mismatching.".format(n_missing_cards))
+            log.info("Trying image match.")
+            l.image_match(edition)
+        else:
+            log.info("All cards matched directly. Yay!")
+    else:
+        log.info("API and CR both have different # of cards. Cancelling.")
 
 
 if __name__ == "__main__":
