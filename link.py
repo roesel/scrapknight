@@ -54,7 +54,7 @@ def setup():
         level=logging_level)
 
 
-def link():
+def link(edition):
     """
     (Re)builds the database completely from scratch, to the state we consider the "default".
     What "default" is can change drastically between commits though.
@@ -63,8 +63,6 @@ def link():
     log = logging.getLogger()
 
     l = Linker(DatabaseConfig)
-
-    edition = "SOI"
 
     api_original = l.total("api", edition)
     api_standard = l.standard("api", edition)
@@ -96,4 +94,7 @@ def link():
 
 if __name__ == "__main__":
     setup()
-    link()
+
+    editions = ["SOI"]
+    for edition in editions:
+        link(edition)
