@@ -8,8 +8,8 @@ CREATE DATABASE `scrapknight` /*!40100 DEFAULT CHARACTER SET utf8 COLLATE utf8_g
 USE `scrapknight`;
 
 CREATE TABLE `editions` (
-  `id` varchar(50) NOT NULL COMMENT 'ID edice (XXX...)',
-  `name` varchar(50) DEFAULT NULL COMMENT 'Plný název edice',
+  `id` VARCHAR(255) NOT NULL COMMENT 'ID edice (XXX...)',
+  `name` VARCHAR(255) DEFAULT NULL COMMENT 'Plný název edice',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Seznam zkratek edic a jejich plných názvů.';
@@ -28,11 +28,11 @@ CREATE TABLE IF NOT EXISTS `sdk_editions` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Edice natažené z SDK.';
 
 CREATE TABLE `cards` (
-  `id` varchar(20) NOT NULL COMMENT 'ID karty',
-  `name` varchar(100) DEFAULT NULL COMMENT 'Název karty',
-  `edition_id` varchar(50) DEFAULT NULL COMMENT 'Edice karty (zkratka)',
-  `manacost` varchar(10) DEFAULT NULL COMMENT 'Manacost (formát?)',
-  `md5` varchar(50) DEFAULT NULL COMMENT 'MD5 hash jména karty',
+  `id` VARCHAR(255) NOT NULL COMMENT 'ID karty',
+  `name` VARCHAR(255) DEFAULT NULL COMMENT 'Název karty',
+  `edition_id` VARCHAR(50) DEFAULT NULL COMMENT 'Edice karty (zkratka)',
+  `manacost` VARCHAR(50) DEFAULT NULL COMMENT 'Manacost (formát?)',
+  `md5` VARCHAR(50) DEFAULT NULL COMMENT 'MD5 hash jména karty',
   PRIMARY KEY (`id`),
   KEY `edition_id` (`edition_id`),
   KEY `name` (`name`),
@@ -43,28 +43,29 @@ CREATE TABLE `cards` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Seznam všech karet v databázi.';
 
 CREATE TABLE IF NOT EXISTS `sdk_cards` (
-  `name` varchar(100) DEFAULT NULL COMMENT 'Název',
-  `mid` mediumint(9) NOT NULL COMMENT 'Multiverse ID',
+  `name` VARCHAR(255) DEFAULT NULL COMMENT 'Název',
+  `mid` mediumint(9) DEFAULT NULL COMMENT 'Multiverse ID',
   `layout` varchar(50) DEFAULT NULL COMMENT 'Rozvržení',
   `mana_cost` varchar(50) DEFAULT NULL COMMENT 'Manacost (formát?)',
   `type` varchar(50) DEFAULT NULL COMMENT 'Typ',
   `rarity` varchar(50) DEFAULT NULL COMMENT 'Rarita',
   `set` varchar(50) DEFAULT NULL COMMENT 'Edice',
-  `id` varchar(50) DEFAULT NULL COMMENT 'ID karty (hash)',
-  PRIMARY KEY (`mid`),
-  KEY `edition_id` (`layout`),
-  KEY `manacost` (`mana_cost`),
-  KEY `md5` (`id`),
+  `id` varchar(50) NOT NULL COMMENT 'ID karty (hash)',
+  PRIMARY KEY (`id`),
+  KEY `mid` (`mid`),
+  KEY `layout` (`layout`),
+  KEY `mana_cost` (`mana_cost`),
+  KEY `id` (`id`),
   KEY `name` (`name`),
   FULLTEXT KEY `name_fulltext` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='Seznam všech karet v databázi, bráno z SDK.';
 
 CREATE TABLE `costs` (
-  `card_id` varchar(20) NOT NULL COMMENT 'ID karty',
-  `buy` smallint(5) unsigned DEFAULT NULL,
-  `buy_foil` smallint(5) unsigned DEFAULT NULL,
-  `sell` smallint(5) unsigned DEFAULT NULL,
-  `sell_foil` smallint(5) unsigned DEFAULT NULL,
+  `card_id` VARCHAR(255) NOT NULL COMMENT 'ID karty',
+  `buy` INT unsigned DEFAULT NULL,
+  `buy_foil` INT unsigned DEFAULT NULL,
+  `sell` INT unsigned DEFAULT NULL,
+  `sell_foil` INT unsigned DEFAULT NULL,
   PRIMARY KEY (`card_id`),
   CONSTRAINT `costs_ibfk_3` FOREIGN KEY (`card_id`) REFERENCES `cards` (`id`) ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Různé ceny jednotlivých karet.';
@@ -119,7 +120,7 @@ CREATE TABLE `users` (
 
 CREATE TABLE `users_cards` (
   `user_id` INT NOT NULL,
-  `card_id` VARCHAR(45) NOT NULL,
+  `card_id` VARCHAR(255) NOT NULL,
   `count` INT NOT NULL,
   PRIMARY KEY (`user_id`, `card_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='List of cards belonging to users';
@@ -130,7 +131,7 @@ ADD UNIQUE INDEX `card_user_unique` (`user_id` ASC, `card_id` ASC);
 CREATE TABLE `users_decks` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `user_id` INT NOT NULL,
-  `name` VARCHAR(45)  DEFAULT NULL,
+  `name` VARCHAR(255)  DEFAULT NULL,
   `info` TEXT,
   PRIMARY KEY (`id`, `user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT = 'Decks belonging to users.';
@@ -138,7 +139,7 @@ CREATE TABLE `users_decks` (
 CREATE TABLE `users_decks_cards` (
   `deck_id` INT NOT NULL,
   `user_id` INT NOT NULL,
-  `card_id` VARCHAR(45) NOT NULL,
+  `card_id` VARCHAR(255) NOT NULL,
   `count` INT NOT NULL,
   PRIMARY KEY (`deck_id`, `user_id`, `card_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT = 'Cards belonging to decks.';
