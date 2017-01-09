@@ -1,7 +1,7 @@
 {% macro render_table_header(header, columns, display_columns) -%}
 
 <colgroup>
-    # for col in ['name', 'edition', 'count', 'count_input', 'price', 'multiprice']
+    # for col in ['name', 'manacost', 'edition', 'count', 'count_input', 'price', 'multiprice']
     # if col in display_columns
     #    set hidden_prop = ""
     # else
@@ -12,7 +12,7 @@
 </colgroup>
 <thead>
     <tr>
-    # for col in ['name', 'edition', 'count', 'count_input', 'price', 'multiprice']
+    # for col in ['name', 'manacost', 'edition', 'count', 'count_input', 'price', 'multiprice']
     # if col in display_columns
     #    set hidden_prop = ""
     # else
@@ -33,6 +33,26 @@
     </tr>
 </thead>
 {%- endmacro %}
+
+## =============================================================================
+## =============================================================================
+
+{% macro render_manacost(manacost) -%}
+
+# for mana in manacost
+#    if mana in [
+         'w', 'u', 'b', 'r', 'g',
+         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13'
+         '14', '15', '16', '17', '18', '19', '20'
+         'x', 'y', 'z']
+    <i class="ms ms-{{ mana }} ms-cost"></i>
+##    <i class="ms ms-{{ mana }} ms-cost ms-shadow"></i>
+#    else
+    {{ mana }}
+#    endif
+# endfor
+{%- endmacro %}
+
 
 ## =============================================================================
 ## =============================================================================
@@ -64,7 +84,7 @@
 # if row['multicard'] == 'head'
 <tr class="{{ row_class }}"
     data-toggle="collapse" data-target=".{{row['search_hash']}}"
-    onmouseover="document.images.card_pic.src='{{ url_for('static',filename='img/card_back.jpg') }}'">
+    onmouseover="document.images.card_pic.src='{{ row['img_url'] }}'">
     <td>
         <strong>{{row['name']}}</strong> &#8212; <em>Click to expand list</em> {# &#8212; is emdash #}
         <input type="button"
@@ -77,7 +97,7 @@
 
 # elif row['multicard'] == 'item'
 <tr class="{{row['search_hash']}} {{ row_class }} collapse out"  data-field="{{row['card_id']}}"
-    onmouseover="document.images.card_pic.src='http://cernyrytir.cz/images/kusovkymagic/{{row['str_id']}}.jpg'">
+    onmouseover="document.images.card_pic.src='{{ row['img_url'] }}'">
         <td><span name="cardname" data-field="{{ row_number }}{{ row['card_id'] }}">{{row['name']}}</span>
         {% if show_add_to_deck_button %}
             {{ add_to_deck_button(row['card_id']) }}
@@ -86,7 +106,7 @@
 
 # else
 <tr class="{{row['search_hash']}}" data-field="{{row['card_id']}}"
-    onmouseover="document.images.card_pic.src='http://cernyrytir.cz/images/kusovkymagic/{{row['str_id']}}.jpg'">
+    onmouseover="document.images.card_pic.src='{{ row['img_url'] }}'">
     <td><span name="cardname" data-field="{{ row_number }}{{ row['card_id'] }}">{{row['name']}}</span>
         {% if show_add_to_deck_button %}
             {{ add_to_deck_button(row['card_id']) }}
@@ -94,6 +114,18 @@
     </td>
 
 # endif
+
+## ================================== MANACOST =================================
+
+# if 'manacost' in display_columns
+#    set hidden_prop = ""
+# else
+#    set hidden_prop = "hidden"
+# endif
+
+    <td class="{{ hidden_prop }}">
+        <span name="manacost" data-field="{{ row['manacost'] }}">{{ render_manacost(row['manacost']) }}</span>
+    </td>
 
 ## ================================== EDITION ==================================
 

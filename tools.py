@@ -7,11 +7,16 @@ import numpy as np
 import random
 import urllib.request
 
+import urllib
+from pathlib import Path
+
 import mysql.connector
 from mysql.connector import Error, errorcode
 
 from libs.database import Database
 from app.config import DatabaseConfig
+
+from flask import url_for
 
 log = []
 
@@ -288,11 +293,11 @@ class Deck(object):
         table = []
         footer = []
 
-        columns = ['name', 'edition', 'count', 'count_input', 'price', 'multiprice']
-        header_texts = ["Card title", "Edition", "Count", "Count", "PPU [CZK]", "Price [CZK]"]
-        header_data_field = ["title", "edition", "count", "count", "price", "multiprice"]
-        header_data_sortable = [True, True, True, True, True, True]
-        header_widths = [6, 2, 2, 2, 4, 4]
+        columns = ['name', 'manacost', 'edition', 'count', 'count_input', 'price', 'multiprice']
+        header_texts = ["Card title", "Manacost", "Edition", "Count", "Count", "PPU [CZK]", "Price [CZK]"]
+        header_data_field = ["title", "manacost", "edition", "count", "count", "price", "multiprice"]
+        header_data_sortable = [True, True, True, True, True, True, True]
+        header_widths = [6, 4, 2, 2, 2, 4, 4]
 
         header = [(col, {
             'text': text,
@@ -347,7 +352,7 @@ class Deck(object):
             'header': header,
             'body': table,
             'footer': footer,
-            'columns': ['name', 'edition', 'count', 'price', 'multiprice'],
+            'columns': ['name', 'manacost', 'edition', 'count', 'price', 'multiprice'],
             'success': success}
 
         return table_data, np.unique(log)
@@ -401,6 +406,7 @@ class Multicard(object):
                 str(costs.max())  # u'\u2013' is endash
 
         return {
+            'img_url': url_for('static',filename='img/card_back.jpg'),
             'found': self.found,
             'multicard': 'head',
             'md5': self.md5,
@@ -408,6 +414,7 @@ class Multicard(object):
             'multicard_info': self.multicard_info,
             'card_id': "",
             'name': self.name,
+            'manacost': '',
             'edition_id': "",
             'edition_name': "",
             'count': "",  # str(self.count),
@@ -426,15 +433,19 @@ class Card(object):
         """
         """
         query = """
-            SELECT `id`, `name`, `edition_id`, `edition_name`, `manacost`, `md5`, `buy`
-            FROM card_details
+            SELECT `id`, `name`, `edition_id`, `edition_name`, `manacost`,
+                `buy`, `sell`, `buy_foil`, `sell_foil`, `md5`,
+                `mid`, `layout`, `type`, `rarity`
+            FROM card_details_extended
             WHERE `id` = %s
             """
 
         result = cls.db.query(query, (card_id,))
 
         if result:
-            keys = ['id', 'name', 'edition_id', 'edition_name', 'manacost', 'md5', 'buy']
+            keys = ['id', 'name', 'edition_id', 'edition_name', 'manacost',
+                'buy', 'sell', 'buy_foil', 'sell_foil', 'md5',
+                'mid', 'layout', 'type', 'rarity']
             return [dict(zip(keys, values)) for values in result]
         else:
             return False
@@ -447,8 +458,10 @@ class Card(object):
         md5 = cls.hash_name(name_req)
 
         query = """
-            SELECT `id`, `name`, `edition_id`, `edition_name`, `manacost`, `md5`, `buy`
-            FROM card_details
+            SELECT `id`, `name`, `edition_id`, `edition_name`, `manacost`,
+                `buy`, `sell`, `buy_foil`, `sell_foil`, `md5`,
+                `mid`, `layout`, `type`, `rarity`
+            FROM card_details_extended
             WHERE `md5` = %s
             """
 
@@ -464,7 +477,9 @@ class Card(object):
             result = cls.db.query(query, (md5,))
 
         if result:
-            keys = ['id', 'name', 'edition_id', 'edition_name', 'manacost', 'md5', 'buy']
+            keys = ['id', 'name', 'edition_id', 'edition_name', 'manacost',
+                'buy', 'sell', 'buy_foil', 'sell_foil', 'md5',
+                'mid', 'layout', 'type', 'rarity']
             return [dict(zip(keys, values)) for values in result]
         else:
             return False
@@ -474,8 +489,10 @@ class Card(object):
         """
         """
         query = """
-            SELECT `id`, `name`, `edition_id`, `edition_name`, `manacost`, `md5`, `buy`
-            FROM card_details
+            SELECT `id`, `name`, `edition_id`, `edition_name`, `manacost`,
+                `buy`, `sell`, `buy_foil`, `sell_foil`, `md5`,
+                `mid`, `layout`, `type`, `rarity`
+            FROM card_details_extended
             WHERE MATCH (`name`)
             AGAINST (%s IN BOOLEAN MODE)
             """
@@ -489,7 +506,9 @@ class Card(object):
             result = cls.db.query(query, (name_req + "*",))
 
         if result:
-            keys = ['id', 'name', 'edition_id', 'edition_name', 'manacost', 'md5', 'buy']
+            keys = ['id', 'name', 'edition_id', 'edition_name', 'manacost',
+                'buy', 'sell', 'buy_foil', 'sell_foil', 'md5',
+                'mid', 'layout', 'type', 'rarity']
 
             dist = [levenshtein(name_req, res[1]) for res in result]
             sorted_idx = np.argsort(dist)
@@ -508,7 +527,10 @@ class Card(object):
             return False
 
     def __init__(self, id=None, name=None, edition_id=None, edition_name=None,
-                 manacost=None, md5=None, buy=None, found=True, count=1,
+                 manacost=None, md5=None,
+                 buy=None, buy_foil=None, sell=None, sell_foil=None,
+                 mid=None, layout=None,
+                 type=None, rarity=None, found=True, count=1,
                  search_hash=None):
         """
         """
@@ -520,6 +542,10 @@ class Card(object):
         self.manacost = manacost
         self.md5 = md5
         self.cost = buy
+        self.mid = mid
+        self.layout = layout
+        self.type = type
+        self.rarity = rarity
         self.count = count
         self.search_hash = search_hash
 
@@ -661,6 +687,32 @@ class Card(object):
         else:
             return None
 
+    @property
+    def img_url(self):
+        if self.mid is not None:
+            name = str(self.mid) + '.png'
+            url_name = str(self.mid) + '.jpg'
+            url = 'https://image.deckbrew.com/mtg/multiverseid/' + url_name
+        else:
+            name = self.id + '.jpg',
+            url_name = self.id.replace('_', '/') + '.jpg',
+            url = 'http://cernyrytir.cz/images/kusovkymagic/' + url_name
+
+        directory = Path('app/static/img/cards/')
+        directory.mkdir(exist_ok=True)
+        path = directory / name
+
+        if path.exists():
+            return url_for('static', filename='img/cards/' + name)
+        else:
+            try:
+                urllib.request.urlretrieve(url, str(path))
+                return url_for('static', filename='img/cards/' + name)
+            except urllib.error.URLError as e:
+                ResponseData = e.read().decode("utf8", 'ignore')
+                log.append(ResponseData)
+                return url
+
     def details_table_row(self):
 
         det = {
@@ -683,8 +735,9 @@ class Card(object):
                 str_multiprice = ""
 
             addet = {
-                'str_id': self.id.replace('_', '/'),
+                'img_url': self.img_url,
                 'name': self.name,
+                'manacost': self.manacost,
                 'edition_name': self.edition_name,
                 'edition_id': self.edition_id,
                 'count': str(self.count),
@@ -694,8 +747,9 @@ class Card(object):
         else:
             addet = {
                 'not_found_reason': Card.not_found_reason(self.name_req, self.edition_req),
-                'str_id': None,
+                'img_url': url_for('static', filename='img/card_back.jpg'),
                 'name': self.name_req,  # tady bacha na nejaky user injection
+                'manacost': '',
                 'edition_name': self.edition_req,
                 'edition_id': None,
                 'count': str(self.count),

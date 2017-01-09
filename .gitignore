@@ -4,6 +4,7 @@ app/config.py
 app/ssl.crt
 app/ssl.key
 app/test.db
+app/static/img/cards/
 
 Thumbs.db
 
