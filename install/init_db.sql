@@ -107,6 +107,30 @@ CREATE VIEW card_details(
     LEFT JOIN `editions` ON `cards`.`edition_id` = `editions`.`id`
 );
 
+CREATE VIEW card_details_extended(
+  `id`, `name`, `edition_id`, `edition_name`, `manacost`, `buy`, `sell`, `buy_foil`, `sell_foil`, `md5`,
+  `mid`, `layout`, `type`, `rarity`)
+  AS (
+    SELECT
+      `card_details`.`id`,
+      `card_details`.`name`,
+      `card_details`.`edition_id`,
+      `card_details`.`edition_name`,
+      `card_details`.`manacost`,
+      `card_details`.`buy`,
+      `card_details`.`sell`,
+      `card_details`.`buy_foil`,
+      `card_details`.`sell_foil`,
+      `card_details`.`md5`,
+      `sdk_cards`.`mid`,
+      `sdk_cards`.`layout`,
+      `sdk_cards`.`type`,
+      `sdk_cards`.`rarity`
+    FROM `rel_cards`
+    INNER JOIN `card_details` ON `card_details`.`id` = `rel_cards`.`id_cr`
+    INNER JOIN `sdk_cards` ON `sdk_cards`.`mid` = `rel_cards`.`id_sdk`
+);
+
 CREATE TABLE `users` (
   `id` int NOT NULL AUTO_INCREMENT,
   `email` varchar(100) NOT NULL,
