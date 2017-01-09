@@ -254,7 +254,7 @@ class Deck(object):
                         # This is somewhat dirty solution...
                         # name = name.replace("'", "´")
 
-                        similar = Card.search_similar(name, limit=None)
+                        similar = Card.search_similar(name, limit=30)
 
                         if similar:
                             card = Multicard(
