@@ -73,7 +73,8 @@ class Builder:
         """
         Fetches, combines and returns database statistics in the form of a list of strings.
         """
-        info = ["Database built on {}.".format(self.get_build_time())]
-        info += self.sc.get_db_info()
-        info += self.co.get_db_info()
+        info = {
+            'db_built_time': self.get_build_time(),
+            'scrapper': self.sc.get_db_info(),
+            'connector': self.co.get_db_info()}
         return info

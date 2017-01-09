@@ -275,18 +275,18 @@ class Scraper:
         """
         Fetches and returns database statistics in the form of a list of strings.
         """
-        print('--- Finished. Statistics: ---')
+        log.debug('--- Finished. Statistics: ---')
         query = """SELECT COUNT(*) FROM `cards`;"""
         result = self.db.query(query)
         number_of_cards = result[0][0]
 
         query = """SELECT COUNT(*) FROM `editions`;"""
         result = self.db.query(query)
-        known_editions = result[0][0]
+        number_of_editions = result[0][0]
 
         query = """SELECT COUNT(DISTINCT `edition_id`) FROM `cards`;"""
         result = self.db.query(query)
-        number_of_editions = result[0][0]
+        known_editions = result[0][0]
 
         query = """SELECT COUNT(`buy`) FROM `costs`;"""
         result = self.db.query(query)
@@ -301,14 +301,23 @@ class Scraper:
         result_list = [ed[0] for ed in result]
         editions = ','.join(result_list)
 
-        out = ["Scraped info:",
-               "{} cards, {} editions out of {} known.".format(
-                   number_of_cards, number_of_editions, known_editions),
-               "Scraped editions: {}.".format(editions),
-               "{} normal costs, {} unique.".format(number_of_normal_costs, number_of_unique_costs),
-               ]
+        data = {
+            'number_of_cards': number_of_cards,
+            'number_of_editions': number_of_editions,
+            'known_editions': known_editions,
+            'editions': editions,
+            'number_of_normal_costs': number_of_normal_costs,
+            'number_of_unique_costs': number_of_unique_costs}
 
-        return out
+
+        log.debug(
+            "Scraped info:\n"
+            "{number_of_cards} cards, {known_editions} editions out of {number_of_editions} known.\n"
+            "Scraped editions: {editions}.\n"
+            "{number_of_normal_costs} normal costs, {number_of_unique_costs} unique.".format(
+                  **data))
+
+        return data
 
     def is_foil(self, card):
         """ Returns if card dictionary item is or isn't foil. """

@@ -187,7 +187,7 @@ class Connector:
         """
         Fetches and returns database statistics in the form of a list of strings.
         """
-        print('--- Finished. Statistics: ---')
+        log.debug('--- Finished. Statistics: ---')
         query = """SELECT COUNT(*) FROM `sdk_cards`;"""
         result = self.db.query(query)
         number_of_cards = result[0][0]
@@ -205,10 +205,16 @@ class Connector:
         result_list = [ed[0] for ed in result]
         editions = ','.join(result_list)
 
-        out = ["Loaded info:",
-               "{} cards, {} editions out of {} known.".format(
-                   number_of_cards, number_of_editions, known_editions),
-               "Loaded editions: {}.".format(editions),
-               ]
+        data = {
+            'number_of_cards': number_of_cards,
+            'number_of_editions': number_of_editions,
+            'known_editions': known_editions,
+            'editions': editions}
 
-        return out
+        log.debug(
+              "Loaded info:\n"
+              "{number_of_cards} cards, {known_editions} editions out of {number_of_editions} known.\n"
+              "Loaded editions: {editions}.".format(
+                  **data))
+
+        return data

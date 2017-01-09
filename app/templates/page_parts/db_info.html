@@ -4,10 +4,32 @@
         <strong>DB info</strong>
     </div>
     <div class="panel-body">
-        <p style="font-size:0.8em;">
-            {% for line in db_info %}
-                {{line}}<br/>
-            {% endfor %}
-        </p>
+        <ul style="font-size:0.8em; padding-left: 1.5em;">
+            <li><strong>Database build on:</strong> {{db_info['db_built_time']}}</li>
+            <li><strong>Scrapper info:</strong>
+                <ul style="padding-left: 1.5em;">
+                    <li><strong>Number of cards:</strong>
+                         {{ db_info['scrapper']['number_of_cards'] }}
+                     </li>
+                    <li title="{{ db_info['scrapper']['editions'] }}"><strong>Known editions:</strong>
+                        {{ db_info['scrapper']['known_editions'] }} / {{ db_info['scrapper']['number_of_editions'] }}
+                    </li>
+                    <li><strong>Number of costs:</strong>
+                         {{ db_info['scrapper']['number_of_normal_costs'] }}
+                         ({{ db_info['scrapper']['number_of_unique_costs'] }} unique)
+                     </li>
+                </ul>
+            </li>
+            <li><strong>Connector info:</strong>
+                <ul style="padding-left: 1.5em;">
+                    <li><strong>Number of cards:</strong>
+                         {{ db_info['connector']['number_of_cards'] }}
+                     </li>
+                    <li title="{{ db_info['connector']['editions'] }}"><strong>Known editions:</strong>
+                        {{ db_info['connector']['known_editions'] }} / {{ db_info['connector']['number_of_editions'] }}
+                    </li>
+                </ul>
+            </li>
+        </ul>
     </div>
 </div>
