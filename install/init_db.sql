@@ -88,6 +88,51 @@ CREATE TABLE `rel_editions` (
   `id_sdk` varchar(50) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Transition table for edition IDs between SDK and CR.';
 
+CREATE VIEW sdk_card_details(
+  `name`, `mid`, `layout`, `mana_cost`, `type`, `rarity`, `set`, `id`,
+  `set_code`, `set_name`)
+  AS (
+    SELECT
+      `sdk_cards`.`name`,
+      `sdk_cards`.`mid`,
+      `sdk_cards`.`layout`,
+      `sdk_cards`.`mana_cost`,
+      `sdk_cards`.`type`,
+      `sdk_cards`.`rarity`,
+      `sdk_cards`.`set`,
+      `sdk_cards`.`id`,
+      `sdk_editions`.`code` as `set_code`,
+      `sdk_editions`.`name` as `set_name`
+    FROM `sdk_cards`
+    LEFT JOIN `sdk_editions` ON `sdk_cards`.`set` = `sdk_editions`.`code`
+);
+
+CREATE VIEW sdk_card_details_extended(
+  `name`, `mid`, `layout`, `mana_cost`, `type`, `rarity`, `set`, `id`,
+  `set_code`, `set_name`, `cid`, `buy`, `sell`, `buy_foil`, `sell_foil`, `md5`)
+  AS (
+    SELECT
+      `sdk_card_details`.`name`,
+      `sdk_card_details`.`mid`,
+      `sdk_card_details`.`layout`,
+      `sdk_card_details`.`mana_cost`,
+      `sdk_card_details`.`type`,
+      `sdk_card_details`.`rarity`,
+      `sdk_card_details`.`set`,
+      `sdk_card_details`.`id`,
+      `sdk_card_details`.`set_code`,
+      `sdk_card_details`.`set_name`,
+      `card_details`.`id` as `cid`,
+      `card_details`.`buy`,
+      `card_details`.`sell`,
+      `card_details`.`buy_foil`,
+      `card_details`.`sell_foil`,
+      `card_details`.`md5`
+    FROM `rel_cards`
+    RIGHT JOIN `sdk_card_details` ON `sdk_card_details`.`mid` = `rel_cards`.`id_sdk`
+    LEFT JOIN `card_details` ON `card_details`.`id` = `rel_cards`.`id_cr`
+);
+
 CREATE VIEW card_details(
   `id`, `name`, `edition_id`, `edition_name`, `manacost`, `buy`, `sell`, `buy_foil`, `sell_foil`, `md5`)
   AS (

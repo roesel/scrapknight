@@ -456,19 +456,19 @@ class Card(object):
         """
         """
         query = """
-            SELECT `id`, `name`, `edition_id`, `edition_name`, `manacost`,
-                `buy`, `sell`, `buy_foil`, `sell_foil`, `md5`,
-                `mid`, `layout`, `type`, `rarity`
-            FROM card_details_extended
+            SELECT `id`, `cid`, `mid`, `name`, `set_code`, `set_name`,
+                `mana_cost`, `layout`, `type`, `rarity`,
+                `buy`, `sell`, `buy_foil`, `sell_foil`, `md5`
+            FROM sdk_card_details_extended
             WHERE `id` = %s
             """
 
         result = cls.db.query(query, (card_id,))
 
         if result:
-            keys = ['id', 'name', 'edition_id', 'edition_name', 'manacost',
-                'buy', 'sell', 'buy_foil', 'sell_foil', 'md5',
-                'mid', 'layout', 'type', 'rarity']
+            keys = ['id', 'cid', 'mid', 'name', 'edition_id', 'edition_name',
+                'manacost', 'layout', 'type', 'rarity',
+                'buy', 'sell', 'buy_foil', 'sell_foil', 'md5']
             return [dict(zip(keys, values)) for values in result]
         else:
             return False
@@ -481,28 +481,28 @@ class Card(object):
         md5 = cls.hash_name(name_req)
 
         query = """
-            SELECT `id`, `name`, `edition_id`, `edition_name`, `manacost`,
-                `buy`, `sell`, `buy_foil`, `sell_foil`, `md5`,
-                `mid`, `layout`, `type`, `rarity`
-            FROM card_details_extended
-            WHERE `md5` = %s
+            SELECT `id`, `cid`, `mid`, `name`, `set_code`, `set_name`,
+                `mana_cost`, `layout`, `type`, `rarity`,
+                `buy`, `sell`, `buy_foil`, `sell_foil`, `md5`
+            FROM sdk_card_details_extended
+            WHERE `name` = %s
             """
 
         if edition_req:
             ed = cls.parse_edition(edition_req)
 
             query += """
-            AND `edition_id` = %s
+            AND `set_code` = %s
             """
 
-            result = cls.db.query(query, (md5, ed['id'],))
+            result = cls.db.query(query, (str(name_req), ed['id'],))
         else:
-            result = cls.db.query(query, (md5,))
+            result = cls.db.query(query, (str(name_req),))
 
         if result:
-            keys = ['id', 'name', 'edition_id', 'edition_name', 'manacost',
-                'buy', 'sell', 'buy_foil', 'sell_foil', 'md5',
-                'mid', 'layout', 'type', 'rarity']
+            keys = ['id', 'cid', 'mid', 'name', 'edition_id', 'edition_name',
+                'manacost', 'layout', 'type', 'rarity',
+                'buy', 'sell', 'buy_foil', 'sell_foil', 'md5']
             return [dict(zip(keys, values)) for values in result]
         else:
             return False
@@ -512,10 +512,10 @@ class Card(object):
         """
         """
         query = """
-            SELECT `id`, `name`, `edition_id`, `edition_name`, `manacost`,
-                `buy`, `sell`, `buy_foil`, `sell_foil`, `md5`,
-                `mid`, `layout`, `type`, `rarity`
-            FROM card_details_extended
+            SELECT `id`, `cid`, `mid`, `name`, `set_code`, `set_name`,
+                `mana_cost`, `layout`, `type`, `rarity`,
+                `buy`, `sell`, `buy_foil`, `sell_foil`, `md5`
+            FROM sdk_card_details_extended
             WHERE MATCH (`name`)
             AGAINST (%s IN BOOLEAN MODE)
             """
@@ -529,14 +529,16 @@ class Card(object):
             result = cls.db.query(query, (name_req + "*",))
 
         if result:
-            keys = ['id', 'name', 'edition_id', 'edition_name', 'manacost',
-                'buy', 'sell', 'buy_foil', 'sell_foil', 'md5',
-                'mid', 'layout', 'type', 'rarity']
+            keys = ['id', 'cid', 'mid', 'name', 'edition_id', 'edition_name',
+                'manacost', 'layout', 'type', 'rarity',
+                'buy', 'sell', 'buy_foil', 'sell_foil', 'md5']
 
-            dist = [levenshtein(name_req, res[1]) for res in result]
+            dist = [levenshtein(name_req, res[3]) for res in result]
             sorted_idx = np.argsort(dist)
 
             sorted_result = [result[idx] for idx in sorted_idx]
+
+            print(len(sorted_result))
 
             return [dict(zip(keys, values)) for values in sorted_result]
         else:
@@ -549,26 +551,33 @@ class Card(object):
         else:
             return False
 
-    def __init__(self, id=None, name=None, edition_id=None, edition_name=None,
+    def __init__(self, id=None, cid=None, mid=None,
+                 name=None, edition_id=None, edition_name=None,
                  manacost=None, md5=None,
                  buy=None, buy_foil=None, sell=None, sell_foil=None,
-                 mid=None, layout=None,
+                 layout=None,
                  type=None, rarity=None, found=True, count=1,
                  search_hash=None):
         """
         """
         self.found = found
+
         self.id = id
+        self.mid = mid
+        self.cid = cid
+
         self.name = name
         self.edition_id = edition_id
         self.edition_name = edition_name
+
         self.manacost = manacost
-        self.md5 = md5
-        self.cost = buy
-        self.mid = mid
         self.layout = layout
         self.type = type
         self.rarity = rarity
+
+        self.md5 = md5
+        self.cost = buy
+
         self.count = count
         self.search_hash = search_hash
 
