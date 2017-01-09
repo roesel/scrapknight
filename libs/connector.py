@@ -38,12 +38,14 @@ class Connector:
         self.insert_editions(loaded_editions)
 
         # Load all editions from edition list
-        for e in editions:
-            log.info("Sleeping for 3 seconds...")
-            time.sleep(3)
-            log.info("[{}] Loading edition from API...".format(e))
-            cards = self.load_edition(e)
-            self.insert_cards(cards)
+        for edition in loaded_editions:
+            edition_code = edition[0]
+            if editions is None or edition_code in editions:
+                log.info("Sleeping for 3 seconds...")
+                time.sleep(3)
+                log.info("[{}] Loading edition from API...".format(edition_code))
+                cards = self.load_edition(edition_code)
+                self.insert_cards(cards)
         log.info('Done.')
 
     def rebuild(self):
@@ -166,8 +168,12 @@ class Connector:
                 VALUES
                     (%s, %s, %s, %s, %s, %s, %s, %s);
                 """
+            if card[1] is None:
+                log.warning("SDK Fail - multiverseid is None. Card details: {}".format(card))
 
+            log.debug("Inserting card: {}".format(card))
             self.db.insert(query, card)
+
 
     def empty_db(self):
         """ Calls for truncate of all tables used by Connector. """

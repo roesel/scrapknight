@@ -46,14 +46,15 @@ class Scraper:
         # Scrape all editions in incoming list
         done = []
         for edition, edition_name in scraped_editions:
-            if ((edition in editions) and (edition not in done)):
-                log.info("[{}] Starting to scrape edition {}.".format(edition, edition_name))
-                cards = self.scrape_edition(edition, sleep=0.5)
-                cards = self.format_cards(cards)
-                log.info('[{}] {} cards left after cleaning. Inserting into database.'.format(
-                    edition, str(len(cards))))
-                self.insert_cards(cards)
-                done.append(edition)
+            if editions is None or edition in editions:
+                if edition not in done:
+                    log.info("[{}] Starting to scrape edition {}.".format(edition, edition_name))
+                    cards = self.scrape_edition(edition, sleep=0.5)
+                    cards = self.format_cards(cards)
+                    log.info('[{}] {} cards left after cleaning. Inserting into database.'.format(
+                        edition, str(len(cards))))
+                    self.insert_cards(cards)
+                    done.append(edition)
         log.info('Done.')
 
     def rebuild(self):
@@ -223,6 +224,9 @@ class Scraper:
                 (%s, %s, %s, %s, %s)
                 """
             try:
+                log.debug(
+                    "Inserting card:\n{}\n{}\n{}\n{}\n{}\n".format(
+                    card_id, card['name'], card['edition'], card['manacost'], name_md5))
                 self.db.insert(query, (card_id, card['name'], card[
                     'edition'], card['manacost'], name_md5,))
             except Error as err:
@@ -242,6 +246,9 @@ class Scraper:
                 """
 
             try:
+                log.debug(
+                    "Inserting card cost:\n{}\n{}\n{}\n".format(
+                    card_id, card['cost'], card['cost_buy_foil']))
                 self.db.insert(query, (card_id, card['cost'], card['cost_buy_foil'],))
             except Error as err:
                 if err.errno == errorcode.ER_DUP_ENTRY:
