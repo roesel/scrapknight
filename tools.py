@@ -213,7 +213,7 @@ class Deck(object):
                     # There may a problem with a wrong appostrophe character in the
                     # input. Loop over possible variants, break on first successfull
                     # search.
-                    name_variants = [name, name.replace("'", "´")]
+                    name_variants = np.unique([name, name.replace("'", "´")])
 
                     card = None
 
