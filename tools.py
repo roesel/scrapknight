@@ -23,8 +23,8 @@ outlog = []
 import logging
 import pprint
 
-# logging_level = logging.INFO
-logging_level = logging.DEBUG
+logging_level = logging.INFO
+# logging_level = logging.DEBUG
 
 # Set logging level
 logging.basicConfig(
@@ -320,7 +320,7 @@ class Deck(object):
         header_texts = ["Card title", "Manacost", "Edition", "Count", "Count", "PPU [CZK]", "Price [CZK]"]
         header_data_field = ["title", "manacost", "edition", "count", "count", "price", "multiprice"]
         header_data_sortable = [True, True, True, True, True, True, True]
-        header_widths = [6, 4, 2, 2, 2, 4, 4]
+        header_widths = [6, 2, 2, 2, 2, 4, 4]
 
         header = [(col, {
             'text': text,
@@ -537,8 +537,6 @@ class Card(object):
             sorted_idx = np.argsort(dist)
 
             sorted_result = [result[idx] for idx in sorted_idx]
-
-            print(len(sorted_result))
 
             return [dict(zip(keys, values)) for values in sorted_result]
         else:
