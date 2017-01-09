@@ -18,11 +18,25 @@ from app.config import DatabaseConfig
 
 from flask import url_for
 
-log = []
+outlog = []
+
+import logging
+import pprint
+
+# logging_level = logging.INFO
+logging_level = logging.DEBUG
+
+# Set logging level
+logging.basicConfig(
+    format='%(levelname)s: %(message)s',
+    level=logging_level)
+
+log = logging.getLogger()
+
 
 def process(user_input):
 
-    log = []
+    outlog = []
 
     Card.db = Database(DatabaseConfig)
 
@@ -32,7 +46,7 @@ def process(user_input):
 
 def print_user_deck(user, deck_id):
 
-    log = []
+    outlog = []
 
     Card.db = Database(DatabaseConfig)
 
@@ -42,7 +56,7 @@ def print_user_deck(user, deck_id):
 
 def print_user_library(user):
 
-    log = []
+    outlog = []
 
     Card.db = Database(DatabaseConfig)
 
@@ -52,7 +66,7 @@ def print_user_library(user):
 
 def users_cards_save(user, user_input):
 
-    log = []
+    outlog = []
 
     Card.db = Database(DatabaseConfig)
 
@@ -62,7 +76,7 @@ def users_cards_save(user, user_input):
 
 def save_user_library(user, user_input):
 
-    log = []
+    outlog = []
 
     Card.db = Database(DatabaseConfig)
 
@@ -72,7 +86,7 @@ def save_user_library(user, user_input):
 
 def modify_user_deck(user, deck_id, user_input):
 
-    log = []
+    outlog = []
 
     Card.db = Database(DatabaseConfig)
 
@@ -140,6 +154,9 @@ class Deck(object):
         self.cards = []
 
         if user_input is not None:
+
+            log.debug("Processing User input:")
+
             for i, row in enumerate(user_input.splitlines()):
 
                 # Delete newline from string
@@ -153,6 +170,8 @@ class Deck(object):
 
                 # Check that the row is not a comment
                 if len(row) > 0 and not row[0] == '#':
+
+                    log.debug("  {}: {}".format(i, row))
 
                     # If the first character is not a digit, lets assume the
                     # number of cards is just ommited and should be equal to 1.
@@ -184,7 +203,7 @@ class Deck(object):
                         edition = match.group(3).replace("[", "").replace("]", "")
 
                     else:
-                        log.append("Error while processing input row {}: {}".format(i, row))
+                        outlog.append("Error while processing input row {}: {}".format(i, row))
                         continue
                         raise ValueError(
                             "Error while processing input row {}: {}".format(i, row))
@@ -200,8 +219,12 @@ class Deck(object):
 
                     for name_var in name_variants:
 
+                        log.debug("  seaching for: {}".format(name_var))
+
                         # Search for the card.
                         result = Card.search(name_var, edition)
+
+                        log.debug("  result: {}".format(result))
 
                         if result:
                             # If the result is a single row, there is no problem,
@@ -355,7 +378,7 @@ class Deck(object):
             'columns': ['name', 'manacost', 'edition', 'count', 'price', 'multiprice'],
             'success': success}
 
-        return table_data, np.unique(log)
+        return table_data, np.unique(outlog)
 
 
 class Multicard(object):
@@ -710,7 +733,7 @@ class Card(object):
                 return url_for('static', filename='img/cards/' + name)
             except urllib.error.URLError as e:
                 ResponseData = e.read().decode("utf8", 'ignore')
-                log.append(ResponseData)
+                outlog.append(ResponseData)
                 return url
 
     @property
