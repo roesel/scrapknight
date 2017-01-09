@@ -10,6 +10,8 @@ from flask_login import LoginManager, login_required, login_user, \
 from requests_oauthlib import OAuth2Session
 from requests.exceptions import HTTPError
 
+from htmlmin.minify import html_minify
+
 from .forms import InputForm
 
 from tools import process, users_cards_save, print_user_library, print_user_deck, \
@@ -201,13 +203,12 @@ def get_google_auth(state=None, token=None):
 
 @app.route('/')
 def index():
-    # return render_template('appindex.html')
     form = InputForm()
-    return render_template(
+    return html_minify(render_template(
         'input.html',
         title='Input',
         fill='',
-        form=form)
+        form=form))
 
 
 @app.route('/login')
@@ -220,7 +221,7 @@ def login():
     session['oauth_state'] = state
 
     # Since we login only with google, we can skip the "login" page.
-    # return render_template('login.html', auth_url=auth_url)
+    # return html_minify(render_template('login.html', auth_url=auth_url))
     return redirect(auth_url)
 
 
@@ -275,6 +276,7 @@ def searchcard():
 
     output_table, log = process(search_string)
 
+    # tady html_minify() dělá nějaké problémy ... :/
     return render_template(
         'page_parts/card_search_table.html',
         search_table=output_table)
@@ -340,7 +342,7 @@ def library():
 
     library_table, log = print_user_library(current_user)
 
-    return render_template(
+    return html_minify(render_template(
         'library.html',
         title='Library',
         form="",
@@ -348,7 +350,7 @@ def library():
         library_table=library_table,
         fill="",
         log=log,
-        db_info=bu.get_db_info())
+        db_info=bu.get_db_info()))
 
 @app.route('/deck/<int:deck_id>')
 @login_required
@@ -361,7 +363,7 @@ def deck(deck_id):
 
     log = log_1 + log_2
 
-    return render_template(
+    return html_minify(render_template(
         'deck.html',
         title='Deck',
         form="",
@@ -369,7 +371,7 @@ def deck(deck_id):
         library_table=library_table,
         fill="",
         log=log,
-        db_info=bu.get_db_info())
+        db_info=bu.get_db_info()))
 
 @app.route('/input', methods=['GET', 'POST'])
 def input():
@@ -382,17 +384,17 @@ def input():
 
         output_table, log = process(form.text.data)
 
-        return render_template(
+        return html_minify(render_template(
             'input.html',
             title='Output',
             form=form,
             output_table=output_table,
             fill=form.text.data,
             log=log,
-            db_info=bu.get_db_info())
+            db_info=bu.get_db_info()))
 
-    return render_template(
+    return html_minify(render_template(
         'input.html',
         title='Input',
         fill='',
-        form=form)
+        form=form))
