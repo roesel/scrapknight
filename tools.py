@@ -713,6 +713,14 @@ class Card(object):
                 log.append(ResponseData)
                 return url
 
+    @property
+    def manacost_parsed(self):
+        if self.manacost is not None:
+            mana = self.manacost.replace('/', '')
+            return re.findall("{(.*?)}", mana)
+        else:
+            return None
+
     def details_table_row(self):
 
         det = {
@@ -737,7 +745,7 @@ class Card(object):
             addet = {
                 'img_url': self.img_url,
                 'name': self.name,
-                'manacost': self.manacost,
+                'manacost': self.manacost_parsed,
                 'edition_name': self.edition_name,
                 'edition_id': self.edition_id,
                 'count': str(self.count),
