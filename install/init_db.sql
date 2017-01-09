@@ -75,6 +75,18 @@ CREATE TABLE `info` (
   PRIMARY KEY (`key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Informace o databázi a aplikaci. (Časem možná i nastavení?)';
 
+CREATE TABLE `rel_cards` (
+  `id_cr` varchar(50) DEFAULT NULL,
+  `id_sdk` varchar(50) DEFAULT NULL,
+  UNIQUE KEY `id_cr` (`id_cr`),
+  UNIQUE KEY `id_sdk` (`id_sdk`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='Transition table for edition IDs between SDK and CR.';
+
+CREATE TABLE `rel_editions` (
+  `id_cr` varchar(50) DEFAULT NULL,
+  `id_sdk` varchar(50) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Transition table for edition IDs between SDK and CR.';
+
 CREATE VIEW card_details(
   `id`, `name`, `edition_id`, `edition_name`, `manacost`, `buy`, `sell`, `buy_foil`, `sell_foil`, `md5`)
   AS (

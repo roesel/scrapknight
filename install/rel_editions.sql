@@ -1,8 +1,3 @@
-CREATE TABLE `rel_editions` (
-  `id_cr` varchar(50) DEFAULT NULL,
-  `id_sdk` varchar(50) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Transition table for edition IDs between SDK and CR.';
-
 INSERT INTO `rel_editions` (`id_cr`, `id_sdk`) VALUES
 	('ZEX', 'EXP'),
 	('KLI', 'MPS'),
