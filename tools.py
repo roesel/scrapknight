@@ -716,10 +716,12 @@ class Card(object):
             name = str(self.mid) + '.png'
             url_name = str(self.mid) + '.jpg'
             url = 'https://image.deckbrew.com/mtg/multiverseid/' + url_name
-        else:
-            name = self.id + '.jpg',
-            url_name = self.id.replace('_', '/') + '.jpg',
+        elif self.cid is not None:
+            name = self.cid + '.jpg',
+            url_name = self.cid.replace('_', '/') + '.jpg',
             url = 'http://cernyrytir.cz/images/kusovkymagic/' + url_name
+        else:
+            return url_for('static',filename='img/card_back.jpg')
 
         directory = Path('app/static/img/cards/')
         directory.mkdir(exist_ok=True)
