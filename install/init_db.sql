@@ -107,6 +107,25 @@ CREATE VIEW sdk_card_details(
     LEFT JOIN `sdk_editions` ON `sdk_cards`.`set` = `sdk_editions`.`code`
 );
 
+CREATE VIEW card_details(
+  `id`, `name`, `edition_id`, `edition_name`, `manacost`, `buy`, `sell`, `buy_foil`, `sell_foil`, `md5`)
+  AS (
+    SELECT
+      `cards`.`id`,
+      `cards`.`name`,
+      `cards`.`edition_id`,
+      `editions`.`name` as `edition_name`,
+      `cards`.`manacost`,
+      `costs`.`buy`,
+      `costs`.`sell`,
+      `costs`.`buy_foil`,
+      `costs`.`sell_foil`,
+      `cards`.`md5`
+    FROM `cards`
+    LEFT JOIN `costs` ON `cards`.`id` = `costs`.`card_id`
+    LEFT JOIN `editions` ON `cards`.`edition_id` = `editions`.`id`
+);
+
 CREATE VIEW sdk_card_details_extended(
   `name`, `mid`, `layout`, `mana_cost`, `type`, `rarity`, `set`, `id`,
   `set_code`, `set_name`, `cid`, `buy`, `sell`, `buy_foil`, `sell_foil`, `md5`)
@@ -131,25 +150,6 @@ CREATE VIEW sdk_card_details_extended(
     FROM `rel_cards`
     RIGHT JOIN `sdk_card_details` ON `sdk_card_details`.`mid` = `rel_cards`.`id_sdk`
     LEFT JOIN `card_details` ON `card_details`.`id` = `rel_cards`.`id_cr`
-);
-
-CREATE VIEW card_details(
-  `id`, `name`, `edition_id`, `edition_name`, `manacost`, `buy`, `sell`, `buy_foil`, `sell_foil`, `md5`)
-  AS (
-    SELECT
-      `cards`.`id`,
-      `cards`.`name`,
-      `cards`.`edition_id`,
-      `editions`.`name` as `edition_name`,
-      `cards`.`manacost`,
-      `costs`.`buy`,
-      `costs`.`sell`,
-      `costs`.`buy_foil`,
-      `costs`.`sell_foil`,
-      `cards`.`md5`
-    FROM `cards`
-    LEFT JOIN `costs` ON `cards`.`id` = `costs`.`card_id`
-    LEFT JOIN `editions` ON `cards`.`edition_id` = `editions`.`id`
 );
 
 CREATE VIEW card_details_extended(
