@@ -15,7 +15,7 @@ from htmlmin.minify import html_minify
 from .forms import InputForm
 
 from tools import process, users_cards_save, print_user_library, print_user_deck, \
-    modify_user_deck, save_user_library
+    modify_user_deck, save_user_library, process_by_id
 from libs.builder import Builder
 
 """App Configuration"""
@@ -369,6 +369,24 @@ def deck(deck_id):
         form="",
         deck_table=deck_table,
         library_table=library_table,
+        fill="",
+        log=log,
+        db_info=bu.get_db_info()))
+
+@app.route('/card/<card_id>')
+@login_required
+def card(card_id):
+
+    bu = Builder(DatabaseConfig)
+
+    card_details, output_table, log = process_by_id(card_id)
+
+    return html_minify(render_template(
+        'card.html',
+        title='Deck',
+        form="",
+        output_table=output_table,
+        card_details_data=card_details,
         fill="",
         log=log,
         db_info=bu.get_db_info()))

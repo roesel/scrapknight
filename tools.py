@@ -44,6 +44,22 @@ def process(user_input):
 
     return mydeck.print_price_table()
 
+def process_by_id(card_id):
+
+    outlog = []
+
+    Card.db = Database(DatabaseConfig)
+
+    card_list = [{'id': card_id, 'count': 1},]
+
+    mydeck = Deck(card_list=card_list)
+
+    price_table, l = mydeck.print_price_table()
+
+    card_details = price_table['body'][0]
+
+    return card_details, price_table, l
+
 def print_user_deck(user, deck_id):
 
     outlog = []
@@ -278,6 +294,9 @@ class Deck(object):
                     self.cards.append(card)
 
         elif card_list is not None:
+
+            log.debug(card_list)
+
             for i, c in enumerate(card_list):
 
                 card_id = c['id']
@@ -749,7 +768,7 @@ class Card(object):
     def manacost_parsed(self):
         if self.manacost is not None:
             mana = self.manacost.replace('/', '')
-            return re.findall("{(.*?)}", mana)
+            return re.findall("{([^{}]*)}", mana)
         else:
             return None
 

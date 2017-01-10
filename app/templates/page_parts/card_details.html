@@ -1,0 +1,36 @@
+{% from 'page_parts/manacost.html' import render_manacost %}
+
+{% macro card_details(details) -%}
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <strong>Card details</strong>
+  </div>
+  <div class="panel-body">
+    <table class="table table-striped table-condensed table-hover" data-toggle="table">
+
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr>
+            <td>Name</td>
+            <td>{{ details['name'] }}</td>
+          </tr>
+        <tr>
+          <td>Manacost</td>
+          <td>{{ render_manacost(details['manacost']) }}</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <th></th>
+          <th></th>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+{%- endmacro %}

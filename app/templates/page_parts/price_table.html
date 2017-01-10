@@ -1,3 +1,6 @@
+{% from 'page_parts/manacost.html' import render_manacost %}
+
+
 {% macro render_table_header(header, columns, display_columns) -%}
 
 <colgroup>
@@ -33,31 +36,6 @@
     </tr>
 </thead>
 {%- endmacro %}
-
-## =============================================================================
-## =============================================================================
-
-{% macro render_manacost(manacost) -%}
-# if not manacost == None
-#    for mana in manacost
-#        if mana | lower in [
-             'w', 'u', 'b', 'r', 'g',
-             '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13'
-             '14', '15', '16', '17', '18', '19', '20'
-             'x', 'y', 'z',
-             'wp', 'up', 'bp', 'rp', 'gp', 's', 'c', 'e',
-             'wu', 'wb', 'ub', 'ur', 'br', 'bg', 'rw', 'rg', 'gw', 'gu',
-             '2w', '2u', '2b', '2r', '2g',
-             '1-2', 'infinity', '100', '100000']
-        <i class="ms ms-{{ mana | lower }} ms-cost"></i>
-##        <i class="ms ms-{{ mana | lower }} ms-cost ms-shadow"></i>
-#        else
-        {{ mana }}
-#        endif
-#    endfor
-# endif
-{%- endmacro %}
-
 
 ## =============================================================================
 ## =============================================================================
@@ -103,7 +81,12 @@
 # elif row['multicard'] == 'item'
 <tr class="{{row['search_hash']}} {{ row_class }} collapse out"  data-field="{{row['card_id']}}"
     onmouseover="document.images.card_pic.src='{{ row['img_url'] }}'">
-        <td><span name="cardname" data-field="{{ row_number }}{{ row['card_id'] }}">{{row['name']}}</span>
+        <td>
+            <a href="/card/{{ row['card_id'] }}">
+                <span name="cardname" data-field="{{ row_number }}{{ row['card_id'] }}">
+                    {{row['name']}}
+                </span>
+            </a>
         {% if show_add_to_deck_button %}
             {{ add_to_deck_button(row['card_id']) }}
         {% endif %}
@@ -112,7 +95,12 @@
 # else
 <tr class="{{row['search_hash']}}" data-field="{{row['card_id']}}"
     onmouseover="document.images.card_pic.src='{{ row['img_url'] }}'">
-    <td><span name="cardname" data-field="{{ row_number }}{{ row['card_id'] }}">{{row['name']}}</span>
+    <td>
+        <a href="/card/{{ row['card_id'] }}">
+            <span name="cardname" data-field="{{ row_number }}{{ row['card_id'] }}">
+                {{row['name']}}
+            </span>
+        </a>
         {% if show_add_to_deck_button %}
             {{ add_to_deck_button(row['card_id']) }}
         {% endif %}
@@ -359,7 +347,7 @@
     {% else %}
         <tr class="danger">
     {% endif %}
-    {% set colspan=columns | count - 1 %}
+    {% set colspan=display_columns | count - 1 %}
             <th colspan="{{ colspan }}">
                 {{ row[0] }}
                 <span style="font-weight: normal;">
