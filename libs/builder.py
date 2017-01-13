@@ -33,8 +33,21 @@ class Builder:
     def build(self, editions):
         self.update_build_time()
 
+        scrape_start = time.time()
         self.sc.build(editions)
+        scrape_took = time.time() - scrape_start
+
+        connect_start = time.time()
         self.co.build(editions)
+        connect_took = time.time() - connect_start
+
+        log.info("Scraping took {}.".format(self.readable_time(scrape_took)))
+        log.info("Connecting took {}.".format(self.readable_time(connect_took)))
+
+    def readable_time(self, seconds):
+        m, s = divmod(seconds, 60)
+        h, m = divmod(m, 60)
+        return "%d:%02d:%02d" % (h, m, s)
 
     def scrape(self, editions):
         self.sc.build(editions)
