@@ -1,1 +1,0 @@
-flask\Scripts\python link.py
