@@ -25,7 +25,7 @@ class Linker:
         """
         self.db = Database(db_config)
 
-    def link(self):
+    def link(self, editions):
         """
         For each edition:
           1) relate through rel_editions to get "edition_sdk" and "edition_cr"
@@ -39,7 +39,36 @@ class Linker:
           7) ...
           8) profit
         """
-        pass
+        for edition in editions:
+            self.link_edition(edition)
+
+    def link_edition(self, edition):
+        api_original = self.total("api", edition)
+        api_standard = self.standard("api", edition)
+        cr_original = self.total("cr", edition)
+        cr_standard = self.standard("cr", edition)
+
+        log.info("API: {} -> {}.".format(api_original, api_standard))
+        log.info(" CR: {} -> {}.".format(cr_original, cr_standard))
+        if api_standard == cr_standard:
+            n_cards = api_standard
+            n_directly_matching = self.direct_matches(edition)
+            n_missing_cards = n_cards - n_directly_matching
+            log.info("API and CR # of cards matching, good.")
+
+            log.info("{} directly matching cards.".format(n_directly_matching))
+            log.info("Inserting direct matches...")
+            # check how many rows were inserted and confirm w/ direct_matches()
+            self.insert_direct_match(edition)
+
+            if n_missing_cards > 0:
+                log.info("{} cards are mismatching.".format(n_missing_cards))
+                log.info("Trying image match.")
+                self.image_match(edition)
+            else:
+                log.info("All cards matched directly. Yay!")
+        else:
+            log.info("API and CR both have different # of cards. Cancelling.")
 
     def total(self, source, edition):
         count = -1

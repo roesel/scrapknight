@@ -56,8 +56,7 @@ def setup():
 
 def link(edition):
     """
-    (Re)builds the database completely from scratch, to the state we consider the "default".
-    What "default" is can change drastically between commits though.
+    Tries to link card entries from API with entries from CR.
     """
 
     log = logging.getLogger()
@@ -95,6 +94,6 @@ def link(edition):
 if __name__ == "__main__":
     setup()
 
-    editions = ["SOI"]
+    editions = ['KLD', 'EMN', 'SOI', 'OGW', 'BFZ']
     for edition in editions:
         link(edition)
