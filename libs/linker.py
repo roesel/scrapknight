@@ -48,27 +48,37 @@ class Linker:
         cr_original = self.total("cr", edition)
         cr_standard = self.standard("cr", edition)
 
-        log.info("API: {} -> {}.".format(api_original, api_standard))
-        log.info(" CR: {} -> {}.".format(cr_original, cr_standard))
-        if api_standard == cr_standard:
+        output_line = str(edition) + ": "
+        if api_standard != cr_standard:
+            log.info(output_line)
+            log.info("    API and CR both have different # of cards. Cancelling.")
+            log.info("    API: {} -> {}.".format(api_original, api_standard))
+            log.info("    CR: {} -> {}.".format(cr_original, cr_standard))
+        else:
             n_cards = api_standard
             n_directly_matching = self.direct_matches(edition)
             n_missing_cards = n_cards - n_directly_matching
-            log.info("API and CR # of cards matching, good.")
+            output_line += "{}/{} matching".format(n_directly_matching, n_cards)
 
-            log.info("{} directly matching cards.".format(n_directly_matching))
-            log.info("Inserting direct matches...")
-            # check how many rows were inserted and confirm w/ direct_matches()
-            self.insert_direct_match(edition)
+            # TODO check how many rows were inserted and confirm w/ direct_matches()
+            changed_rows = self.insert_direct_match(edition)
+            if changed_rows != n_directly_matching:
+                log.info(output_line)
+                log.info(
+                    "WARNING: Not all directly matching cards inserted ({}/{}).".format(changed_rows, n_directly_matching))
 
             if n_missing_cards > 0:
-                log.info("{} cards are mismatching.".format(n_missing_cards))
-                log.info("Trying image match.")
-                self.image_match(edition)
+                n_image_matched = self.image_match(edition)
+                output_line += ", {}/{} image_matched".format(n_image_matched, n_missing_cards)
+                if n_image_matched != n_missing_cards:
+                    log.info(output_line)
+                    log.info("WARNING: not all missing fixed by image_match().")
+                else:
+                    output_line += " - OK"
+
             else:
-                log.info("All cards matched directly. Yay!")
-        else:
-            log.info("API and CR both have different # of cards. Cancelling.")
+                output_line += " - OK (probably black magic)"
+            log.info(output_line)
 
     def total(self, source, edition):
         count = -1
@@ -127,17 +137,21 @@ class Linker:
         if len(cr_ids) == len(api_ids):
             m = Matcher(cr_ids, api_ids)
             matches, status = m.get_matches()
-            log.info(status)
-
+            if status:
+                log.debug("All matches are unambiguous (unique).")
             self.insert_image_match(matches)
+
+            # TODO: this is a cheat, we need to actually check rows in DB!
+            return len(matches)
         else:
-            log.info("Image match would get uneven arrays -> not matching.")
+            log.info("WARNING: Image match would get uneven arrays -> not matching.")
 
     def insert_image_match(self, matches):
         """
         Replaces new values into `rel_cards`.
+        TODO: find out the amount inserted to report back
         """
-        log.info("Inserting...")
+        log.debug("Inserting image match...")
         for cr_id, mid in matches.items():
             query = """
                 REPLACE INTO `rel_cards`
@@ -147,7 +161,7 @@ class Linker:
                 """
 
             self.db.insert(query, [cr_id, mid])
-        log.info("Done.")
+        log.debug("Done.")
 
     def extra_from_cr(self, edition):
         """
@@ -206,7 +220,7 @@ class Linker:
         return out
 
     def insert_direct_match(self, edition):
-        query = """ SET @edition = %s;
+        query = """ SET @edition = %s ;
                     REPLACE INTO rel_cards
                     SELECT `id_cr`, `mid` as `id_sdk` FROM (
                        SELECT REPLACE(name,'´', '\\\'') as name_replaced, `id` as `id_cr` from cards where edition_id = @edition
@@ -216,4 +230,5 @@ class Linker:
                        ) as api
                     ON cr.name_replaced = api.name;
         """
-        results = self.db.multiinsert(query, (edition,))
+        number_of_changed_rows = self.db.multiinsert(query, (edition,))
+        return number_of_changed_rows / 2

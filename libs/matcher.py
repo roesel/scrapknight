@@ -34,7 +34,7 @@ class Matcher:
         results = self.match(self.list_cr, self.list_mid)
         match_took = time.time() - start
 
-        log.info("Matching took {}.".format(self.readable_time(match_took)))
+        log.debug("Matching took {}.".format(self.readable_time(match_took)))
 
         return results, self.status
 
@@ -90,9 +90,10 @@ class Matcher:
             minima_locations.append(minimum_location)
 
         if unambiguous:
-            self.status = "All matches are unambiguous (unique)."
+            self.status = 1
         else:
-            self.status = "Some matches are ambiguous."
+            self.status = 0
+            log.info("Some matches are ambiguous.")
             for i in range(len(occurences)):
                 for candidate in occurences[i]:
                     # TODO Not sure which index is which - might be switched CR/API
@@ -101,7 +102,7 @@ class Matcher:
 
         max_difference = np.max(minima)
         if max_difference < 5:
-            log.info("Maximum difference in images was {}.".format(max_difference))
+            log.debug("Maximum difference in images was {}.".format(max_difference))
         else:
             log.info("WARNING! Maximum difference {} >= 5. Trouble?".format(max_difference))
 
