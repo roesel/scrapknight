@@ -10,7 +10,7 @@ from flask_login import LoginManager, login_required, login_user, \
 from requests_oauthlib import OAuth2Session
 from requests.exceptions import HTTPError
 
-from htmlmin.minify import html_minify
+# from htmlmin.minify import html_minify
 
 from .forms import InputForm
 
@@ -36,6 +36,7 @@ from libs.database import Database
 from tools import Deck
 
 """ DB Models """
+
 
 class User(db.Model, UserMixin):
     __tablename__ = "users"
@@ -169,7 +170,6 @@ class User(db.Model, UserMixin):
         if len(decks) == 1 and not any(decks[0]):
             decks = []
 
-
         decks = [{
             'id': d[0],
             'name': d[1],
@@ -179,6 +179,7 @@ class User(db.Model, UserMixin):
         return decks
 
 User.db = Database(DatabaseConfig)
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -281,6 +282,7 @@ def searchcard():
         'page_parts/card_search_table.html',
         search_table=output_table)
 
+
 @app.route('/savecards', methods=['POST'])
 @login_required
 def savecards():
@@ -290,6 +292,7 @@ def savecards():
     users_cards_save(current_user, card_list)
 
     return "success"
+
 
 @app.route('/savelibrary', methods=['POST'])
 @login_required
@@ -303,6 +306,7 @@ def savelibrary():
     else:
         return "failure"
 
+
 @app.route('/modifydeck', methods=['POST'])
 @login_required
 def modifydeck():
@@ -315,6 +319,7 @@ def modifydeck():
         return "success"
     else:
         return "failure"
+
 
 @app.route('/library')
 @login_required
@@ -352,6 +357,7 @@ def library():
         log=log,
         db_info=bu.get_db_info()))
 
+
 @app.route('/deck/<int:deck_id>')
 @login_required
 def deck(deck_id):
@@ -373,6 +379,7 @@ def deck(deck_id):
         log=log,
         db_info=bu.get_db_info()))
 
+
 @app.route('/card/<card_id>')
 @login_required
 def card(card_id):
@@ -390,6 +397,7 @@ def card(card_id):
         fill="",
         log=log,
         db_info=bu.get_db_info()))
+
 
 @app.route('/input', methods=['GET', 'POST'])
 def input():
