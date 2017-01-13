@@ -4,6 +4,11 @@
 import mysql.connector
 from mysql.connector import Error, errorcode
 
+import logging
+import pprint
+
+log = logging.getLogger()
+
 
 class Database:
     debug = False
@@ -39,28 +44,30 @@ class Database:
             self.cnx.rollback()
 
     def multiinsert(self, query, *args, **kwargs):
+        """
+        WORKAROUND for correct reporting of changed rows is not ideal.
+        """
+        i = 0
+        statements = ""
+        changed_rows = 0
         for result in self.cursor.execute(query, *args, **kwargs, multi=True):
             if result.with_rows:
                 print("Rows produced by statement '{}':".format(result.statement))
                 print(result.fetchall())
             else:
                 preview_length = 35
-                if len(result.statement) > preview_length:
-                    query_preview = ' '.join(result.statement.split())[0:preview_length] + "... ;"
+                if i == 0:
+                    statements = result.statement.split(";")
+                if len(statements[i]) > preview_length:
+                    query_preview = ' '.join(statements[i].split())[0:preview_length] + "...;"
                 else:
-                    query_preview = result.statement + ";"
-                print("Number of rows affected by statement '{}': {}".format(
+                    query_preview = statements[i][0:-1] + ";"
+                log.debug("Number of rows affected by statement '{}': {}".format(
                     query_preview, result.rowcount))
+                changed_rows += result.rowcount
+                i += 1
         self.cnx.commit()
-
-    def multiinsert_simple(self, query, *args, **kwargs):
-        for result in self.cursor.execute(query, *args, **kwargs, multi=True):
-            if result.with_rows:
-                print("Rows produced by statement '{}':".format(result.statement))
-                print(result.fetchall())
-            else:
-                print("Number of rows affected by statement '{}': {}".format(
-                    result.statement, result.rowcount))
+        return changed_rows
 
     def query(self, query, *args, **kwargs):
         self.cursor.execute(query, *args, **kwargs)
