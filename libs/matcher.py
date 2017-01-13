@@ -129,8 +129,13 @@ class Matcher:
         return hash_1 - hash_2
 
     def get_img(self, type_id, card_id):
+        if type_id == "cr":
+            url = self.url_cr(card_id)
+            name = str(card_id) + ".jpg"
+        else:
+            url = self.url_api(card_id)
+            name = str(card_id) + ".png"
 
-        name = str(card_id) + ".jpg"
         directory = Path('app/static/img/cards/')
         directory.mkdir(exist_ok=True)
         path = directory / name
@@ -139,10 +144,7 @@ class Matcher:
             img = Image.open(path)
             return img
         else:
-            if type_id == "cr":
-                url = self.url_cr(card_id)
-            else:
-                url = self.url_api(card_id)
+
             try:
                 urllib.request.urlretrieve(url, str(path))
                 img = Image.open(path)
