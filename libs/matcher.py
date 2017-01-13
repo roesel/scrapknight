@@ -6,6 +6,7 @@ import imagehash
 import requests
 from io import BytesIO
 import numpy as np
+import time
 
 import logging
 logging.getLogger("requests").setLevel(logging.WARNING)
@@ -28,7 +29,18 @@ class Matcher:
         self.list_mid = list_mid
 
     def get_matches(self):
-        return self.match(self.list_cr, self.list_mid), self.status
+        start = time.time()
+        results = self.match(self.list_cr, self.list_mid)
+        match_took = time.time() - start
+
+        log.info("Matching took {}.".format(self.readable_time(match_took)))
+
+        return results, self.status
+
+    def readable_time(self, seconds):
+        m, s = divmod(seconds, 60)
+        h, m = divmod(m, 60)
+        return "%d:%02d:%02d" % (h, m, s)
 
     def matrix(self, list_cr, list_mid):
         """
