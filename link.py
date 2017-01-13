@@ -54,7 +54,7 @@ def setup():
         level=logging_level)
 
 
-def link(edition):
+def link(editions):
     """
     Tries to link card entries from API with entries from CR.
     """
@@ -63,37 +63,11 @@ def link(edition):
 
     l = Linker(DatabaseConfig)
 
-    api_original = l.total("api", edition)
-    api_standard = l.standard("api", edition)
-    cr_original = l.total("cr", edition)
-    cr_standard = l.standard("cr", edition)
-
-    log.info("API: {} -> {}.".format(api_original, api_standard))
-    log.info(" CR: {} -> {}.".format(cr_original, cr_standard))
-    if api_standard == cr_standard:
-        n_cards = api_standard
-        n_directly_matching = l.direct_matches(edition)
-        n_missing_cards = n_cards - n_directly_matching
-        log.info("API and CR # of cards matching, good.")
-
-        log.info("{} directly matching cards.".format(n_directly_matching))
-        log.info("Inserting direct matches...")
-        # check how many rows were inserted and confirm w/ direct_matches()
-        l.insert_direct_match(edition)
-
-        if n_missing_cards > 0:
-            log.info("{} cards are mismatching.".format(n_missing_cards))
-            log.info("Trying image match.")
-            l.image_match(edition)
-        else:
-            log.info("All cards matched directly. Yay!")
-    else:
-        log.info("API and CR both have different # of cards. Cancelling.")
+    l.link(editions)
 
 
 if __name__ == "__main__":
     setup()
 
     editions = ['KLD', 'EMN', 'SOI', 'OGW', 'BFZ']
-    for edition in editions:
-        link(edition)
+    link(editions)
