@@ -41,8 +41,8 @@ class Connector:
         for edition in loaded_editions:
             edition_code = edition[0]
             if editions is None or edition_code in editions:
-                log.info("Sleeping for 3 seconds...")
-                time.sleep(3)
+                #log.info("Sleeping for 3 seconds...")
+                # time.sleep(3)
                 log.info("[{}] Loading edition from API...".format(edition_code))
                 cards = self.load_edition(edition_code)
                 self.insert_cards(cards)
@@ -174,7 +174,6 @@ class Connector:
             log.debug("Inserting card: {}".format(card))
             self.db.insert(query, card)
 
-
     def empty_db(self):
         """ Calls for truncate of all tables used by Connector. """
 
@@ -212,9 +211,9 @@ class Connector:
             'editions': editions}
 
         log.debug(
-              "Loaded info:\n"
-              "{number_of_cards} cards, {known_editions} editions out of {number_of_editions} known.\n"
-              "Loaded editions: {editions}.".format(
-                  **data))
+            "Loaded info:\n"
+            "{number_of_cards} cards, {known_editions} editions out of {number_of_editions} known.\n"
+            "Loaded editions: {editions}.".format(
+                **data))
 
         return data
