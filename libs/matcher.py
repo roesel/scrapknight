@@ -3,10 +3,11 @@
 
 from PIL import Image
 import imagehash
-import requests
+import urllib
 from io import BytesIO
 import numpy as np
 import time
+from pathlib import Path
 
 import logging
 logging.getLogger("requests").setLevel(logging.WARNING)
@@ -46,8 +47,8 @@ class Matcher:
         """
         Creates a nxn matrix with distances of all images to each other.
         """
-        imgs_cr = [self.load_img(self.url_cr(id_cr)) for id_cr in list_cr]
-        imgs_api = [self.load_img(self.url_api(mid)) for mid in list_mid]
+        imgs_cr = [self.get_img("cr", id_cr) for id_cr in list_cr]
+        imgs_api = [self.get_img("api", mid) for mid in list_mid]
 
         mat = np.zeros([len(imgs_cr), len(imgs_api)])
         for i in range(len(imgs_cr)):
@@ -127,14 +128,28 @@ class Matcher:
 
         return hash_1 - hash_2
 
-    def load_img(self, url):
-        """
-        Downloads the image on provided url and returns it as an Image object.
-        (logging module for requests has to be turned to warning only)
-        """
-        response = requests.get(url)
-        img = Image.open(BytesIO(response.content))
-        return img
+    def get_img(self, type_id, card_id):
+
+        name = str(card_id) + ".jpg"
+        directory = Path('app/static/img/cards/')
+        directory.mkdir(exist_ok=True)
+        path = directory / name
+
+        if path.exists():
+            img = Image.open(path)
+            return img
+        else:
+            if type_id == "cr":
+                url = self.url_cr(card_id)
+            else:
+                url = self.url_api(card_id)
+            try:
+                urllib.request.urlretrieve(url, str(path))
+                img = Image.open(path)
+                return img
+            except urllib.error.URLError as e:
+                log.info("URLError, trouble...")
+                return None
 
     def url_cr(self, id_cr):
         """
