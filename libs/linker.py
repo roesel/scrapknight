@@ -49,24 +49,31 @@ class Linker:
         cr_standard = self.standard("cr", edition)
 
         output_line = str(edition) + ": "
+        matching_sources = False
         if api_standard != cr_standard:
             log.info(output_line)
-            log.info("    API and CR both have different # of cards. Cancelling.")
+            log.info("    API and CR both have different # of cards. Direct match only.")
             log.info("    API: {} -> {}.".format(api_original, api_standard))
             log.info("    CR: {} -> {}.".format(cr_original, cr_standard))
         else:
-            n_cards = api_standard
-            n_directly_matching = self.direct_matches(edition)
-            n_missing_cards = n_cards - n_directly_matching
-            output_line += "{}/{} matching".format(n_directly_matching, n_cards)
+            matching_sources = True
 
-            # TODO check how many rows were inserted and confirm w/ direct_matches()
-            changed_rows = self.insert_direct_match(edition)
-            if changed_rows != n_directly_matching:
-                log.info(output_line)
-                log.info(
-                    "WARNING: Not all directly matching cards inserted ({}/{}).".format(changed_rows, n_directly_matching))
+        n_cards = api_standard
+        n_directly_matching = self.direct_matches(edition)
+        n_missing_cards = n_cards - n_directly_matching
+        output_line += "{}/{} matching".format(n_directly_matching, n_cards)
 
+        # TODO check how many rows were inserted and confirm w/ direct_matches()
+        changed_rows = self.insert_direct_match(edition)
+        if changed_rows != n_directly_matching:
+            log.info(output_line)
+            log.info(
+                "WARNING: Not all directly matching cards inserted ({}/{}).".format(changed_rows, n_directly_matching))
+
+        if not matching_sources:
+            output_line += " - PROBLEMS"
+            log.info(output_line)
+        else:
             if n_missing_cards > 0:
                 n_image_matched = self.image_match(edition)
                 output_line += ", {}/{} image_matched".format(n_image_matched, n_missing_cards)
