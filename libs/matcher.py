@@ -95,10 +95,13 @@ class Matcher:
             self.status = 0
             log.info("Some matches are ambiguous.")
             for i in range(len(occurences)):
-                for candidate in occurences[i]:
-                    # TODO Not sure which index is which - might be switched CR/API
-                    log.info(
-                        "Ambiguous candidate: {} -> {}".format(self.list_cr[i], self.list_mid[candidate]))
+                try:
+                    for candidate in occurences[i]:
+                        # TODO Not sure which index is which - might be switched CR/API
+                        log.info(
+                            "Ambiguous candidate: {} -> {}".format(self.list_cr[i], self.list_mid[candidate]))
+                except:
+                    pass
 
         max_difference = np.max(minima)
         if max_difference < 5:

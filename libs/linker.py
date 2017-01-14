@@ -6,6 +6,8 @@ from datetime import datetime
 
 from libs.database import Database
 from libs.matcher import Matcher
+from libs.connector import Connector
+from libs.scraper import Scraper
 
 import logging
 import pprint
@@ -24,8 +26,10 @@ class Linker:
         Creates a Database() object and passes it to Scraper/Connector upon creation.
         """
         self.db = Database(db_config)
+        self.sc = Scraper(self.db)
+        self.co = Connector(self.db)
 
-    def link(self, editions):
+    def link(self, eds):
         """
         For each edition:
           1) relate through rel_editions to get "edition_sdk" and "edition_cr"
@@ -38,7 +42,27 @@ class Linker:
           6) ...magic...
           7) ...
           8) profit
+        TODO: all-editions should use the relation table and allow passing 2 different editions to link_edition(s)
         """
+        if eds == []:
+            editions = []
+            editions_sc = self.sc.get_edition_list()
+            editions_co = self.co.get_edition_list()
+
+            ed_sc = []
+            for ed in editions_sc:
+                ed_sc.append(ed[0])
+
+            ed_co = []
+            for ed in editions_co:
+                ed_co.append(ed[0])
+
+            for edition in ed_sc:
+                if edition in ed_co:
+                    editions.append(edition)
+        else:
+            editions = eds
+
         for edition in editions:
             self.link_edition(edition)
 
@@ -146,10 +170,11 @@ class Linker:
             matches, status = m.get_matches()
             if status:
                 log.debug("All matches are unambiguous (unique).")
-            self.insert_image_match(matches)
-
+                self.insert_image_match(matches)
+            else:
+                log.info("Not inserting due to ambiguity.")
             # TODO: this is a cheat, we need to actually check rows in DB!
-            return len(matches)
+            return len(matches) * status
         else:
             log.info("WARNING: Image match would get uneven arrays -> not matching.")
 

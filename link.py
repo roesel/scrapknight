@@ -69,5 +69,6 @@ def link(editions):
 if __name__ == "__main__":
     setup()
 
-    editions = ['KLD', 'EMN', 'SOI', 'OGW', 'BFZ']
+    #editions = ['KLD', 'EMN', 'SOI', 'OGW', 'BFZ']
+    editions = []
     link(editions)
