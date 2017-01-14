@@ -29,7 +29,7 @@ class Linker:
         self.sc = Scraper(self.db)
         self.co = Connector(self.db)
 
-    def link(self, eds):
+    def link(self, editions):
         """
         For each edition:
           1) relate through rel_editions to get "edition_sdk" and "edition_cr"
@@ -44,35 +44,64 @@ class Linker:
           8) profit
         TODO: all-editions should use the relation table and allow passing 2 different editions to link_edition(s)
         """
-        if eds == []:
-            editions = []
-            editions_sc = self.sc.get_edition_list()
-            editions_co = self.co.get_edition_list()
+        edition_list = self.get_rel_edition_lists()
 
-            ed_sc = []
-            for ed in editions_sc:
-                ed_sc.append(ed[0])
+        edition_dict = {}
+        for edition_pair in edition_list:
+            edition_dict[edition_pair[0]] = edition_pair[1]
 
-            ed_co = []
-            for ed in editions_co:
-                ed_co.append(ed[0])
-
-            for edition in ed_sc:
-                if edition in ed_co:
-                    editions.append(edition)
+        if editions == []:
+            double_list = edition_list
         else:
-            editions = eds
+            # TODO: this needs to assume CR and look up API and make pairs
+            double_list = []
+            for edition in editions:
+                if isinstance(edition, (list, tuple)):
+                    if len(edition) == 2:
+                        double_list.append(edition)
+                else:
+                    try:
+                        # assume CR and look up API
+                        double_list.append([edition, edition_dict[edition]])
+                    except:
+                        print(
+                            "Input CR edition `{}` doesn't exist in both or is not matched. Exiting.".format(edition))
+                        sys.exit()
 
-        for edition in editions:
-            self.link_edition(edition)
+        for edition_pair in double_list:
+            self.link_edition(edition_pair)
 
-    def link_edition(self, edition):
-        api_original = self.total("api", edition)
-        api_standard = self.standard("api", edition)
-        cr_original = self.total("cr", edition)
-        cr_standard = self.standard("cr", edition)
+    def get_rel_edition_lists(self):
+        query = """ SELECT editions.id, code
+                    FROM editions
+                        INNER JOIN rel_editions
+                            ON rel_editions.id_cr = editions.id
+                        INNER JOIN sdk_editions
+                            ON sdk_editions.code = rel_editions.id_sdk
 
-        n_directly_matching = self.direct_matches(edition)
+                    UNION ALL
+
+                    SELECT editions.id, code
+                    FROM editions
+                        JOIN sdk_editions
+                            ON editions.id = sdk_editions.code; """
+        result = self.db.query(query)
+
+        double_list = []
+        for edition in result:
+            double_list.append([edition[0], edition[1]])
+        return double_list
+
+    def link_edition(self, edition_pair):
+        edition_cr = edition_pair[0]
+        edition_api = edition_pair[1]
+        api_original = self.total("api", edition_api)
+        api_standard = self.standard("api", edition_api)
+        cr_original = self.total("cr", edition_cr)
+        cr_standard = self.standard("cr", edition_cr)
+
+        n_directly_matching = self.direct_matches(edition_pair)
+
         if cr_standard >= api_standard:
             n_cards = cr_standard
         else:
@@ -84,7 +113,8 @@ class Linker:
 
         # Is it reasonable to try direct matching?
         if n_directly_matching > 0:
-            n_direct_inserted = self.insert_direct_match(edition)
+
+            n_direct_inserted = self.insert_direct_match(edition_pair)
             n_inserted += n_direct_inserted
             if n_direct_inserted != n_directly_matching:
                 self.trouble.append("{}/{} direct inserted".format(
@@ -94,7 +124,8 @@ class Linker:
         if api_standard == cr_standard:
             # Is there even anything to image match?
             if n_missing_cards > 0:
-                n_image_matched = self.image_match(edition)
+                n_image_matched = self.image_match(edition_pair)
+                # stopped here
                 n_inserted += n_image_matched
                 if n_image_matched != n_missing_cards:
                     self.trouble.append("{}/{} image_matches inserted".format(
@@ -111,10 +142,10 @@ class Linker:
 
         if n_inserted == n_cards:
             log.info("{}: {}% ({}/{} cards inserted) {}".format(
-                edition, int(100 * n_inserted / n_cards), n_inserted, n_cards, trouble_string))
+                edition_api, int(100 * n_inserted / n_cards), n_inserted, n_cards, trouble_string))
         else:
             log.info("{}: {}% ({}/{} cards inserted) {}".format(
-                edition, int(100 * n_inserted / n_cards), n_inserted, n_cards, trouble_string))
+                edition_api, int(100 * n_inserted / n_cards), n_inserted, n_cards, trouble_string))
 
     def total(self, source, edition):
         count = -1
@@ -142,16 +173,18 @@ class Linker:
             count = result[0][0]
         return count
 
-    def direct_matches(self, edition):
-        query = """ SET @edition = "{}";
+    def direct_matches(self, edition_pair):
+
+        query = """ SET @edition_cr = "{}";
+                    SET @edition_api = "{}";
                     SELECT COUNT(*) FROM (
-                        SELECT REPLACE(name,'´', '\\\'') as name_replaced from cards where edition_id = @edition
+                        SELECT REPLACE(name,'´', '\\\'') as name_replaced from cards where edition_id = @edition_cr
                         ) as cr
                     JOIN (
-                        SELECT * from sdk_cards where `set` = @edition
+                        SELECT * from sdk_cards where `set` = @edition_api
                         ) as api
                     ON cr.name_replaced = api.name;
-                """.format(edition)
+                """.format(edition_pair[0], edition_pair[1])
         results = self.db.cursor.execute(query, multi=True)
         self.db.cnx.commit()
         for cur in results:
@@ -160,15 +193,15 @@ class Linker:
 
         return count
 
-    def image_match(self, edition):
+    def image_match(self, edition_pair):
         """
         Tries to match cards not covered by direct_matches() using differences in images.
 
         IMPROVE Could be optimized to make a new matcher for every kind of land in order
         to only do 3x3 matrices for 'Plains' instead of 15x15 for all lands.
         """
-        cr_ids = self.extra_from_cr(edition)
-        api_ids = self.extra_from_api(edition)
+        cr_ids = self.extra_from_cr(edition_pair)
+        api_ids = self.extra_from_api(edition_pair)
 
         if len(cr_ids) == len(api_ids):
             m = Matcher(cr_ids, api_ids)
@@ -182,7 +215,7 @@ class Linker:
                 return 0
         else:
             log.debug("{}: WARNING: image_match() found {} in API and {} in CR. Not even trying.".format(
-                edition, len(api_ids), len(cr_ids)))
+                edition_pair[0], len(api_ids), len(cr_ids)))
             self.trouble.append("image_match uneven {}!={}".format(len(api_ids), len(cr_ids)))
             return 0
 
@@ -203,23 +236,24 @@ class Linker:
             self.db.insert(query, [cr_id, mid])
         log.debug("Done.")
 
-    def extra_from_cr(self, edition):
+    def extra_from_cr(self, edition_pair):
         """
         Returns a list of cards from CR that are not covered by direct_matches().
         """
         query_cr = """
-                SET @edition = "{}";
+                SET @edition_cr = "{}";
+                SET @edition_api = "{}";
 
             	SELECT id_cr
             	FROM (
-            		SELECT * FROM sdk_cards WHERE NOT (`layout`="double-faced" and mana_cost is null and `type` !="Land") AND (`set`=@edition)
+            		SELECT * FROM sdk_cards WHERE NOT (`layout`="double-faced" and mana_cost is null and `type` !="Land") AND (`set`=@edition_api)
             	) as t1
             	RIGHT JOIN (
-            		SELECT REPLACE(name,'´', '\\\'') as name_replaced, id as id_cr FROM cards WHERE edition_id=@edition AND id not like "tokens%" AND name not like "Token - %" AND name not like "Emblem - %"
+            		SELECT REPLACE(name,'´', '\\\'') as name_replaced, id as id_cr FROM cards WHERE edition_id=@edition_cr AND id not like "tokens%" AND name not like "Token - %" AND name not like "Emblem - %"
             	) as t2
             	ON t1.name = t2.name_replaced
             	WHERE `name` is null;
-                """.format(edition)
+                """.format(edition_pair[0], edition_pair[1])
 
         results = self.db.cursor.execute(query_cr, multi=True)
         self.db.cnx.commit()
@@ -231,23 +265,24 @@ class Linker:
                     out.append(row[0])
         return out
 
-    def extra_from_api(self, edition):
+    def extra_from_api(self, edition_pair):
         """
         Returns a list of cards from API that are not covered by direct_matches().
         """
         query_cr = """
-                SET @edition = "{}";
+                SET @edition_cr = "{}";
+                SET @edition_api = "{}";
 
                 SELECT mid
             	FROM (
-            		SELECT * FROM sdk_cards WHERE NOT (`layout`="double-faced" and mana_cost is null and `type` !="Land") AND (`set`=@edition)
+            		SELECT * FROM sdk_cards WHERE NOT (`layout`="double-faced" and mana_cost is null and `type` !="Land") AND (`set`=@edition_api)
             	) as t1
             	LEFT JOIN (
-            		SELECT REPLACE(name,'´', '\\\'') as name_replaced FROM cards WHERE edition_id=@edition AND id not like "tokens%" AND name not like "Token - %" AND name not like "Emblem - %"
+            		SELECT REPLACE(name,'´', '\\\'') as name_replaced FROM cards WHERE edition_id=@edition_cr AND id not like "tokens%" AND name not like "Token - %" AND name not like "Emblem - %"
             	) as t2
             	ON t1.name = t2.name_replaced
             	WHERE `name_replaced` is null;
-                """.format(edition)
+                """.format(edition_pair[0], edition_pair[1])
 
         results = self.db.cursor.execute(query_cr, multi=True)
         self.db.cnx.commit()
@@ -259,18 +294,19 @@ class Linker:
                     out.append(row[0])
         return out
 
-    def insert_direct_match(self, edition):
-        query = """ SET @edition = %s ;
+    def insert_direct_match(self, edition_pair):
+        query = """ SET @edition_cr = %s ;
+                    SET @edition_api = %s ;
                     REPLACE INTO rel_cards
                     SELECT `id_cr`, `mid` as `id_sdk` FROM (
-                       SELECT REPLACE(name,'´', '\\\'') as name_replaced, `id` as `id_cr` from cards where edition_id = @edition
+                       SELECT REPLACE(name,'´', '\\\'') as name_replaced, `id` as `id_cr` from cards where edition_id = @edition_cr
                        ) as cr
                     JOIN (
-                       SELECT * from sdk_cards where `set` = @edition
+                       SELECT * from sdk_cards where `set` = @edition_api
                        ) as api
                     ON cr.name_replaced = api.name;
         """
-        number_of_changed_rows = self.db.multiinsert(query, (edition,))
+        number_of_changed_rows = self.db.multiinsert(query, (edition_pair[0], edition_pair[1]))
         if number_of_changed_rows % 2 == 0:
             return int(number_of_changed_rows / 2)
         else:
