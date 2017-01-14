@@ -72,44 +72,49 @@ class Linker:
         cr_original = self.total("cr", edition)
         cr_standard = self.standard("cr", edition)
 
-        output_line = str(edition) + ": "
-        matching_sources = False
-        if api_standard != cr_standard:
-            log.info(output_line)
-            log.info("    API and CR both have different # of cards. Direct match only.")
-            log.info("    API: {} -> {}.".format(api_original, api_standard))
-            log.info("    CR: {} -> {}.".format(cr_original, cr_standard))
-        else:
-            matching_sources = True
-
-        n_cards = api_standard
         n_directly_matching = self.direct_matches(edition)
-        n_missing_cards = n_cards - n_directly_matching
-        output_line += "{}/{} matching".format(n_directly_matching, n_cards)
-
-        # TODO check how many rows were inserted and confirm w/ direct_matches()
-        changed_rows = self.insert_direct_match(edition)
-        if changed_rows != n_directly_matching:
-            log.info(output_line)
-            log.info(
-                "WARNING: Not all directly matching cards inserted ({}/{}).".format(changed_rows, n_directly_matching))
-
-        if not matching_sources:
-            output_line += " - PROBLEMS"
-            log.info(output_line)
+        if cr_standard >= api_standard:
+            n_cards = cr_standard
         else:
+            n_cards = api_standard
+        n_missing_cards = n_cards - n_directly_matching
+        n_inserted = 0
+
+        self.trouble = []
+
+        # Is it reasonable to try direct matching?
+        if n_directly_matching > 0:
+            n_direct_inserted = self.insert_direct_match(edition)
+            n_inserted += n_direct_inserted
+            if n_direct_inserted != n_directly_matching:
+                self.trouble.append("{}/{} direct inserted".format(
+                    n_direct_inserted, n_directly_matching))
+
+        # Is it reasonable to try image matching?
+        if api_standard == cr_standard:
+            # Is there even anything to image match?
             if n_missing_cards > 0:
                 n_image_matched = self.image_match(edition)
-                output_line += ", {}/{} image_matched".format(n_image_matched, n_missing_cards)
+                n_inserted += n_image_matched
                 if n_image_matched != n_missing_cards:
-                    log.info(output_line)
-                    log.info("WARNING: not all missing fixed by image_match().")
-                else:
-                    output_line += " - OK"
+                    self.trouble.append("{}/{} image_matches inserted".format(
+                        n_image_matched, n_missing_cards))
+        else:
+            self.trouble.append("API ({} -> {}) / CR ({} -> {}) mismatch".format(
+                api_original, api_standard, cr_original, cr_standard))
 
-            else:
-                output_line += " - OK (probably black magic)"
-            log.info(output_line)
+        # Final report
+        if len(self.trouble):
+            trouble_string = "(" + ", ".join(self.trouble) + ")"
+        else:
+            trouble_string = ""
+
+        if n_inserted == n_cards:
+            log.info("{}: {}% ({}/{} cards inserted) {}".format(
+                edition, int(100 * n_inserted / n_cards), n_inserted, n_cards, trouble_string))
+        else:
+            log.info("{}: {}% ({}/{} cards inserted) {}".format(
+                edition, int(100 * n_inserted / n_cards), n_inserted, n_cards, trouble_string))
 
     def total(self, source, edition):
         count = -1
@@ -167,16 +172,19 @@ class Linker:
 
         if len(cr_ids) == len(api_ids):
             m = Matcher(cr_ids, api_ids)
-            matches, status = m.get_matches()
-            if status:
+            matches, info = m.get_matches()
+            if matches is not None:
                 log.debug("All matches are unambiguous (unique).")
                 self.insert_image_match(matches)
+                return len(matches)
             else:
-                log.info("Not inserting due to ambiguity.")
-            # TODO: this is a cheat, we need to actually check rows in DB!
-            return len(matches) * status
+                self.trouble.append("matcher: {}.".format(info))
+                return 0
         else:
-            log.info("WARNING: Image match would get uneven arrays -> not matching.")
+            log.debug("{}: WARNING: image_match() found {} in API and {} in CR. Not even trying.".format(
+                edition, len(api_ids), len(cr_ids)))
+            self.trouble.append("image_match uneven {}!={}".format(len(api_ids), len(cr_ids)))
+            return 0
 
     def insert_image_match(self, matches):
         """
@@ -263,4 +271,7 @@ class Linker:
                     ON cr.name_replaced = api.name;
         """
         number_of_changed_rows = self.db.multiinsert(query, (edition,))
-        return number_of_changed_rows / 2
+        if number_of_changed_rows % 2 == 0:
+            return int(number_of_changed_rows / 2)
+        else:
+            return number_of_changed_rows / 2

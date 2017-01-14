@@ -20,7 +20,6 @@ class Matcher:
     """
     # self.list_cr
     # self.list_mid
-    status = ""
 
     def __init__(self, list_cr, list_mid):
         """
@@ -28,6 +27,7 @@ class Matcher:
         """
         self.list_cr = list_cr
         self.list_mid = list_mid
+        self.info_status = []
 
     def get_matches(self):
         start = time.time()
@@ -36,7 +36,7 @@ class Matcher:
 
         log.debug("Matching took {}.".format(self.readable_time(match_took)))
 
-        return results, self.status
+        return results, "(" + ",".join(self.info_status) + ")"
 
     def readable_time(self, seconds):
         m, s = divmod(seconds, 60)
@@ -50,10 +50,14 @@ class Matcher:
         imgs_cr = [self.get_img("cr", id_cr) for id_cr in list_cr]
         imgs_api = [self.get_img("api", mid) for mid in list_mid]
 
-        mat = np.zeros([len(imgs_cr), len(imgs_api)])
-        for i in range(len(imgs_cr)):
-            for j in range(len(imgs_api)):
-                mat[i][j] = self.dist(imgs_cr[i], imgs_api[j])
+        if (None not in imgs_cr) and (None not in imgs_api):
+            mat = np.zeros([len(imgs_cr), len(imgs_api)])
+            for i in range(len(imgs_cr)):
+                for j in range(len(imgs_api)):
+                    mat[i][j] = self.dist(imgs_cr[i], imgs_api[j])
+        else:
+            self.info_status.append("wrong url(s)")
+            mat = None
 
         return mat
 
@@ -62,14 +66,18 @@ class Matcher:
         Generates dictionary of cr_ids matching mids.
         """
         mat = self.matrix(list_cr, list_mid)
+        if mat is not None:
+            minima_locations = self.get_minima(mat)
+            if minima_locations is not None:
+                out = {}
+                for i in range(len(minima_locations)):
+                    out[list_cr[i]] = list_mid[minima_locations[i]]
 
-        minima_locations = self.get_minima(mat)
-
-        out = {}
-        for i in range(len(minima_locations)):
-            out[list_cr[i]] = list_mid[minima_locations[i]]
-
-        return out
+                return out
+            else:
+                return None
+        else:
+            return None
 
     def get_minima(self, mat):
         minima = []
@@ -90,15 +98,16 @@ class Matcher:
             minima_locations.append(minimum_location)
 
         if unambiguous:
-            self.status = 1
+            status = 1
         else:
-            self.status = 0
-            log.info("Some matches are ambiguous.")
+            status = 0
+            self.info_status.append("ambiguous")
+            log.debug("Some matches are ambiguous.")
             for i in range(len(occurences)):
                 try:
                     for candidate in occurences[i]:
                         # TODO Not sure which index is which - might be switched CR/API
-                        log.info(
+                        log.debug(
                             "Ambiguous candidate: {} -> {}".format(self.list_cr[i], self.list_mid[candidate]))
                 except:
                     pass
@@ -107,20 +116,14 @@ class Matcher:
         if max_difference < 5:
             log.debug("Maximum difference in images was {}.".format(max_difference))
         else:
-            log.info("WARNING! Maximum difference {} >= 5. Trouble?".format(max_difference))
+            status = 0
+            self.info_status.append("max dif {} >= 5".format(max_difference))
+            log.debug("WARNING! Maximum difference {} >= 5. Trouble?".format(max_difference))
 
-        # debug
-        log.debug("Matrix:")
-        for row in mat:
-            log.debug(row)
-        log.debug("Minima_locations:")
-        log.debug(minima_locations)
-        log.debug("Minima:")
-        log.debug(minima)
-        log.debug("Occurences:")
-        log.debug(occurences)
-
-        return minima_locations
+        if status:
+            return minima_locations
+        else:
+            return None
 
     def dist(self, image_1, image_2):
         """
@@ -148,13 +151,12 @@ class Matcher:
             img = Image.open(path)
             return img
         else:
-
             try:
                 urllib.request.urlretrieve(url, str(path))
                 img = Image.open(path)
                 return img
             except urllib.error.URLError as e:
-                log.info("URLError, trouble...")
+                log.debug("URLError, trouble...")
                 return None
 
     def url_cr(self, id_cr):
