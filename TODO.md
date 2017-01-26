@@ -1,3 +1,20 @@
+## minimální TODO
+ * *"Udělat dobře jedno UI na jeden účel."*
+ * Search
+   * indikátor je/není v knihovně
+   * kolikrát už v decku karta je
+   * odstranit Accept Selection
+   * rovnou specific search parameters
+   * odstranit výčet knihovny (Library sekce)
+ * Deckbox
+   * smazat čudlík
+   * Accept Selection by mělo "acceptnout"
+ * Pozadí / DB
+   * mít dokonale načtené všechny karty ze **standard** edic
+   * dtto **modern** edice
+
+*(Není tu všechno co jsme probírali, jen to co je opravdu potřeba udělat.)*
+
 ## TODO
  * rozhodnout se jak naplňovat databázi
  * zkopírovat "update_time" do Connectoru
