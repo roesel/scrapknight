@@ -10,7 +10,7 @@ from flask_login import LoginManager, login_required, login_user, \
 from requests_oauthlib import OAuth2Session
 from requests.exceptions import HTTPError
 
-# from htmlmin.minify import html_minify
+from htmlmin.minify import html_minify
 
 from .forms import InputForm
 
