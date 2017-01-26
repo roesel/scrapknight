@@ -56,7 +56,8 @@ Add this repository to your favourite git client. Let's assume you put it into `
 6. Install MySQL version >= 5.6.
  * For example from here: [http://dev.mysql.com/downloads/mysql/](http://dev.mysql.com/downloads/mysql/)
  * Feel free *to install as a service*, all you need is "MySQL server" and "MySQL Notifier" is also pretty useful
-7. The environment should be ready now.
+7. You will probably need to create an empty database called `scrapknight`.
+8. The environment should be ready now.
 
 ### Moving configuration files
 If you have done everything correctly (and a little more), you have everything you need to run the app, just in the wrong place. Let's fix that.
