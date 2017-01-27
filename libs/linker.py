@@ -139,13 +139,16 @@ class Linker:
             trouble_string = "(" + ", ".join(self.trouble) + ")"
         else:
             trouble_string = ""
-
+        try:
+            perc = int(100 * n_inserted / n_cards)
+        except ZeroDivisionError:
+            perc = "-"
         if n_inserted == n_cards:
             log.info("{}: {}% ({}/{} cards inserted) {}".format(
-                edition_api, int(100 * n_inserted / n_cards), n_inserted, n_cards, trouble_string))
+                edition_api, perc, n_inserted, n_cards, trouble_string))
         else:
             log.info("{}: {}% ({}/{} cards inserted) {}".format(
-                edition_api, int(100 * n_inserted / n_cards), n_inserted, n_cards, trouble_string))
+                edition_api, perc, n_inserted, n_cards, trouble_string))
 
     def total(self, source, edition):
         count = -1
