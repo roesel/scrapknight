@@ -1,0 +1,24 @@
+name: scrap
+dependencies:
+  - scipy
+  - numpy
+  - pip:
+    - flask
+    - flask-login
+    - flask-openid
+    - flask-mail
+    - flask-sqlalchemy
+    - sqlalchemy-migrate
+    - flask-whooshalchemy
+    - flask-wtf
+    - flask-babel
+    - guess_language
+    - flipflop
+    - coverage
+    - mysql-connector
+    - mtgsdk
+    - oauth2client
+    - pyopenssl
+    - requests_oauthlib
+    - django-htmlmin
+    - imagehash
