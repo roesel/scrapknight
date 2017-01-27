@@ -34,18 +34,19 @@ class Scraper:
         else:
             self.db = Database(db)
 
+    def build_edition_list(self, editions):
+        # Build edition list
+        self.scraped_editions = self.get_edition_list()
+        self.insert_editions(self.scraped_editions)
+
     def build(self, editions):
         """
         Builds the database to its 'default' state.
         Assumes empty but existing tables.
         """
-        # Build edition list
-        scraped_editions = self.get_edition_list()
-        self.insert_editions(scraped_editions)
-
         # Scrape all editions in incoming list
         done = []
-        for edition, edition_name in scraped_editions:
+        for edition, edition_name in self.scraped_editions:
             if editions is None or edition in editions:
                 if edition not in done:
                     log.info("[{}] Starting to scrape edition {}.".format(edition, edition_name))
@@ -191,13 +192,18 @@ class Scraper:
         Filters scraped cards. Currently only filters played cards, but could filter more in the future.
         Not sure how it handles used foils?
         """
+        removals = [" (KLD)", " (AER)"]
         corrections = {
             "Jaces´s Scrutiny": "Jace´s Scrutiny",
         }
+
         cards_out = {}
         for card_id, card in cards.items():
             if card_id not in cards_out:
                 old_name = card['name']
+                for rem in removals:
+                    old_name = old_name.replace(rem, "")
+                    card['name'] = old_name
                 if old_name in corrections:
                     new_name = corrections[old_name]
                     card['name'] = new_name
@@ -226,7 +232,7 @@ class Scraper:
             try:
                 log.debug(
                     "Inserting card:\n{}\n{}\n{}\n{}\n{}\n".format(
-                    card_id, card['name'], card['edition'], card['manacost'], name_md5))
+                        card_id, card['name'], card['edition'], card['manacost'], name_md5))
                 self.db.insert(query, (card_id, card['name'], card[
                     'edition'], card['manacost'], name_md5,))
             except Error as err:
@@ -248,7 +254,7 @@ class Scraper:
             try:
                 log.debug(
                     "Inserting card cost:\n{}\n{}\n{}\n".format(
-                    card_id, card['cost'], card['cost_buy_foil']))
+                        card_id, card['cost'], card['cost_buy_foil']))
                 self.db.insert(query, (card_id, card['cost'], card['cost_buy_foil'],))
             except Error as err:
                 if err.errno == errorcode.ER_DUP_ENTRY:
@@ -309,13 +315,12 @@ class Scraper:
             'number_of_normal_costs': number_of_normal_costs,
             'number_of_unique_costs': number_of_unique_costs}
 
-
         log.debug(
             "Scraped info:\n"
             "{number_of_cards} cards, {known_editions} editions out of {number_of_editions} known.\n"
             "Scraped editions: {editions}.\n"
             "{number_of_normal_costs} normal costs, {number_of_unique_costs} unique.".format(
-                  **data))
+                **data))
 
         return data
 

@@ -33,12 +33,18 @@ class Builder:
     def build(self, editions):
         self.update_build_time()
 
+        self.sc.build_edition_list(editions)
+        self.co.build_edition_list(editions)
+
         scrape_start = time.time()
         self.sc.build(editions)
         scrape_took = time.time() - scrape_start
 
+        edition_dict = self.get_rel_edition_dict()
+        translated_editions = [edition_dict[edition] or edition for edition in editions]
+
         connect_start = time.time()
-        self.co.build(editions)
+        self.co.build(translated_editions)
         connect_took = time.time() - connect_start
 
         log.info("Scraping took {}.".format(self.readable_time(scrape_took)))
@@ -53,7 +59,31 @@ class Builder:
         self.sc.build(editions)
 
     def connect(self, editions):
-        self.co.build(editions)
+        self.co.build(translated_editions)
+
+    def get_rel_edition_dict(self):
+        '''
+        This is a semi-duplicate of linker.get_rel_edition_lists.
+        '''
+        query = """ SELECT editions.id, code
+                    FROM editions
+                        INNER JOIN rel_editions
+                            ON rel_editions.id_cr = editions.id
+                        INNER JOIN sdk_editions
+                            ON sdk_editions.code = rel_editions.id_sdk
+
+                    UNION ALL
+
+                    SELECT editions.id, code
+                    FROM editions
+                        JOIN sdk_editions
+                            ON editions.id = sdk_editions.code; """
+        result = self.db.query(query)
+
+        double_dict = {}
+        for edition in result:
+            double_dict[edition[0]] = edition[1]
+        return double_dict
 
     def load_sql(self, filename):
         with open(filename, "rt", encoding='utf-8') as in_file:

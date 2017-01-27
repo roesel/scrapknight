@@ -28,17 +28,19 @@ class Connector:
         else:
             self.db = Database(db)
 
+    def build_edition_list(self, editions):
+        # Build edition list
+        self.loaded_editions = self.get_edition_list()
+        self.insert_editions(self.loaded_editions)
+
     def build(self, editions):
         """
         Builds the database to its 'default' state.
         Assumes empty but existing tables.
         """
-        # Build edition list
-        loaded_editions = self.get_edition_list()
-        self.insert_editions(loaded_editions)
 
         # Load all editions from edition list
-        for edition in loaded_editions:
+        for edition in self.loaded_editions:
             edition_code = edition[0]
             if editions is None or edition_code in editions:
                 #log.info("Sleeping for 3 seconds...")
