@@ -167,7 +167,7 @@ class Linker:
         if source == "api":
             pass
             # Korekce na druhé strany double-faced karet (SOI, ...)
-            query = """SELECT COUNT(*) FROM sdk_cards WHERE NOT (`layout`="double-faced" and mana_cost is null and `type` !="Land") AND (`set`="{}");""".format(edition)
+            query = """SELECT COUNT(*) FROM sdk_cards WHERE NOT ((`layout`="double-faced" OR `layout`="meld") and mana_cost is null and `type` !="Land") AND (`set`="{}");""".format(edition)
             result = self.db.query(query)
             count = result[0][0]
         elif source == "cr":
@@ -249,7 +249,7 @@ class Linker:
 
             	SELECT id_cr
             	FROM (
-            		SELECT * FROM sdk_cards WHERE NOT (`layout`="double-faced" and mana_cost is null and `type` !="Land") AND (`set`=@edition_api)
+            		SELECT * FROM sdk_cards WHERE NOT ((`layout`="double-faced" OR `layout`="meld") and mana_cost is null and `type` !="Land") AND (`set`=@edition_api)
             	) as t1
             	RIGHT JOIN (
             		SELECT REPLACE(name,'´', '\\\'') as name_replaced, id as id_cr FROM cards WHERE edition_id=@edition_cr AND id not like "tokens%" AND name not like "Token - %" AND name not like "Emblem - %"
@@ -278,7 +278,7 @@ class Linker:
 
                 SELECT mid
             	FROM (
-            		SELECT * FROM sdk_cards WHERE NOT (`layout`="double-faced" and mana_cost is null and `type` !="Land") AND (`set`=@edition_api)
+            		SELECT * FROM sdk_cards WHERE NOT ((`layout`="double-faced" OR `layout`="meld") and mana_cost is null and `type` !="Land") AND (`set`=@edition_api)
             	) as t1
             	LEFT JOIN (
             		SELECT REPLACE(name,'´', '\\\'') as name_replaced FROM cards WHERE edition_id=@edition_cr AND id not like "tokens%" AND name not like "Token - %" AND name not like "Emblem - %"
