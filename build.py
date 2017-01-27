@@ -88,9 +88,9 @@ def build():
 
     # Specify editions to build (a list of edition abbreviations) or None for
     # all editions
-    # editions = ['KLD', 'EMN', 'SOI', 'OGW', 'BFZ']
+    editions = ['AER', 'KLD', 'KLI', 'EMN', 'SOI', 'OGW', 'BFZ']
     # editions = ['CED']
-    editions = None;
+    #editions = None
 
     bu.build(editions)
 
