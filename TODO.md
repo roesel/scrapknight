@@ -9,6 +9,8 @@
  * Deckbox
    * smazat čudlík
    * Accept Selection by mělo "acceptnout"
+   * tlačítko "objednat karty co nemám"
+   * tlačítko "naproxit karty co nemám" (http://www.mtgpress.net/faq)
  * Pozadí / DB
    * mít dokonale načtené všechny karty ze **standard** edic
    * dtto **modern** edice
