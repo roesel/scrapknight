@@ -97,6 +97,8 @@ class Matcher:
             minima.append(minimum)
             minima_locations.append(minimum_location)
 
+        acceptable_minimum = 11
+
         if unambiguous:
             status = 1
         else:
@@ -113,12 +115,12 @@ class Matcher:
                     pass
 
         max_difference = np.max(minima)
-        if max_difference < 5:
+        if max_difference < acceptable_minimum:
             log.debug("Maximum difference in images was {}.".format(max_difference))
         else:
             status = 0
-            self.info_status.append("max dif {} >= 5".format(max_difference))
-            log.debug("WARNING! Maximum difference {} >= 5. Trouble?".format(max_difference))
+            self.info_status.append("max dif {} >= {}".format(max_difference, acceptable_minimum))
+            log.debug("WARNING! Maximum difference {} >= {}. Trouble?".format(max_difference, acceptable_minimum))
 
         if status:
             return minima_locations
