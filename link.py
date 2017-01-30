@@ -71,5 +71,7 @@ if __name__ == "__main__":
 
     #editions = []
     editions = ['AER', 'KLD', 'KLI', 'EMN', 'SOI', 'OGW', 'BFZ']
+    #editions = ['M15', 'M14', 'M13', 'M12', 'M11', 'M10', '10E', '9ED', '8ED']
+    #editions = ['M14', '9ED']
 
     link(editions)
