@@ -71,7 +71,8 @@ class Matcher:
             if minima_locations is not None:
                 out = {}
                 for i in range(len(minima_locations)):
-                    out[list_cr[i]] = list_mid[minima_locations[i]]
+                    if minima_locations[i] != -1:
+                        out[list_cr[i]] = list_mid[minima_locations[i]]
 
                 return out
             else:
@@ -79,7 +80,55 @@ class Matcher:
         else:
             return None
 
-    def get_minima(self, mat):
+    def get_min_info(self, m, a):
+        if a == 1:
+            m = m.T
+        min_loc = np.argmin(m, axis=0)
+        min_val = np.amin(m, axis=0)
+        occ = np.zeros_like(min_loc)
+        for i in range(len(min_loc)):
+            dupl = np.where(m[i] == min_val[i])[0]
+            occ[i] = len(dupl) - 1
+
+        return min_loc, min_val, occ, dupl
+
+    def get_minima(self, m):
+        acceptable_minimum = 10
+        xmin_loc, xmin_val, xocc, xdupl = self.get_min_info(m, 0)
+        ymin_loc, ymin_val, yocc, ydupl = self.get_min_info(m, 1)
+        # print(m)
+
+        xout = np.negative(np.ones_like(xmin_loc))
+        yout = np.negative(np.ones_like(ymin_loc))
+
+        max_dif = 0
+
+        # scroll by x and see perfect matches
+        for i in range(len(xocc)):
+            if xmin_val[i] <= acceptable_minimum:
+                if xocc[i] <= 0:  # if no duplicates
+                    if ymin_loc[xmin_loc[i]] == i:
+                        xout[i] = xmin_loc[i]
+                        yout[xmin_loc[i]] = ymin_loc[xmin_loc[i]]
+            elif xmin_val[i] > max_dif:
+                max_dif = xmin_val[i]
+                self.info_status.append("max dif {} >= {}".format(max_dif, acceptable_minimum))
+
+        # scroll by y and for unmatched see perfect matches
+        for j in range(len(yocc)):
+            if yout[j] == -1:
+                if ymin_val[j] <= acceptable_minimum:
+                    if yocc[j] <= 0:  # if no duplicates
+                        if xmin_loc[ymin_loc[j]] == j:
+                            yout[j] = ymin_loc[j]
+                            xout[ymin_loc[j]] = xmin_loc[ymin_loc[j]]
+                elif ymin_val[j] > max_dif:
+                    max_dif = ymin_val[j]
+                    self.info_status.append("max dif {} >= {}".format(max_dif, acceptable_minimum))
+
+        return xout
+
+    def get_minima_2(self, mat):
         minima = []
         minima_locations = []
 
