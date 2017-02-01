@@ -156,8 +156,8 @@ class Scraper:
                     card['cost'] = match[3]
 
                     # Foil vs non-foil X existing non-existing
-                    # Ignoring played cards
-                    if (not self.is_played(card) and not self.is_nonenglish(card)):
+                    # Ignoring played/non-english/strange cards
+                    if self.is_normal(card):
                         if card_id in cards:
                             if not self.is_foil(card):
                                 foil_cost = cards[card_id]['cost_buy_foil']
@@ -324,17 +324,19 @@ class Scraper:
 
         return data
 
+    def is_normal(self, card):
+        normal = True
+        if (str.find(card['name'], '- lightly played') != -1) or \
+            (str.find(card['name'], '- moderately played') != -1) or \
+            (str.find(card['name'], '- japanese') != -1) or \
+            (str.find(card['name'], '- chinese') != -1) or \
+                (str.find(card['name'], '- non-english') != -1):
+            normal = False
+        return normal
+
     def is_foil(self, card):
         """ Returns if card dictionary item is or isn't foil. """
         return (str.find(card['name'], '- foil') != -1)
-
-    def is_played(self, card):
-        """ Returns if card dictionary item is or isn't played. """
-        return (str.find(card['name'], '- lightly played') != -1)
-
-    def is_nonenglish(self, card):
-        """ Returns if card dictionary item is or isn't non-english. """
-        return (str.find(card['name'], '- non-english') != -1)
 
     def get_build_time(self):
         """ Returns current build time from DB. """
