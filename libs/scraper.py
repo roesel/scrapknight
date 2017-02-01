@@ -327,6 +327,7 @@ class Scraper:
     def is_normal(self, card):
         normal = True
         if (str.find(card['name'], '- lightly played') != -1) or \
+            (str.find(card['name'], '/ lightly played') != -1) or \
             (str.find(card['name'], '- moderately played') != -1) or \
             (str.find(card['name'], '- heavily played') != -1) or \
             (str.find(card['name'], '- japanese') != -1) or \
