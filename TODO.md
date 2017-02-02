@@ -12,10 +12,19 @@
    * tlačítko "objednat karty co nemám"
    * tlačítko "naproxit karty co nemám" (http://www.mtgpress.net/faq) - to by mělo být super jednoduché
  * Pozadí / DB
+   * Vytvořit nějaký "patch" na ruční dofixování toho co direct_match a image_match nezvládnou.
+     * Jak to přesně udělat?
+     * Nějak chytře, tak aby to věděl link.py script a uměl říct "máme 100 %"
    * ~ DONE mít dokonale načtené všechny karty ze **standard** edic
      * KLI/MPS není na rytíři celá (jen něco málo přes půlku)
      * Není zkontrolováno, jestli jsou opravdu nalinkované všechny.
    * dtto **modern** edice
+     * BOK, CHK - problémy s flip kartami, v řešení s tvůrcem API přes github
+     * DIS, TSB, PLC - problémy s dual-kartami jako Hit // Run - prodiskutovat nejlepší řešení?
+       * nová tabulka na "merged" karty?
+     * ZEN - problémy s nekonzistencí rytíře
+       * dalo by se ručně namatchovat, ale už tak řešíme jeden problém, možná kontaktovat rytíře?
+
 
 *(Není tu všechno co jsme probírali, jen to co je opravdu potřeba udělat.)*
 
