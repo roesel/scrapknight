@@ -138,7 +138,10 @@ class Matcher:
             if yout[j] == -1:
                 if ymin_val[j] <= acceptable_minimum:
                     if yocc[j] == 0:  # if no duplicates
-                        if j in xdupl[ymin_loc[j]]:
+                        if xdupl[ymin_loc[j]] is None:
+                            log.debug('y minimum found, but x has no minima at all, {} -> {} (j={}).'.format(
+                                self.list_mid[j], self.list_cr[ymin_loc[j]], j))
+                        elif j in xdupl[ymin_loc[j]]:
                             yout[j] = ymin_loc[j]
                             xout[ymin_loc[j]] = xmin_loc[ymin_loc[j]]
                             y_inserted += 1

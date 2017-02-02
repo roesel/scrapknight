@@ -23,7 +23,7 @@
      * DIS, TSB, PLC - problémy s dual-kartami jako Hit // Run - prodiskutovat nejlepší řešení?
        * nová tabulka na "merged" karty?
      * ZEN - problémy s nekonzistencí rytíře
-       * dalo by se ručně namatchovat, ale už tak řešíme jeden problém, možná kontaktovat rytíře?
+       * dalo by se ručně namatchovat, ale už tak řešíme problém s ořezanými obrázky, možná kontaktovat rytíře?
 
 
 *(Není tu všechno co jsme probírali, jen to co je opravdu potřeba udělat.)*
