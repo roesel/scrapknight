@@ -210,6 +210,7 @@ class Scraper:
         removals = [" (KLD)", " (AER)"]
         corrections = {
             "Jaces´s Scrutiny": "Jace´s Scrutiny",
+            "Berserker´s Onslaught": "Berserkers´ Onslaught",
         }
 
         cards_out = {}
