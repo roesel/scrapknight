@@ -126,29 +126,29 @@ class Matcher:
             elif xmin_val[i] > max_dif:
                 max_dif = xmin_val[i]
 
-        #print('x - duplicates ({} inserted)'.format(x_inserted))
+        log.debug('x - duplicates ({} inserted)'.format(x_inserted))
         for k in range(len(xdupl)):
             if xdupl[k] is not None:
                 for candidate in xdupl[k]:
                     log.debug("Ambiguous candidate: {} -> {}".format(self.list_cr[k], self.list_mid[candidate]))
 
-        # scroll by y and for unmatched see perfect matches
+        # scroll by y and for unmatched see matches within duplicates from x direction
         y_inserted = 0
         for j in range(len(yocc)):
             if yout[j] == -1:
                 if ymin_val[j] <= acceptable_minimum:
                     if yocc[j] == 0:  # if no duplicates
-                        if xmin_loc[ymin_loc[j]] == j:
+                        if j in xdupl[ymin_loc[j]]:
                             yout[j] = ymin_loc[j]
                             xout[ymin_loc[j]] = xmin_loc[ymin_loc[j]]
                             y_inserted += 1
                         else:
-                            log.debug('y minimum found, but not minimum for x, {} -> {} (j={}).'.format(
-                                self.list_mid[ymin_loc[j]], self.list_cr[j], j))
+                            log.debug('y minimum found, but not among minima for x, {} -> {} (j={}).'.format(
+                                self.list_mid[j], self.list_cr[ymin_loc[j]], j))
                 elif ymin_val[j] > max_dif:
                     max_dif = ymin_val[j]
 
-        #print('y - duplicates ({} inserted)'.format(y_inserted))
+        log.debug('y - duplicates ({} inserted)'.format(y_inserted))
         for k in range(len(ydupl)):
             if ydupl[k] is not None:
                 for candidate in ydupl[k]:
