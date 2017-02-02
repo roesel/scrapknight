@@ -212,7 +212,7 @@ class Linker:
             if matches is not None:
                 log.debug("All matches are unambiguous (unique).")
                 self.insert_image_match(matches)
-                if len(matches) != len(cr_ids):
+                if len(matches) != len(cr_ids) and info:
                     self.trouble.append("matcher: {}.".format(info))
                 return len(matches)
             else:

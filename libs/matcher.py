@@ -36,7 +36,12 @@ class Matcher:
 
         log.debug("Matching took {}.".format(self.readable_time(match_took)))
 
-        return results, "(" + ",".join(self.info_status) + ")"
+        if len(self.info_status):
+            out_info = "(" + ",".join(self.info_status) + ")"
+        else:
+            out_info = None
+
+        return results, out_info
 
     def readable_time(self, seconds):
         m, s = divmod(seconds, 60)
@@ -93,7 +98,7 @@ class Matcher:
         return min_loc, min_val, occ, dupl
 
     def get_minima(self, m):
-        acceptable_minimum = 10
+        acceptable_minimum = 16
         xmin_loc, xmin_val, xocc, xdupl = self.get_min_info(m, 0)
         ymin_loc, ymin_val, yocc, ydupl = self.get_min_info(m, 1)
         # print(m)
