@@ -212,10 +212,13 @@ class Linker:
             if matches is not None:
                 log.debug("All matches are unambiguous (unique).")
                 self.insert_image_match(matches)
+                if len(matches) != len(cr_ids):
+                    self.trouble.append("matcher: {}.".format(info))
                 return len(matches)
             else:
                 self.trouble.append("matcher: {}.".format(info))
                 return 0
+
         else:
             log.debug("{}: WARNING: image_match() found {} in API and {} in CR. Not even trying.".format(
                 edition_pair[0], len(api_ids), len(cr_ids)))

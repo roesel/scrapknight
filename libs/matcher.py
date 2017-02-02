@@ -112,7 +112,6 @@ class Matcher:
                         yout[xmin_loc[i]] = ymin_loc[xmin_loc[i]]
             elif xmin_val[i] > max_dif:
                 max_dif = xmin_val[i]
-                self.info_status.append("max dif {} >= {}".format(max_dif, acceptable_minimum))
 
         # scroll by y and for unmatched see perfect matches
         for j in range(len(yocc)):
@@ -124,7 +123,9 @@ class Matcher:
                             xout[ymin_loc[j]] = xmin_loc[ymin_loc[j]]
                 elif ymin_val[j] > max_dif:
                     max_dif = ymin_val[j]
-                    self.info_status.append("max dif {} >= {}".format(max_dif, acceptable_minimum))
+
+        if max_dif > acceptable_minimum:
+            self.info_status.append("max dif {} >= {}".format(max_dif, acceptable_minimum))
 
         return xout
 
