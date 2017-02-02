@@ -158,6 +158,7 @@ class Scraper:
                     # Foil vs non-foil X existing non-existing
                     # Ignoring played/non-english/strange cards
                     if self.is_normal(card):
+                        card_id = self.fix_known_cr_mistakes(card_id)
                         if card_id in cards:
                             if not self.is_foil(card):
                                 foil_cost = cards[card_id]['cost_buy_foil']
@@ -186,6 +187,20 @@ class Scraper:
         else:
             log.info('[{}] {} unique cards found.'.format(edition, str(len(cards))))
         return cards
+
+    def fix_known_cr_mistakes(self, card_id):
+        known_id_errors = {
+            # ZEN large-graphics lands
+            'ZEN_258': 'ZEN_235', 'ZEN_256': 'ZEN_237', 'ZEN_260': 'ZEN_236', 'ZEN_262': 'ZEN_238',  # Forests
+            'ZEN_264': 'ZEN_240', 'ZEN_266': 'ZEN_241', 'ZEN_268': 'ZEN_242', 'ZEN_270': 'ZEN_239',  # Islands
+            'ZEN_272': 'ZEN_244', 'ZEN_274': 'ZEN_243', 'ZEN_276': 'ZEN_245', 'ZEN_278': 'ZEN_246',  # Mountains
+            'ZEN_282': 'ZEN_249', 'ZEN_284': 'ZEN_248', 'ZEN_286': 'ZEN_250', 'ZEN_288': 'ZEN_247',  # Plains
+            'ZEN_292': 'ZEN_253', 'ZEN_294': 'ZEN_254', 'ZEN_296': 'ZEN_251', 'ZEN_298': 'ZEN_252',  # Swamps
+        }
+        if card_id in known_id_errors:
+            return known_id_errors[card_id]
+        else:
+            return card_id
 
     def format_cards(self, cards):
         """
