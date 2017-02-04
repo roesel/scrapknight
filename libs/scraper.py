@@ -158,7 +158,8 @@ class Scraper:
                     # Foil vs non-foil X existing non-existing
                     # Ignoring played/non-english/strange cards
                     if self.is_normal(card):
-                        card_id = self.fix_known_cr_mistakes(card_id)
+                        card_id, card['name'] = self.fix_known_cr_mistakes(card_id, card['name'])
+
                         if card_id in cards:
                             if not self.is_foil(card):
                                 foil_cost = cards[card_id]['cost_buy_foil']
@@ -188,7 +189,7 @@ class Scraper:
             log.info('[{}] {} unique cards found.'.format(edition, str(len(cards))))
         return cards
 
-    def fix_known_cr_mistakes(self, card_id):
+    def fix_known_cr_mistakes(self, card_id, card_name):
         known_id_errors = {
             # ZEN large-graphics lands
             'ZEN_258': 'ZEN_235', 'ZEN_256': 'ZEN_237', 'ZEN_260': 'ZEN_236', 'ZEN_262': 'ZEN_238',  # Forests
@@ -196,11 +197,17 @@ class Scraper:
             'ZEN_272': 'ZEN_244', 'ZEN_274': 'ZEN_243', 'ZEN_276': 'ZEN_245', 'ZEN_278': 'ZEN_246',  # Mountains
             'ZEN_282': 'ZEN_249', 'ZEN_284': 'ZEN_248', 'ZEN_286': 'ZEN_250', 'ZEN_288': 'ZEN_247',  # Plains
             'ZEN_292': 'ZEN_253', 'ZEN_294': 'ZEN_254', 'ZEN_296': 'ZEN_251', 'ZEN_298': 'ZEN_252',  # Swamps
+            # DTK mismatched images fixes
+            'DTK_254': 'DTK_133',  # Misthoof Kirin
+            'DTK_140': 'DTK_124',  # Center Soul
         }
         if card_id in known_id_errors:
-            return known_id_errors[card_id]
+            return known_id_errors[card_id], card_name
+        elif card_name == "Scion of Ugin":
+            # This is here because Scion of Ugin has a wrong image
+            return 'DTK_300', card_name
         else:
-            return card_id
+            return card_id, card_name
 
     def format_cards(self, cards):
         """
