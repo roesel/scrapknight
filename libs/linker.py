@@ -171,7 +171,7 @@ class Linker:
             result = self.db.query(query)
             count = result[0][0]
         elif source == "cr":
-            query = """SELECT COUNT(*) FROM `cards` WHERE `edition_id` = "{}" AND id not like "tokens%" AND name not like "Token - %" AND name not like "Emblem - %";""".format(edition)
+            query = """SELECT COUNT(*) FROM `cards` WHERE `edition_id` = "{}" AND id not like "tokens%" AND name not like "Token - %" AND name not like "Hero - %" AND name not like "Emblem - %";""".format(edition)
             result = self.db.query(query)
             count = result[0][0]
         return count
@@ -255,7 +255,7 @@ class Linker:
             		SELECT * FROM sdk_cards WHERE NOT ((`layout`="double-faced" OR `layout`="meld") and mana_cost is null and `type` !="Land") AND NOT (`layout`="flip") AND (`set`=@edition_api)
             	) as t1
             	RIGHT JOIN (
-            		SELECT REPLACE(name,'´', '\\\'') as name_replaced, id as id_cr FROM cards WHERE edition_id=@edition_cr AND id not like "tokens%" AND name not like "Token - %" AND name not like "Emblem - %"
+            		SELECT REPLACE(name,'´', '\\\'') as name_replaced, id as id_cr FROM cards WHERE edition_id=@edition_cr AND id not like "tokens%" AND name not like "Token - %" AND name not like "Hero - %" AND name not like "Emblem - %"
             	) as t2
             	ON t1.name = t2.name_replaced
             	WHERE `name` is null;
@@ -284,7 +284,7 @@ class Linker:
             		SELECT * FROM sdk_cards WHERE NOT ((`layout`="double-faced" OR `layout`="meld") and mana_cost is null and `type` !="Land") AND NOT (`layout`="flip") AND (`set`=@edition_api)
             	) as t1
             	LEFT JOIN (
-            		SELECT REPLACE(name,'´', '\\\'') as name_replaced FROM cards WHERE edition_id=@edition_cr AND id not like "tokens%" AND name not like "Token - %" AND name not like "Emblem - %"
+            		SELECT REPLACE(name,'´', '\\\'') as name_replaced FROM cards WHERE edition_id=@edition_cr AND id not like "tokens%" AND name not like "Token - %" AND name not like "Hero - %" AND name not like "Emblem - %"
             	) as t2
             	ON t1.name = t2.name_replaced
             	WHERE `name_replaced` is null;
