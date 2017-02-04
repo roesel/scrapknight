@@ -200,6 +200,8 @@ class Scraper:
             # DTK mismatched images fixes
             'DTK_254': 'DTK_133',  # Misthoof Kirin
             'DTK_140': 'DTK_124',  # Center Soul
+            # M12 missing images
+            'C14_200': 'M12_078',  # Turn to Frog
         }
         if card_id in known_id_errors:
             return known_id_errors[card_id], card_name

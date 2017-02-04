@@ -24,6 +24,8 @@
        * nová tabulka na "merged" karty?
      * ZEN - problémy s nekonzistencí rytíře
        * dalo by se ručně namatchovat, ale už tak řešíme problém s ořezanými obrázky, možná kontaktovat rytíře?
+     * SOM, M12 - ruční matching příliš podobných landů
+       * prozatím v `misc/manual_patches.py`
 
 
 *(Není tu všechno co jsme probírali, jen to co je opravdu potřeba udělat.)*
