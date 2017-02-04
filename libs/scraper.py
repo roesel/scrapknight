@@ -347,6 +347,7 @@ class Scraper:
             (str.find(card['name'], '- moderately played') != -1) or \
             (str.find(card['name'], '- heavily played') != -1) or \
             (str.find(card['name'], '- japanese') != -1) or \
+            (str.find(card['name'], '- korean') != -1) or \
             (str.find(card['name'], '- chinese') != -1) or \
             (str.find(card['name'], '- russian') != -1) or \
                 (str.find(card['name'], '- non-english') != -1):
