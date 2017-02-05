@@ -16,14 +16,16 @@
      * Jak to přesně udělat?
      * Nějak chytře, tak aby to věděl link.py script a uměl říct "máme 100 %"
    * mít dokonale načtené všechny karty ze **standard** edic
-     * KLI/MPS není na rytíři celá (jen něco málo přes půlku)
+     * KLI/MPS není na rytíři celá (jen něco málo přes půlku) - nevadí
      * Není zkontrolováno, jestli jsou opravdu nalinkované všechny.
    * dtto **modern** edice
-     * BOK, CHK - problémy s flip kartami, v řešení s tvůrcem API přes github
-     * DIS, TSB, PLC, DGM - problémy s dual-kartami jako Hit // Run - prodiskutovat nejlepší řešení?
-       * nová tabulka na "merged" karty?
+     * DIS, TSB, PLC, DGM - problémy s dual-kartami jako Hit // Run
+       * nová tabulka na "merged" karty - potom UNION ALL v rámci view
+     * BOK, CHK, SOK - problémy s flip kartami
+       * stejně jako split karty
      * ZEN - problémy s nekonzistencí rytíře
        * dalo by se ručně namatchovat, ale už tak řešíme problém s ořezanými obrázky, možná kontaktovat rytíře?
+     * CHK - Brothers Ya... - ručně namatchovat
      * SOM, M12 - ruční matching příliš podobných landů
        * prozatím v `misc/manual_patches.py`
 
