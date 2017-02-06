@@ -66,12 +66,32 @@ class Matcher:
 
         return mat
 
+    def manual_match(self, mat):
+        # Manual matching of images that are too similar.
+        matches = {
+            'BSLS_125': '214676',
+            'BSLS_124': '214669',
+            'BSLF_34': '244319',
+            'BSLF_36': '244322',
+        }
+        for i in range(len(self.list_cr)):
+            if self.list_cr[i] in matches:
+                for j in range(len(self.list_mid)):
+                    if int(self.list_mid[j]) == int(matches[self.list_cr[i]]):
+                        log.debug("Setting mat[{}][{}] to -1.".format(i, j))
+                        mat[i][j] = -1  # -1 is lower than the lowest value of hash distance (0)
+                    else:
+                        log.debug("list_mid[j]={}, matches[list_cr[i]]={}".format(
+                            self.list_mid[j], matches[self.list_cr[i]]))
+        return mat
+
     def match(self, list_cr, list_mid):
         """
         Generates dictionary of cr_ids matching mids.
         """
         mat = self.matrix(list_cr, list_mid)
         if mat is not None:
+            mat = self.manual_match(mat)
             minima_locations = self.get_minima(mat)
             if minima_locations is not None:
                 out = {}
