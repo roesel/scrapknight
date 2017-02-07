@@ -71,13 +71,18 @@ if __name__ == "__main__":
 
     #editions = []
     #editions = ['AER', 'KLD', 'KLI', 'EMN', 'SOI', 'OGW', 'BFZ']
-    editions = ['M15', 'M14', 'M13', 'M12', 'M11', 'M10', '10E', '9ED', '8ED',
-                'ORI', 'DTK', 'FRF', 'KTK', 'JOU', 'BNG', 'THS', 'DGM',
-                'GTC', 'RTR', 'AVR', 'DKA', 'ISD', 'NPH', 'MBS', 'SOM', 'ROE',
-                'WWK', 'ZEN', 'ARB', 'CON', 'ALA', 'EVE', 'SHM', 'MOR', 'LRW',
-                'FUT', 'PLC', 'TSB', 'TSP', 'CSP', 'DIS', 'GPT', 'RAV',
-                'SOK', 'BOK', 'CHK', '5DN', 'DST', 'MRD'
-                ]
+    editions = [
+        # standard
+        'AER', 'KLD', 'KLI', 'EMN', 'SOI', 'OGW', 'BFZ',
+
+        # modern
+        'M15', 'M14', 'M13', 'M12', 'M11', 'M10', '10E', '9ED', '8ED',
+        'ORI', 'DTK', 'FRF', 'KTK', 'JOU', 'BNG', 'THS', 'DGM',
+        'GTC', 'RTR', 'AVR', 'DKA', 'ISD', 'NPH', 'MBS', 'SOM', 'ROE',
+        'WWK', 'ZEN', 'ARB', 'CON', 'ALA', 'EVE', 'SHM', 'MOR', 'LRW',
+        'FUT', 'PLC', 'TSB', 'TSP', 'CSP', 'DIS', 'GPT', 'RAV',
+        'SOK', 'BOK', 'CHK', '5DN', 'DST', 'MRD'
+    ]
     #editions = ['M14', '9ED']
 
     link(editions)
