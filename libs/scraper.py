@@ -4,6 +4,9 @@
 import re
 import numpy as np
 import urllib.request
+import requests
+import requests_cache
+requests_cache.install_cache('scraper_cache', backend='sqlite', expire_after=60 * 60 * 8)
 import time
 import hashlib
 
@@ -377,7 +380,7 @@ class Scraper:
         """
         Downloads HTML contents of a webpage in encoding windows-1250.
         """
-        response = urllib.request.urlopen(url)
-        data = response.read()              # a `bytes` object
-        text = data.decode('windows-1250')  # a `str`; this step can't be used if data is binary
-        return text
+        response = requests.get(url)
+        response.encoding = 'windows-1250'
+        data = response.text
+        return data

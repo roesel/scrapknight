@@ -6,6 +6,8 @@ app/ssl.key
 app/test.db
 app/static/img/cards/
 
+scraper_cache.sqlite
+
 Thumbs.db
 
 # ------------------------------------------------------------------------------
