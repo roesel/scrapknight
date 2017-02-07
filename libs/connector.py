@@ -151,7 +151,11 @@ class Connector:
 
         cards = []
         for c in all_cards:
-            cards.append([c.name, c.multiverse_id, c.layout,
+            names = None
+            if c.names:
+                names = " // ".join(c.names)
+
+            cards.append([c.name, names, c.multiverse_id, c.layout,
                           c.mana_cost, c.type, c.rarity, c.set, c.id])
 
         log.info("[{}] Inserting {} cards into DB.".format(edition, len(cards)))
@@ -166,11 +170,11 @@ class Connector:
         for card in cards:
             query = """
                 INSERT INTO `sdk_cards`
-                    (`name`, `mid`, `layout`, `mana_cost`, `type`, `rarity`, `set`, `id`)
+                    (`name`, `names`, `mid`, `layout`, `mana_cost`, `type`, `rarity`, `set`, `id`)
                 VALUES
-                    (%s, %s, %s, %s, %s, %s, %s, %s);
+                    (%s, %s, %s, %s, %s, %s, %s, %s, %s);
                 """
-            if card[1] is None:
+            if card[2] is None:
                 log.warning("SDK Fail - multiverseid is None. Card details: {}".format(card))
 
             log.debug("Inserting card: {}".format(card))

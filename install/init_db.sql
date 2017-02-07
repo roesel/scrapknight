@@ -44,6 +44,7 @@ CREATE TABLE `cards` (
 
 CREATE TABLE IF NOT EXISTS `sdk_cards` (
   `name` VARCHAR(255) DEFAULT NULL COMMENT 'Název',
+  `names` VARCHAR(255) DEFAULT NULL COMMENT 'Názvy',
   `mid` mediumint(9) DEFAULT NULL COMMENT 'Multiverse ID',
   `layout` varchar(50) DEFAULT NULL COMMENT 'Rozvržení',
   `mana_cost` varchar(50) DEFAULT NULL COMMENT 'Manacost (formát?)',
@@ -59,6 +60,25 @@ CREATE TABLE IF NOT EXISTS `sdk_cards` (
   KEY `name` (`name`),
   FULLTEXT KEY `name_fulltext` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='Seznam všech karet v databázi, bráno z SDK.';
+
+CREATE TABLE IF NOT EXISTS `manual_cards` (
+  `name` VARCHAR(255) DEFAULT NULL COMMENT 'Název',
+  `names` VARCHAR(255) DEFAULT NULL COMMENT 'Názvy',
+  `mid` mediumint(9) DEFAULT NULL COMMENT 'Multiverse ID',
+  `layout` varchar(50) DEFAULT NULL COMMENT 'Rozvržení',
+  `mana_cost` varchar(50) DEFAULT NULL COMMENT 'Manacost (formát?)',
+  `type` varchar(50) DEFAULT NULL COMMENT 'Typ',
+  `rarity` varchar(50) DEFAULT NULL COMMENT 'Rarita',
+  `set` varchar(50) DEFAULT NULL COMMENT 'Edice',
+  `id` varchar(50) NOT NULL COMMENT 'ID karty (hash)',
+  PRIMARY KEY (`id`),
+  KEY `mid` (`mid`),
+  KEY `layout` (`layout`),
+  KEY `mana_cost` (`mana_cost`),
+  KEY `id` (`id`),
+  KEY `name` (`name`),
+  FULLTEXT KEY `name_fulltext` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='Ručně dělaná tabulka karet co nejsou v API, ale potřebujeme je tam.';
 
 CREATE TABLE `costs` (
   `card_id` VARCHAR(255) NOT NULL COMMENT 'ID karty',
