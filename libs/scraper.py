@@ -211,6 +211,9 @@ class Scraper:
         elif card_name == "Scion of Ugin":
             # This is here because Scion of Ugin has a wrong image
             return 'DTK_300', card_name
+        elif card_name == "Prey Upon" and card_id == 'EMN_062':
+            # This is here because Scion of Ugin has a wrong image
+            return 'ISD_300', card_name
         else:
             return card_id, card_name
 
