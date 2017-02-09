@@ -99,3 +99,35 @@ SELECT *
 )z, (select @s:=0)y
 ) as not_in_api
         ON not_in_cr.my_order = not_in_api.my_order
+
+/* SELECT combined split cards */
+SET @edition = "DIS";
+SELECT
+	`names` as `name`,
+	`mid`,
+	'join' as `layout`,
+	GROUP_CONCAT(mana_cost SEPARATOR "/") as mana_cost,
+	`type`,
+	`rarity`,
+	`set`,
+	GROUP_CONCAT(id SEPARATOR "-") as id
+FROM (
+	SELECT * FROM sdk_cards WHERE layout = 'split'
+	) as split_cards
+WHERE `set` = @edition GROUP BY `mid`
+
+/* SELECT first parts of flip cards */
+SET @edition = "CHK";
+SELECT
+	SUBSTRING_INDEX(`names`, ' // ', 1 ) as `name`,
+	`mid`,
+	'join' as `layout`,
+	`mana_cost`,
+	`type`,
+	`rarity`,
+	`set`,
+	GROUP_CONCAT(id SEPARATOR "-") as id
+FROM (
+	SELECT * FROM sdk_cards WHERE layout = 'flip'
+	) as split_cards
+WHERE `set` = @edition GROUP BY `mid`
