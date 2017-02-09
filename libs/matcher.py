@@ -73,6 +73,16 @@ class Matcher:
             'BSLS_124': '214669',
             'BSLF_34': '244319',
             'BSLF_36': '244322',
+            'BSLF_61': '157877',
+            # ZEN lands
+            'ZEN_255': '201959', 'ZEN_257': '195192', 'ZEN_259': '195177', 'ZEN_261': '201961',  # Forests
+            'ZEN_263': '195187', 'ZEN_265': '195165', 'ZEN_267': '195161', 'ZEN_269': '201965',  # Islands
+            'ZEN_271': '195178', 'ZEN_273': '195171', 'ZEN_275': '195181', 'ZEN_277': '195184',  # Mountains
+            'ZEN_281': '201973', 'ZEN_283': '195173', 'ZEN_285': '195196', 'ZEN_287': '201971',  # Plains
+            'ZEN_291': '195172', 'ZEN_293': '195194', 'ZEN_295': '201976', 'ZEN_197': '201975',  # Swamps
+
+
+
         }
         for i in range(len(self.list_cr)):
             if self.list_cr[i] in matches:
@@ -150,7 +160,8 @@ class Matcher:
         for k in range(len(xdupl)):
             if xdupl[k] is not None:
                 for candidate in xdupl[k]:
-                    log.debug("Ambiguous candidate: {} -> {}".format(self.list_cr[k], self.list_mid[candidate]))
+                    log.debug(
+                        "Ambiguous candidate: {} -> {}".format(self.list_cr[k], self.list_mid[candidate]))
 
         # scroll by y and for unmatched see matches within duplicates from x direction
         y_inserted = 0
@@ -175,7 +186,8 @@ class Matcher:
         for k in range(len(ydupl)):
             if ydupl[k] is not None:
                 for candidate in ydupl[k]:
-                    log.debug("Ambiguous candidate: {} -> {}".format(self.list_mid[k], self.list_cr[candidate]))
+                    log.debug(
+                        "Ambiguous candidate: {} -> {}".format(self.list_mid[k], self.list_cr[candidate]))
 
         if max_dif > acceptable_minimum:
             self.info_status.append("max dif {} >= {}".format(max_dif, acceptable_minimum))
@@ -223,7 +235,8 @@ class Matcher:
         else:
             status = 0
             self.info_status.append("max dif {} >= {}".format(max_difference, acceptable_minimum))
-            log.debug("WARNING! Maximum difference {} >= {}. Trouble?".format(max_difference, acceptable_minimum))
+            log.debug("WARNING! Maximum difference {} >= {}. Trouble?".format(
+                max_difference, acceptable_minimum))
 
         if status:
             return minima_locations

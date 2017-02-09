@@ -195,6 +195,7 @@ class Scraper:
     def fix_known_cr_mistakes(self, card_id, card_name):
         known_id_errors = {
             # ZEN large-graphics lands
+            # This is done because on CR some full-art lands have different "foil" and "normal" IDs
             'ZEN_258': 'ZEN_235', 'ZEN_256': 'ZEN_237', 'ZEN_260': 'ZEN_236', 'ZEN_262': 'ZEN_238',  # Forests
             'ZEN_264': 'ZEN_240', 'ZEN_266': 'ZEN_241', 'ZEN_268': 'ZEN_242', 'ZEN_270': 'ZEN_239',  # Islands
             'ZEN_272': 'ZEN_244', 'ZEN_274': 'ZEN_243', 'ZEN_276': 'ZEN_245', 'ZEN_278': 'ZEN_246',  # Mountains
