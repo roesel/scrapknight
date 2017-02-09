@@ -210,10 +210,13 @@ class Scraper:
             return known_id_errors[card_id], card_name
         elif card_name == "Scion of Ugin":
             # This is here because Scion of Ugin has a wrong image
-            return 'DTK_300', card_name
+            return 'DTK_990', card_name
         elif card_name == "Prey Upon" and card_id == 'EMN_062':
-            # This is here because Scion of Ugin has a wrong image
-            return 'ISD_300', card_name
+            # This is here because Prey Upon has a wrong image
+            return 'ISD_990', card_name
+        elif card_name == "Blood Rites" and card_id == 'CHK_159':
+            # This is here because Blood Rites [CHK] has image of Brothers Yamazaki (#1)
+            return 'CHK_990', card_name
         else:
             return card_id, card_name
 
