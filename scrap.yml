@@ -22,3 +22,4 @@ dependencies:
     - requests_oauthlib
     - django-htmlmin
     - imagehash
+    - requests_cache
