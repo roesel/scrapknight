@@ -169,8 +169,10 @@ class Linker:
                     	SELECT * FROM sdk_cards WHERE NOT ((`layout`="double-faced" OR `layout`="meld") and mana_cost is null and `type` !="Land") AND NOT (`layout`="flip" OR `layout`="split") AND (`set`="{}")
                     	UNION ALL
                     	SELECT `names` as `name`, `names`, `mid`, 'join' as `layout`, GROUP_CONCAT(mana_cost SEPARATOR "/") as mana_cost,	`type`, `rarity`, `set`, GROUP_CONCAT(id SEPARATOR "-") as id FROM (SELECT * FROM sdk_cards WHERE layout = 'split'  ORDER BY `id` DESC ) as ordered   WHERE `set` = "{}" GROUP BY `mid`
+                        UNION ALL
+    		            SELECT SUBSTRING_INDEX(`names`, ' // ', 1 ) as `name`, `names`, `mid`, 'unflip' as `layout`, `mana_cost`, `type`, `rarity`, `set`, GROUP_CONCAT(id SEPARATOR "-") as id FROM (SELECT * FROM sdk_cards WHERE layout = 'flip') as split_cards WHERE `set` = "{}" GROUP BY `mid`
                     ) as a;
-                    """.format(edition, edition)
+                    """.format(edition, edition, edition)
             result = self.db.query(query)
             count = result[0][0]
         elif source == "cr":
@@ -187,9 +189,11 @@ class Linker:
                         SELECT REPLACE(name,'´', '\\\'') as name_replaced from cards where edition_id = @edition_cr
                         ) as cr
                     JOIN (
-                        SELECT * from sdk_cards where `set` = @edition_api and NOT (`layout`="split")
+                        SELECT * from sdk_cards where `set` = @edition_api and NOT (`layout`="split" OR `layout`="flip")
                         UNION ALL
                         SELECT `names` as `name`, `names`, `mid`, 'join' as `layout`, GROUP_CONCAT(mana_cost SEPARATOR "/") as mana_cost,	`type`, `rarity`, `set`, GROUP_CONCAT(id SEPARATOR "-") as id FROM (SELECT * FROM sdk_cards WHERE layout = 'split'  ORDER BY `id` DESC ) as ordered   WHERE `set` = @edition_api GROUP BY `mid`
+                        UNION ALL
+    		            SELECT SUBSTRING_INDEX(`names`, ' // ', 1 ) as `name`, `names`, `mid`, 'unflip' as `layout`, `mana_cost`, `type`, `rarity`, `set`, GROUP_CONCAT(id SEPARATOR "-") as id FROM (SELECT * FROM sdk_cards WHERE layout = 'flip') as split_cards WHERE `set` = @edition_api GROUP BY `mid`
                         ) as api
                     ON cr.name_replaced = api.name;
                 """.format(edition_pair[0], edition_pair[1])
@@ -260,6 +264,8 @@ class Linker:
             		SELECT * FROM sdk_cards WHERE NOT ((`layout`="double-faced" OR `layout`="meld") and mana_cost is null and `type` !="Land") AND NOT (`layout`="flip" OR `layout`="split") AND (`set`=@edition_api)
                     UNION ALL
                     SELECT `names` as `name`, `names`, `mid`, 'join' as `layout`, GROUP_CONCAT(mana_cost SEPARATOR "/") as mana_cost,	`type`, `rarity`, `set`, GROUP_CONCAT(id SEPARATOR "-") as id FROM (SELECT * FROM sdk_cards WHERE layout = 'split'  ORDER BY `id` DESC ) as ordered   WHERE `set` = @edition_api GROUP BY `mid`
+                    UNION ALL
+		            SELECT SUBSTRING_INDEX(`names`, ' // ', 1 ) as `name`, `names`, `mid`, 'unflip' as `layout`, `mana_cost`, `type`, `rarity`, `set`, GROUP_CONCAT(id SEPARATOR "-") as id FROM (SELECT * FROM sdk_cards WHERE layout = 'flip') as split_cards WHERE `set` = @edition_api GROUP BY `mid`
             	) as t1
             	RIGHT JOIN (
             		SELECT REPLACE(name,'´', '\\\'') as name_replaced, id as id_cr FROM cards WHERE edition_id=@edition_cr AND id not like "tokens%" AND name not like "Token - %" AND name not like "Hero - %" AND name not like "Emblem - %"
@@ -291,6 +297,8 @@ class Linker:
             		SELECT * FROM sdk_cards WHERE NOT ((`layout`="double-faced" OR `layout`="meld") and mana_cost is null and `type` !="Land") AND NOT (`layout`="flip" OR `layout`="split") AND (`set`=@edition_api)
                     UNION ALL
                     SELECT `names` as `name`, `names`, `mid`, 'join' as `layout`, GROUP_CONCAT(mana_cost SEPARATOR "/") as mana_cost,	`type`, `rarity`, `set`, GROUP_CONCAT(id SEPARATOR "-") as id FROM (SELECT * FROM sdk_cards WHERE layout = 'split'  ORDER BY `id` DESC ) as ordered   WHERE `set` = @edition_api GROUP BY `mid`
+                    UNION ALL
+		            SELECT SUBSTRING_INDEX(`names`, ' // ', 1 ) as `name`, `names`, `mid`, 'unflip' as `layout`, `mana_cost`, `type`, `rarity`, `set`, GROUP_CONCAT(id SEPARATOR "-") as id FROM (SELECT * FROM sdk_cards WHERE layout = 'flip') as split_cards WHERE `set` = @edition_api GROUP BY `mid`
             	) as t1
             	LEFT JOIN (
             		SELECT REPLACE(name,'´', '\\\'') as name_replaced FROM cards WHERE edition_id=@edition_cr AND id not like "tokens%" AND name not like "Token - %" AND name not like "Hero - %" AND name not like "Emblem - %"
@@ -317,9 +325,11 @@ class Linker:
                        SELECT REPLACE(name,'´', '\\\'') as name_replaced, `id` as `id_cr` from cards where edition_id = @edition_cr
                        ) as cr
                     JOIN (
-                       SELECT * from sdk_cards where `set` = @edition_api and NOT (`layout`="split")
+                       SELECT * from sdk_cards where `set` = @edition_api and NOT (`layout`="split" OR `layout`="flip")
                        UNION ALL
                        SELECT `names` as `name`, `names`, `mid`, 'join' as `layout`, GROUP_CONCAT(mana_cost SEPARATOR "/") as mana_cost,	`type`, `rarity`, `set`, GROUP_CONCAT(id SEPARATOR "-") as id FROM (SELECT * FROM sdk_cards WHERE layout = 'split'  ORDER BY `id` DESC ) as ordered   WHERE `set` = @edition_api GROUP BY `mid`
+                       UNION ALL
+   		               SELECT SUBSTRING_INDEX(`names`, ' // ', 1 ) as `name`, `names`, `mid`, 'unflip' as `layout`, `mana_cost`, `type`, `rarity`, `set`, GROUP_CONCAT(id SEPARATOR "-") as id FROM (SELECT * FROM sdk_cards WHERE layout = 'flip') as split_cards WHERE `set` = @edition_api GROUP BY `mid`
                        ) as api
                     ON cr.name_replaced = api.name;
         """
