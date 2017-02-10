@@ -6,7 +6,7 @@ import numpy as np
 import urllib.request
 import requests
 import requests_cache
-requests_cache.install_cache('scraper_cache', backend='sqlite', expire_after=60 * 60 * 8)
+
 import time
 import hashlib
 
