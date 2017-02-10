@@ -6,6 +6,34 @@
   <div class="panel-body">
       {{ form.hidden_tag() }}
       <div class="form-group">
+        <div class="radio">
+          <label>
+            <input type="radio" name="optionEditions" id="optionEditions1" value="standard">
+            Search within <strong>standard</strong> editions.
+          </label>
+        </div>
+        <div class="radio">
+          <label>
+            <input type="radio" name="optionEditions" id="optionEditions2" value="modern" checked>
+            Search within <strong>modern</strong> editions.
+          </label>
+        </div>
+        <div class="radio">
+          <label>
+            <input type="radio" name="optionEditions" id="optionEditions3" value="all">
+            Search within <strong>all</strong> editions.
+          </label>
+        </div>
+      </div>
+      <div class="form-group">
+          <div class="checkbox">
+            <label>
+              <input type="checkbox" value="only_owned">
+              Search only within my library.
+            </label>
+          </div>
+      </div>
+      <div class="form-group">
           <textarea class="form-control" id="card_list_input_textarea" name="text" rows="20" style="resize: vertical;" placeholder="Input your decklist">{{fill}}</textarea>
       </div>
   </div>
