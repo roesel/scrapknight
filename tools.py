@@ -18,6 +18,10 @@ from app.config import DatabaseConfig
 
 from flask import url_for
 
+from multiprocessing.dummy import Pool
+
+pool = Pool(10)
+
 outlog = []
 
 import logging
@@ -753,16 +757,28 @@ class Card(object):
         directory.mkdir(exist_ok=True)
         path = directory / name
 
-        if path.exists():
-            return url_for('static', filename='img/cards/' + name)
+        if not path.exists():
+            log.debug(f'Picture file for card {self.mid} not found.')
+
+            # Download card image, but don't wait for it, rather return the
+            # original url. Not sure this is correct (and thread safe, whatever)
+            # but it works.
+            pool.apply_async(self.download_card_image, [url, str(path)])
+
+            return url
         else:
-            try:
-                urllib.request.urlretrieve(url, str(path))
-                return url_for('static', filename='img/cards/' + name)
-            except urllib.error.URLError as e:
-                ResponseData = e.read().decode("utf8", 'ignore')
-                outlog.append(ResponseData)
-                return url
+            log.debug(f'Picture file for card {self.mid} found.')
+            return url_for('static', filename='img/cards/' + name)
+
+    @staticmethod
+    def download_card_image(url, path):
+        try:
+            urllib.request.urlretrieve(url, str(path))
+            return url_for('static', filename='img/cards/' + name)
+        except urllib.error.URLError as e:
+            ResponseData = e.read().decode("utf8", 'ignore')
+            outlog.append(ResponseData)
+            return url
 
     @property
     def manacost_parsed(self):
