@@ -15,6 +15,7 @@ Add this repository to your favourite git client. Let's assume you put it into `
 1. Open up terminal
 2. run `conda env create -f scrap.yml`
  * this should create a new conda environment with all the dependencies necessary
+ * if the environment allready exists, but new packages are required, run `conda env update -f scrap.yml` instead
  * NOTE: `imagehash` requires `pywavelets` which currently doesn't have a pre-compiled version for Python 3.6. You can either use Python 3.5 (not tested, but simpler) or it will try to build while creating the environment. This however requires *Visual C++ Build Tools* (external install, link will show in pip error log).
  * If you run into mistakes, you can remove the environment by running `conda remove --name scrap --all`
 3. Install MySQL version >= 5.6.
