@@ -2,7 +2,7 @@
   <div class="panel-heading">
     <strong>Input decklist</strong>
   </div>
-  <form action="deck/0" method="post" name="input" id="card_list_input_form">
+  <form method="post" name="input" id="card_list_input_form">
   <div class="panel-body">
       {{ form.hidden_tag() }}
       <div class="form-group">
@@ -10,7 +10,10 @@
       </div>
   </div>
   <div class="panel-footer clearfix">
-      <input type="submit" name="submit" value="Look it up!" class="btn btn-primary pull-right">
+      <div class="btn-group pull-right">
+          <button type="submit" class="btn btn-default" formaction="input">Look it up</button>
+          <button type="submit" class="btn btn-default" formaction="deck/0">Build deck</button>
+      </div>
   </div>
   </form>
 </div>
