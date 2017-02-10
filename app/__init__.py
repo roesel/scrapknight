@@ -156,12 +156,13 @@ class User(db.Model, UserMixin):
     def get_deck_list(self):
 
         query = """
-            SELECT `d`.id, `d`.`name`, `d`.`info`, SUM(`c`.`count`)
+            SELECT `d`.`id`, `d`.`name`, `d`.`info`, SUM(`c`.`count`)
             FROM `users_decks` AS `d`
             LEFT JOIN `users_decks_cards` AS `c`
             ON `d`.`id` = `c`.`deck_id` AND `d`.`user_id` = `c`.`user_id`
             WHERE `d`.`user_id` = %s
-            ORDER BY `d`.id ASC
+            GROUP BY `d`.`id`, `d`.`user_id`
+            ORDER BY `d`.`id` ASC
             """
 
         decks = self.db.query(query, (self.id,))
