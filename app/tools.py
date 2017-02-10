@@ -1,31 +1,11 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-import re
-import hashlib
 import numpy as np
-import random
-import urllib.request
-
-import urllib
-from pathlib import Path
-
-import mysql.connector
-from mysql.connector import Error, errorcode
 
 from libs.database import Database
 from app.config import DatabaseConfig
 
-from flask import url_for
-
-from multiprocessing.dummy import Pool
-
-pool = Pool(10)
-
 outlog = []
 
 import logging
-import pprint
 
 from .deck import Deck
 from .card import Card
@@ -52,6 +32,7 @@ def process(user, user_input):
 
     return mydeck.print_price_table()
 
+
 def process_by_id(card_id):
 
     outlog = []
@@ -68,6 +49,7 @@ def process_by_id(card_id):
 
     return card_details, price_table, l
 
+
 def print_user_deck(user, deck_id):
 
     outlog = []
@@ -77,6 +59,7 @@ def print_user_deck(user, deck_id):
     mydeck = user.get_deck(deck_id)
 
     return mydeck.print_price_table()
+
 
 def print_user_library(user):
 
@@ -88,6 +71,7 @@ def print_user_library(user):
 
     return mydeck.print_price_table()
 
+
 def users_cards_save(user, user_input):
 
     outlog = []
@@ -97,6 +81,7 @@ def users_cards_save(user, user_input):
     mydeck = Deck(user_input=user_input)
 
     user.save_cards(mydeck)
+
 
 def save_user_library(user, user_input):
 
@@ -108,6 +93,7 @@ def save_user_library(user, user_input):
 
     return user.save_library(mydeck)
 
+
 def modify_user_deck(user, deck_id, user_input):
 
     outlog = []
@@ -117,6 +103,7 @@ def modify_user_deck(user, deck_id, user_input):
     mydeck = Deck(user_input=user_input)
 
     return user.save_deck(deck_id, mydeck)
+
 
 def levenshtein(source, target):
     """

@@ -1,27 +1,9 @@
-import os
-import json
 import datetime
 
-from flask import Flask, url_for, redirect, \
-    render_template, session, request
-from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, login_required, login_user, \
-    logout_user, current_user, UserMixin
-from requests_oauthlib import OAuth2Session
-from requests.exceptions import HTTPError
-
-from htmlmin.minify import html_minify
-
-from .forms import InputForm
-
-from .tools import process, users_cards_save, print_user_library, print_user_deck, \
-    modify_user_deck, save_user_library, process_by_id
-from libs.builder import Builder
+from flask_login import UserMixin
 
 """App Configuration"""
 
-from .config import FlaskConfig
-from .config import GoogleAuthConfig
 from .config import DatabaseConfig
 
 """ DB Models """
@@ -30,6 +12,7 @@ from libs.database import Database
 from .deck import Deck
 
 from .shared_stuff import db
+
 
 class User(db.Model, UserMixin):
 

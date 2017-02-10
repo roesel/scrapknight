@@ -1,20 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-import re
-import hashlib
 import numpy as np
-import random
-import urllib.request
-
-import urllib
-from pathlib import Path
-
-import mysql.connector
-from mysql.connector import Error, errorcode
-
-from libs.database import Database
-from app.config import DatabaseConfig
 
 from flask import url_for
 
@@ -25,10 +9,6 @@ pool = Pool(10)
 outlog = []
 
 import logging
-import pprint
-
-import app.tools
-from .card import Card
 
 logging_level = logging.INFO
 # logging_level = logging.DEBUG

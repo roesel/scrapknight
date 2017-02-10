@@ -6,7 +6,7 @@ from flask import Flask, url_for, redirect, \
     render_template, session, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_required, login_user, \
-    logout_user, current_user, UserMixin
+    logout_user, current_user
 from requests_oauthlib import OAuth2Session
 from requests.exceptions import HTTPError
 
@@ -37,6 +37,7 @@ login_manager.session_protection = "strong"
 shared_stuff.db = db
 
 from .user import User
+
 
 @login_manager.user_loader
 def load_user(user_id):
