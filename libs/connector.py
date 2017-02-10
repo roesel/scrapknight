@@ -43,8 +43,6 @@ class Connector:
         for edition in self.loaded_editions:
             edition_code = edition[0]
             if editions is None or edition_code in editions:
-                #log.info("Sleeping for 3 seconds...")
-                # time.sleep(3)
                 log.info("[{}] Loading edition from API...".format(edition_code))
                 cards = self.load_edition(edition_code)
                 self.insert_cards(cards)
