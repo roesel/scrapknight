@@ -40,8 +40,11 @@ class Builder:
         self.sc.build(editions)
         scrape_took = time.time() - scrape_start
 
-        edition_dict = self.get_rel_edition_dict()
-        translated_editions = [edition_dict[edition] or edition for edition in editions]
+        if editions is None:
+            translated_editions = None
+        else:
+            edition_dict = self.get_rel_edition_dict()
+            translated_editions = [edition_dict[edition] or edition for edition in editions]
 
         connect_start = time.time()
         self.co.build(translated_editions)
