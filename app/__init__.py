@@ -47,6 +47,21 @@ class User(db.Model, UserMixin):
     tokens = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow())
 
+    def owns_card(self, card):
+
+        query = """
+            SELECT `count`
+            FROM `users_cards`
+            WHERE `user_id` = %s AND `card_id` = %s
+            """
+
+        result = self.db.query(query, (self.id, card.id))
+
+        if result:
+            return result[0][0]
+        else:
+            return False
+
     def save_library(self, deck):
 
         query = """
@@ -276,7 +291,7 @@ def logout():
 def searchcard():
     search_string = request.form['search_string']
 
-    output_table, log = process(search_string)
+    output_table, log = process(current_user, search_string)
 
     # tady html_minify() dělá nějaké problémy ... :/
     return render_template(
@@ -409,7 +424,7 @@ def input():
         #flash( 'Input containted: %s' % (form.text.data) )
         # return redirect('/')
 
-        output_table, log = process(form.text.data)
+        output_table, log = process(current_user, form.text.data)
 
         return html_minify(render_template(
             'input.html',

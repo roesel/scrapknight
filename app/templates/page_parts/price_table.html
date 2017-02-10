@@ -4,7 +4,7 @@
 {% macro render_table_header(header, columns, display_columns) -%}
 
 <colgroup>
-    # for col in ['name', 'manacost', 'edition', 'count', 'count_input', 'price', 'multiprice']
+    # for col in ['name', 'manacost', 'edition', 'count', 'count_input', 'owned', 'price', 'multiprice']
     # if col in display_columns
     #    set hidden_prop = ""
     # else
@@ -15,7 +15,7 @@
 </colgroup>
 <thead>
     <tr>
-    # for col in ['name', 'manacost', 'edition', 'count', 'count_input', 'price', 'multiprice']
+    # for col in ['name', 'manacost', 'edition', 'count', 'count_input', 'owned', 'price', 'multiprice']
     # if col in display_columns
     #    set hidden_prop = ""
     # else
@@ -194,6 +194,26 @@
     </td>
 # endif
 
+## =================================== OWNED ===================================
+
+# if 'owned' in display_columns
+#    set hidden_prop = ""
+# else
+#    set hidden_prop = "hidden"
+# endif
+
+# if row['multicard'] == 'head'
+    <td name="owned" class="{{ hidden_prop }}">
+    </td>
+# else
+    <td name="owned" class="{{ hidden_prop }}">
+        {% if row['owned'] %}
+            {{ row['owned'] }}
+        {% else %}
+        {% endif %}
+    </td>
+# endif
+
 ## =================================== PRICE ===================================
 
 # if 'price' in display_columns
@@ -293,6 +313,22 @@
     <td class="{{ hidden_prop }}">
         {{ row['count'] }}
     </td>
+
+## =================================== OWNED ===================================
+
+# if 'owned' in display_columns
+#    set hidden_prop = ""
+# else
+#    set hidden_prop = "hidden"
+# endif
+
+# if row['multicard'] == 'head'
+    <td name="owned" class="{{ hidden_prop }}">
+    </td>
+# else
+    <td name="owned" class="{{ hidden_prop }}">
+    </td>
+# endif
 
 ## =================================== PRICE ===================================
 

@@ -38,13 +38,13 @@ logging.basicConfig(
 log = logging.getLogger()
 
 
-def process(user_input):
+def process(user, user_input):
 
     outlog = []
 
     Card.db = Database(DatabaseConfig)
 
-    mydeck = Deck(user_input=user_input)
+    mydeck = Deck(user=user, user_input=user_input)
 
     return mydeck.print_price_table()
 
@@ -168,7 +168,7 @@ class Deck(object):
     def found_all_costs(self):
         return all([card.cost_found for card in self.cards])
 
-    def __init__(self, user_input=None, card_list=None):
+    def __init__(self, user=None, user_input=None, card_list=None):
         """
         """
         self.cards = []
@@ -250,7 +250,7 @@ class Deck(object):
                             # If the result is a single row, there is no problem,
                             # instantiate a Card.
                             if len(result) == 1:
-                                card = Card(**result[0], count=count)
+                                card = Card(**result[0], count=count, user=user)
 
                             # If there was more matches (should be only possible if
                             # a card with the same name exist in multiple editios),
@@ -258,7 +258,7 @@ class Deck(object):
                             # Card instances with some special methods.
                             else:
                                 card = Multicard(
-                                    [Card(**c, count=0, search_hash=search_hash) for c in result])
+                                    [Card(**c, count=0, search_hash=search_hash, user=user) for c in result])
                                 card.multicard_info = "multiple_cards"
 
                             # Either way, the card was found, so we can break the
@@ -278,7 +278,7 @@ class Deck(object):
 
                         if similar:
                             card = Multicard(
-                                [Card(**c, count=0, search_hash=search_hash) for c in similar])
+                                [Card(**c, count=0, search_hash=search_hash, user=user) for c in similar])
                             card.found = True
                             card.name = name
                             card.multicard_info = "similar_search"
@@ -339,11 +339,11 @@ class Deck(object):
         table = []
         footer = []
 
-        columns = ['name', 'manacost', 'edition', 'count', 'count_input', 'price', 'multiprice']
-        header_texts = ["Card title", "Manacost", "Edition", "Count", "Count", "PPU [CZK]", "Price [CZK]"]
-        header_data_field = ["title", "manacost", "edition", "count", "count", "price", "multiprice"]
-        header_data_sortable = [True, True, True, True, True, True, True]
-        header_widths = [6, 2, 2, 2, 2, 4, 4]
+        columns = ['name', 'manacost', 'edition', 'count', 'count_input', 'owned', 'price', 'multiprice']
+        header_texts = ["Card title", "Manacost", "Edition", "Count", "Count", "Owned", "PPU [CZK]", "Price [CZK]"]
+        header_data_field = ["title", "manacost", "edition", "count", "count", "Owned", "price", "multiprice"]
+        header_data_sortable = [True, True, True, True, True, True, True, True]
+        header_widths = [6, 2, 2, 2, 2, 2, 4, 4]
 
         header = [(col, {
             'text': text,
@@ -578,7 +578,8 @@ class Card(object):
                  buy=None, buy_foil=None, sell=None, sell_foil=None,
                  layout=None,
                  type=None, rarity=None, found=True, count=1,
-                 search_hash=None):
+                 search_hash=None,
+                 user=None):
         """
         """
         self.found = found
@@ -601,6 +602,12 @@ class Card(object):
 
         self.count = count
         self.search_hash = search_hash
+
+        if user is not None:
+            self.owned = user.owns_card(self)
+        else:
+            self.owned = False
+
 
     @classmethod
     def parse_edition(cls, edition):
@@ -817,7 +824,8 @@ class Card(object):
                 'edition_id': self.edition_id,
                 'count': str(self.count),
                 'price': str_cost,
-                'multiprice': str_multiprice}
+                'multiprice': str_multiprice,
+                'owned': self.owned}
 
         else:
             addet = {
