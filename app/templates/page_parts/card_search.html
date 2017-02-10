@@ -8,8 +8,22 @@
       </span>
     </div>
 
-    <table id="search_table" class="table table-striped table-condensed table-hover" data-toggle="table" hidden>
+# if search_table
+#    set hidden_prop = ""
+# else
+#    set hidden_prop = "hidden"
+# endif
 
+    <table id="search_table" class="table table-striped table-condensed table-hover" data-toggle="table" {{hidden_prop}}>
+        {% if search_table %}
+            {{ price_table(
+                'Search',
+                table_data=search_table,
+                display_columns=['name', 'edition', 'price', 'owned'],
+                display_footer=False,
+                show_add_to_deck_button=True,
+                only_table_contents=True,) }}
+        {% endif %}
     </table>
 
   </div>

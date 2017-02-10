@@ -216,6 +216,9 @@ $(document).on('click', "input[name='addToDeck']", function(e){
         clone.find("span[name='multiprice']").text(clone.find("span[name='price']").text());
         clone.find("td.hidden").removeClass("hidden");
         clone.find("td[name='number']").addClass("hidden");
+        clone.find("th[name='number']").addClass("hidden");
+        clone.find("td[name='manacost']").addClass("hidden");
+        clone.find("th[name='manacost']").addClass("hidden");
         $("#out_table tbody").append(clone);
         clone.flashTableRow();
     }

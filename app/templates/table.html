@@ -4,13 +4,8 @@
 {% from 'page_parts/price_table.html' import price_table %}
 
 {% block content %}
-<div class="col-md-3">
-    <!-- Input decklist form -->
-    {% include 'page_parts/input_decklist.html' %}
-</div>
-
 {% if output_table %}
-<div class="col-md-9">
+<div class="col-md-12">
     <div style="width: 270px; position:fixed;">
         <!-- Card preview -->
         {% include 'page_parts/card_preview.html' %}
@@ -34,7 +29,7 @@
     </div>
 </div>
 {% else %}
-<div class="col-md-9">
+<div class="col-md-12">
     <div class="panel panel-default">
         <div class="panel-heading"><strong>No input.</strong></div>
     </div>
@@ -42,7 +37,7 @@
 {% endif %}
 
 {% if log %}
-<div class="col-md-9">
+<div class="col-md-12">
     <!-- Log -->
     {% include 'page_parts/log.html' %}
 </div>

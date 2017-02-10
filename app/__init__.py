@@ -222,7 +222,7 @@ def get_google_auth(state=None, token=None):
 def index():
     form = InputForm()
     return html_minify(render_template(
-        'input.html',
+        'home.html',
         title='Input',
         fill='',
         form=form))
@@ -374,16 +374,23 @@ def library():
         db_info=bu.get_db_info()))
 
 
-@app.route('/deck/<int:deck_id>')
+@app.route('/deck/<int:deck_id>', methods=['GET', 'POST'])
 @login_required
-def deck(deck_id):
+def deck(deck_id, search_table=None):
+
+    form = InputForm()
+    if form.validate_on_submit():
+        search_table, log_0 = process(current_user, form.text.data)
+    else:
+        log_0 = []
+        search_table = None
 
     bu = Builder(DatabaseConfig)
 
     deck_table, log_1 = print_user_deck(current_user, deck_id)
     library_table, log_2 = print_user_library(current_user)
 
-    log = log_1 + log_2
+    log = log_0 + log_1 + log_2
 
     return html_minify(render_template(
         'deck.html',
@@ -391,6 +398,7 @@ def deck(deck_id):
         form="",
         deck_table=deck_table,
         library_table=library_table,
+        search_table=search_table,
         fill="",
         log=log,
         db_info=bu.get_db_info()))
@@ -427,7 +435,7 @@ def input():
         output_table, log = process(current_user, form.text.data)
 
         return html_minify(render_template(
-            'input.html',
+            'table.html',
             title='Output',
             form=form,
             output_table=output_table,
@@ -436,7 +444,7 @@ def input():
             db_info=bu.get_db_info()))
 
     return html_minify(render_template(
-        'input.html',
+        'home.html',
         title='Input',
         fill='',
         form=form))
