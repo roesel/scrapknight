@@ -12,7 +12,7 @@ Add this repository to your favourite git client. Let's assume you put it into `
 
 ### Setting up a virtual environment
 
-1. Open up terminal
+1. Open up terminal and navigate to the repository folder, e.g. `cd C:\Repa\scrapknight`
 2. run `conda env create -f scrap.yml`
  * this should create a new conda environment with all the dependencies necessary
  * if the environment allready exists, but new packages are required, run `conda env update -f scrap.yml` instead
@@ -46,25 +46,13 @@ Start python console in repository root and run
 ### Filling the database
 To gather the data and fill the database, run:
 
-    (scrap) cd C:\Repa\scrapknight
     (scrap) python build.py
-
-or on Linux:
-
-    (scrap) cd ~/repa/scrapknight
-    (scrap) ./build.py
 
 
 ### Running the server
 At this point, you should be able to run the server like this:
 
-    (scrap) cd C:\Repa\scrapknight
     (scrap) python run.py
-
-or on Linux:
-
-    (scrap) cd ~/repa/scrapknight
-    (scrap) ./run.py
 
 Once you're running, the website should be visible on [http://localhost:5010/](http://localhost:5010/) unless you changed the IP address/port in the configs.
 
