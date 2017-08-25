@@ -15,7 +15,7 @@ dependencies:
     - guess_language
     - flipflop
     - coverage
-    - mysql-connector
+    - mysql-connector==2.1.4
     - mtgsdk
     - oauth2client
     - pyopenssl
@@ -23,3 +23,4 @@ dependencies:
     - django-htmlmin
     - imagehash
     - htmlmin
+    - requests-cache
